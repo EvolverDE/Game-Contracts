@@ -13,12 +13,24 @@
  */
 
 #include APIFunctions
-#pragma version 1.0
+#program name AXTPoolContractRef
+#program activationAmount .5
+#pragma optimizationLevel 3
+#pragma maxAuxVars 3
+#pragma version 2.2.1
 
-#define DEPOSITING 0xc915c24f95f28d9d
-#define ACT 0x4b8e064b14d74d64
-#define WITHDRAWALING 0x64ff1046423d38df
-#define VOTE_FOR_POLL 0xddca044a939d3bb7
+// @evolver Ich wuerde einfache Zahlen wie 1,2,3,4 fuer die Methoden Ids verwenden. Damit ich erspare ich mir das nervige umrechnen in LE
+
+#define DEPOSITING 1
+#define ACT 2
+#define WITHDRAWALING 3
+#define VOTE_FOR_POLL 4
+
+// gutes conversion tool: https://www.simonv.fr/TypesConvert/?integers
+// #define DEPOSITING 0xc915c24f95f28d9d
+// #define ACT 0x4b8e064b14d74d64
+// #define WITHDRAWALING 0x64ff1046423d38df
+// #define VOTE_FOR_POLL 0xddca044a939d3bb7
 
 #define REJECT 0x0000000000000000
 #define DEPOSIT 0x0000000000000001
@@ -79,7 +91,12 @@ void main(void) {
 // this is for a registration into the contract (get vote entitlement)
 void Depositing(void) {
 	// check minimal depositAmount
-	if((contractProvider == 0 || currentTX.amount <= 100_0000_0000) && IsIDOK(currentTX.sender) == 1 && GetIndexOfProviderInMap(currentTX.sender) >= GetLastIndexOfProvidersInMap()) {
+
+	// @evolver GetIndexOfProviderInMap ist eine teure Funktion...wenn notwendig wuerde ich die nur einmal aufrufen. Hier ist definitiv noch optimierungsspielraum
+	if((contractProvider == 0 || currentTX.amount <= 100_0000_0000)
+	//&& IsIDOK(currentTX.sender) == 1
+// 	&& GetIndexOfProviderInMap(currentTX.sender) >= GetLastIndexOfProvidersInMap()
+	) {
 		
 		// get the last map entry index.
 		long index = GetIndexOfProviderInMap(currentTX.sender);
@@ -88,6 +105,7 @@ void Depositing(void) {
 		// check if not already exist
 		if(index >= lastIndex) {
 			// set new entry as last entry
+			// @evolver index, index ???? Das riecht nach Verbesserung
 			setMapValue(index, index, currentTX.sender);
 		}
 		setMapValue(currentTX.sender, DEPOSIT, currentTX.amount);
