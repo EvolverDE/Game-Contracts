@@ -2,9 +2,10 @@
   "name": "game-contracts",
   "version": "1.0.0",
   "description": "Smart Contracts for Flashwork Layer 2 solution",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "vitest"
+    "dev": "vitest",
+    "test": "vitest run"
   },
   "repository": {
     "type": "git",
