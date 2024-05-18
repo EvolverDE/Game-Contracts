@@ -93,9 +93,9 @@ void Depositing(void) {
 	// check minimal depositAmount
 
 	// @evolver GetIndexOfProviderInMap ist eine teure Funktion...wenn notwendig wuerde ich die nur einmal aufrufen. Hier ist definitiv noch optimierungsspielraum
-	if((contractProvider == 0 || currentTX.amount <= 100_0000_0000)
-	//&& IsIDOK(currentTX.sender) == 1
-// 	&& GetIndexOfProviderInMap(currentTX.sender) >= GetLastIndexOfProvidersInMap()
+	if((contractProvider == 0 || currentTX.amount <= 100_0000_0000) &&
+	IsIDOK(currentTX.sender) == 1 &&
+	GetIndexOfProviderInMap(currentTX.sender) >= GetLastIndexOfProvidersInMap()
 	) {
 		
 		// get the last map entry index.
