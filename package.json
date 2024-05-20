@@ -1,0 +1,32 @@
+{
+  "name": "game-contracts",
+  "version": "1.0.0",
+  "description": "Smart Contracts for Flashwork Layer 2 solution",
+  "type": "module",
+  "scripts": {
+    "dev": "vitest",
+    "test": "vitest run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EvolverDE/Game-Contracts.git"
+  },
+  "keywords": [
+    "signum",
+    "web3",
+    "blockchain",
+    "cryptocurrency"
+  ],
+  "author": "evolverde",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/EvolverDE/Game-Contracts/issues"
+  },
+  "homepage": "https://github.com/EvolverDE/Game-Contracts#readme",
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "signum-smartc-testbed": "^1.0.4",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}
