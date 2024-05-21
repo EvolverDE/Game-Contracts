@@ -32,11 +32,11 @@
 // #define WITHDRAWALING 0x64ff1046423d38df
 // #define VOTE_FOR_POLL 0xddca044a939d3bb7
 
-#define REJECT 0x0000000000000000
-#define DEPOSIT 0x0000000000000001
-#define ACTION 0x0000000000000002
-#define VOTEPOINTS 0x0000000000000003
-#define WITHDRAWAL 0x0000000000000004
+#define REJECT 5
+#define DEPOSIT 6
+#define ACTION 7
+#define VOTEPOINTS 8
+#define WITHDRAWAL 9
 
 long contractProvider = 0;
 long maxGlobalVotePoints = 0; // 100%
@@ -212,16 +212,17 @@ void VoteForPoll(void) {
 	}
 	
 	long pollingAmount = getMapValue(pollsterID, pollType);
-	long vote = currentTX.message[1];
+	long vote = currentTX.message[2];
 	long votingEntitled = getMapValue(currentTX.sender, DEPOSIT);
-	
-	if(vote != pollingAmount / (contractProvider / 2)) {
-		// vote "reject" so increase the deposit
-		setMapValue(currentTX.sender, DEPOSIT, votingEntitled + currentTX.amount);
-	}
 	
 	// check if withdrawal and entitled
 	if(pollingAmount > 0 && votingEntitled > 0) {
+
+		if(vote != pollingAmount / (contractProvider / 2)) {
+			// vote "reject" so increase the deposit
+			setMapValue(currentTX.sender, DEPOSIT, votingEntitled + currentTX.amount);
+		}
+
 		pollingAmount = getMapValue(pollsterID, DEPOSIT);
 		votingEntitled = getMapValue(pollsterID, currentTX.sender);
 		// check if already voted
