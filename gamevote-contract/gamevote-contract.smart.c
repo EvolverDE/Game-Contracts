@@ -93,20 +93,25 @@ void Depositing(void) {
 	// check minimal depositAmount
 
 	// @evolver GetIndexOfProviderInMap ist eine teure Funktion...wenn notwendig wuerde ich die nur einmal aufrufen. Hier ist definitiv noch optimierungsspielraum
+	// @ohager da hast du vollkommen recht! mir ging es hier in erster Linie nur um die Funktionalität/Machbarkeit.
+	long providerIndex = GetIndexOfProviderInMap(currentTX.sender);
+	long lastIndex = GetLastIndexOfProvidersInMap();
 	if((contractProvider == 0 || currentTX.amount <= 100_0000_0000) &&
 	IsIDOK(currentTX.sender) == 1 &&
-	GetIndexOfProviderInMap(currentTX.sender) >= GetLastIndexOfProvidersInMap()
+	providerIndex >= lastIndex
 	) {
 		
 		// get the last map entry index.
-		long index = GetIndexOfProviderInMap(currentTX.sender);
-		long lastIndex = GetLastIndexOfProvidersInMap();
+		//long index = GetIndexOfProviderInMap(currentTX.sender);
+		//long lastIndex = GetLastIndexOfProvidersInMap();
 		
 		// check if not already exist
-		if(index >= lastIndex) {
+		if(providerIndex >= lastIndex) {
 			// set new entry as last entry
 			// @evolver index, index ???? Das riecht nach Verbesserung
-			setMapValue(index, index, currentTX.sender);
+			// @ohager das dient zur Key-Bestimmung (in diesem Fall der "iteration of providerIDs" siehe Abschnitt "## Maps" in CONTRACT_API.md). Dies kann vllt noch verbessert werden(?)
+			// TODO: optimize 
+			setMapValue(providerIndex, providerIndex, currentTX.sender);
 		}
 		setMapValue(currentTX.sender, DEPOSIT, currentTX.amount);
 		contractProvider++;
@@ -211,24 +216,40 @@ void VoteForPoll(void) {
 		return;
 	}
 	
-	long pollingAmount = getMapValue(pollsterID, pollType);
-	long vote = currentTX.message[2];
+	long polling = getMapValue(pollsterID, pollType);
+	
+	// if there is no will to ACT or WITHDRAWAL then break
+	if(polling == 0) {
+		SendBack();
+		return;
+	}
+
+	// get pollsterID's DEPOSIT
+	long pollingAmount = getMapValue(pollsterID, DEPOSIT);
+	long vote = currentTX.amount;
 	long votingEntitled = getMapValue(currentTX.sender, DEPOSIT);
 	
 	// check if withdrawal and entitled
 	if(pollingAmount > 0 && votingEntitled > 0) {
+		
+		long votingResult = Voting(vote, pollingAmount);
 
-		if(vote != pollingAmount / (contractProvider / 2)) {
-			// vote "reject" so increase the deposit
-			setMapValue(currentTX.sender, DEPOSIT, votingEntitled + currentTX.amount);
+		if(votingResult == 0) {
+			// vote is out of acceptable range
+			SendBack();
+			return;
 		}
 
-		pollingAmount = getMapValue(pollsterID, DEPOSIT);
+		if(votingResult == 1) {
+			// vote "reject" so increase the deposit
+			setMapValue(currentTX.sender, DEPOSIT, votingEntitled + vote);
+		}
+
 		votingEntitled = getMapValue(pollsterID, currentTX.sender);
 		// check if already voted
 		if(votingEntitled == 0) {
 			// check voteCost with currentTX.amount as vote
-			if(currentTX.amount >= pollingAmount / (contractProvider / 2)) {
+			if(votingResult == 2) {
 				
 				// set the vote: iteration for pollsterID, accepted(vote == pollingAmount) or rejected(vote != pollingAmount)
 				setMapValue(GetNextZeroValue(pollsterID), pollsterID, vote);
@@ -254,6 +275,7 @@ void VoteForPoll(void) {
 		}
 	} else {
 		if(pollingAmount == 0) {
+			// if there is no DEPOSIT of PollsterID then clean up maps
 			ExecuteAndCleanUpMap(pollsterID, REJECT, pollingAmount);
 		}
 		SendBack();
@@ -320,12 +342,14 @@ void CheckThePoll(long pollsterID, long pollType, long pollingAmount) {
 		long notOKVotes = 0;
 		for (long i = 0; i < contractProvider; i++) {
 			long vote = getMapValue(i, pollsterID);
+
 			// just count until value reaches zero...
 			if(vote == 0) {
 				break;
 			}
-			
-			if(vote == pollingAmount / (contractProvider / 2)) { 
+
+			long historyVoteResult = Voting(vote, pollingAmount);
+			if(historyVoteResult == 2) { 
 				// vote accepted
 				okVotes++;
 			} else { 
@@ -336,7 +360,7 @@ void CheckThePoll(long pollsterID, long pollType, long pollingAmount) {
 		
 		if(okVotes > contractProvider / 2) {
 			// poll OK
-			ExecuteAndCleanUpMap(pollsterID, pollType, pollingAmount - 132200000);
+			ExecuteAndCleanUpMap(pollsterID, pollType, pollingAmount);
 		} else {
 			if(notOKVotes > contractProvider / 2) {
 				// poll is NOT OK and voting has ended because they cant reach a OK end anymore
@@ -351,7 +375,7 @@ void CheckThePoll(long pollsterID, long pollType, long pollingAmount) {
 		
 		if(vote2 == pollingAmount){
 			// poll OK
-			ExecuteAndCleanUpMap(pollsterID, pollType, pollingAmount - 132200000);
+			ExecuteAndCleanUpMap(pollsterID, pollType, pollingAmount);
 		} else {
 			// poll is NOT OK and voting has ended because they cant reach a OK end anymore
 			ExecuteAndCleanUpMap(pollsterID, REJECT, pollingAmount);
@@ -406,6 +430,8 @@ void ExecuteAndCleanUpMap(long pollsterID, long pollType, long pollingAmount) {
 		case WITHDRAWAL:
 			// set pollster's vote points back to 0
 			setMapValue(pollsterID, VOTEPOINTS, 0);
+			// set pollster's DEPOSIT to 0
+			setMapValue(pollsterID, DEPOSIT, 0);
 			// send back pollster's deposit
 			sendAmount(pollingAmount, pollsterID);
 			break;
@@ -476,3 +502,31 @@ void sendMessageSC(long recipient, long messageToSend1, long messageToSend2, lon
     Send_A_To_Address_In_B();
 }
 
+// 0 = voting error
+// 1 = voting rejected
+// 2 = voting accepted
+long Voting(long vote, long pollingAmount) {
+	long voteCost = pollingAmount / (contractProvider / 2);
+	if(IsVoteValid(vote, voteCost, 10) == 1) {
+		if(vote < voteCost) {
+			return 1;
+		} else {
+			return 2;
+		}
+	} else {
+		return 0;
+	}
+}
+
+// calculate max deviation percent
+long IsVoteValid(long vote, long target, long maxDeviationPercent) {
+	
+	if(vote < target - (target * maxDeviationPercent / 100) || vote > target + (target * maxDeviationPercent / 100)  ) {
+		// vote not ok
+		return 0;
+	} else {
+		// vote ok
+		return 1;
+	}
+
+}
