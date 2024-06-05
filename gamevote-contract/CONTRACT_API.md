@@ -49,12 +49,12 @@ to vote a poll, one in the map has to pay the votefee and set the parameter to P
 
 Initiates an Act Poll to induce changes on a target contract
 
-| Description              | Key 1                              | Key 2                              | Value                                  |
-|--------------------------|------------------------------------|------------------------------------|----------------------------------------|
-| iteration of providerIDs | 0 (incr int)                       | 0 (incr int)                       | providerID                             |
-| deposit of providerID    | providerID                         | 1(DEPOSIT)                         | 100(signa)                             |
-| poll of providerID       | providerID(pollCreator/PollsterID) | 2(ACTION), 3(WITHDRAWAL)           | 0(no poll active) or 1 (poll active)   |
-| vote for poll            | 0 (incr int)                       | providerID(pollCreator/PollsterID) | vote(match or not)                     |
-| prevent double voting    | voterID                            | providerID(pollCreator/PollsterID) | vote(alreadyVoted != 0; notVoted == 0) |
-| votePoints of voterID    | voterID                            | 4(VOTEPOINTS)                      | 0(int)                                 |
+| Description              | Key 1                              | Key 2                              | Value                                   |
+|--------------------------|------------------------------------|------------------------------------|-----------------------------------------|
+| iteration of providerIDs | 0 (incr int)                       | 0 (incr int)                       | providerID                              |
+| deposit of providerID    | providerID                         | 1(DEPOSIT)                         | 100(signa)                              |
+| poll of providerID       | providerID(pollCreator/PollsterID) | 2(ACTION), 3(WITHDRAWAL)           | 0(no poll active) or > 0(poll active)   |
+| vote for poll            | 0 (incr int)                       | providerID(pollCreator/PollsterID) | vote(match or not)                      |
+| prevent double voting    | voterID                            | providerID(pollCreator/PollsterID) | vote(alreadyVoted != 0; notVoted == 0)  |
+| votePoints of voterID    | voterID                            | 4(VOTEPOINTS)                      | 0(int)                                  |
 

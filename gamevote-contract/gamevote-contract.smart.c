@@ -19,12 +19,15 @@
 #pragma maxAuxVars 3
 #pragma version 2.2.1
 
-// @evolver Ich wuerde einfache Zahlen wie 1,2,3,4 fuer die Methoden Ids verwenden. Damit ich erspare ich mir das nervige umrechnen in LE
+#define ONESIGNA 100000000
 
 #define DEPOSITING 1
 #define ACT 2
 #define WITHDRAWALING 3
 #define VOTE_FOR_POLL 4
+
+#define ONEHOUR 60
+#define TWENTYFOURHOURS 1440
 
 // gutes conversion tool: https://www.simonv.fr/TypesConvert/?integers
 // #define DEPOSITING 0xc915c24f95f28d9d
@@ -36,10 +39,13 @@
 #define DEPOSIT 6
 #define ACTION 7
 #define VOTEPOINTS 8
-#define WITHDRAWAL 9
 
 long contractProvider = 0;
 long maxGlobalVotePoints = 0; // 100%
+
+long sendBuffer[8];
+
+long currentFee = ONESIGNA;
 
 struct TXINFO {
     long txId,
@@ -91,25 +97,14 @@ void main(void) {
 // this is for a registration into the contract (get vote entitlement)
 void Depositing(void) {
 	// check minimal depositAmount
-
-	// @evolver GetIndexOfProviderInMap ist eine teure Funktion...wenn notwendig wuerde ich die nur einmal aufrufen. Hier ist definitiv noch optimierungsspielraum
-	// @ohager da hast du vollkommen recht! mir ging es hier in erster Linie nur um die Funktionalität/Machbarkeit.
+	// get the last map entry index.
 	long providerIndex = GetIndexOfProviderInMap(currentTX.sender);
 	long lastIndex = GetLastIndexOfProvidersInMap();
-	if((contractProvider == 0 || currentTX.amount <= 100_0000_0000) &&
-	IsIDOK(currentTX.sender) == 1 &&
-	providerIndex >= lastIndex
-	) {
-		
-		// get the last map entry index.
-		//long index = GetIndexOfProviderInMap(currentTX.sender);
-		//long lastIndex = GetLastIndexOfProvidersInMap();
+	if((contractProvider == 0 || currentTX.amount <= 100_0000_0000) && IsIDOK(currentTX.sender) == 1 &&	providerIndex >= lastIndex) {
 		
 		// check if not already exist
 		if(providerIndex >= lastIndex) {
 			// set new entry as last entry
-			// @evolver index, index ???? Das riecht nach Verbesserung
-			// @ohager das dient zur Key-Bestimmung (in diesem Fall der "iteration of providerIDs" siehe Abschnitt "## Maps" in CONTRACT_API.md). Dies kann vllt noch verbessert werden(?)
 			// TODO: optimize 
 			setMapValue(providerIndex, providerIndex, currentTX.sender);
 		}
@@ -129,34 +124,27 @@ void Act(void) {
 		return;
 	}
 	
-	// TODO: save command(parameter) somewhere(maybe prevTX?) and determine key1 and key2
-	
-	// long targetContractID = currentTX.message[1]; // target contract
-	// long command = currentTX.message[2]; // maybe ingame: mining; fitting; other contract activities
-	// long parameter = currentTX.message[3]; // maybe mining(123); fitting(contractID/objectID)
-	
-	// long targetFactor = getExtMapValue(key1, key2, targetContractID);
-	
-	// sendAmountAndMessage(long amount, long * buffer, targetContractID);
-	// long msg[4];
-	// msg[0] = 
-	// sendMessage({long1, long2}, accountID);
-	
-	// sendAmount(Get_Current_Balance() - GAS_FEE, Initiator);
-	
 	if(contractProvider <= 1) {
 		// no voting necessary
 		
 		setMapValue(currentTX.sender, ACTION, 0);
-		setMapValue(currentTX.sender, WITHDRAWAL, 0);
 		// send ACT as method, currentTX.message[2] as command, currentTX.message[3] as parameter and 1 as executeflag to currentTX.message[1] as targetContractID
-		sendMessageSC(currentTX.message[1], ACT, currentTX.message[2], currentTX.message[3], 1);
+		
+		SetSendBufferForTargetContract(ACT, currentTX.message[2], currentTX.message[3], currentTX.sender, 1, 0, 0, 0);
+		SendMessageSC(currentTX.message[1]);
+		
 	} else {
-		if(getMapValue(currentTX.sender, WITHDRAWAL) <= 0) {
+		// check if there is no other poll active...
+		if(getMapValue(currentTX.sender, ACTION) <= 0) {
 			// set action poll with currentTX.message[1] as targetContractID
 			setMapValue(currentTX.sender, ACTION, currentTX.message[1]);
-			// send ACT as method, currentTX.message[2] as command, currentTX.message[3] as parameter and 0 as executeflag to currentTX.message[1] as targetContractID
-			sendMessageSC(currentTX.message[1], ACT, currentTX.message[2], currentTX.message[3], 0);
+			// send ACT as method, currentTX.message[2] as command, currentTX.message[3] as parameter and a time in the future to currentTX.message[1] as targetContractID
+			// command: mining, fitting, other contract activities
+			// parameter: mining(123), fitting(contractID/objectID)
+			
+			SetSendBufferForTargetContract(ACT, currentTX.message[2], currentTX.message[3], currentTX.sender, SetTimeOut(ONEHOUR), 0, 0, 0);
+			SendMessageSC(currentTX.message[1]);
+			
 		} else {
 			SendBack();
 		}
@@ -168,23 +156,25 @@ void Withdrawaling(void) {
 	
 	if(IsIDOK(currentTX.sender) == 1 && GetIndexOfProviderInMap(currentTX.sender) < GetLastIndexOfProvidersInMap()) {
 		
-		// set the withdrawalAmount to vote for
-		if(contractProvider <= 1) {
-			// no voting necessary
-			if(getMapValue(currentTX.sender, DEPOSIT) >= 1) {
-				setMapValue(currentTX.sender, DEPOSIT, 0);
-				contractProvider--;
+		long deposit = getMapValue(currentTX.sender, DEPOSIT);
+		
+		if(deposit >= ONESIGNA) {
+			
+			// set DEPOSIT and VOTEPOINTS to 0
+			setMapValue(currentTX.sender, DEPOSIT, 0);
+			setMapValue(currentTX.sender, VOTEPOINTS, 0);
+			
+			SetMaxVotePoints();
+			contractProvider--;
+			
+			if(contractProvider == 0) {
 				sendAmount(Get_Current_Balance(), currentTX.sender);
 			} else {
-				SendBack();
+				sendAmount(deposit, currentTX.sender);
 			}
 			
 		} else {
-			if(getMapValue(currentTX.sender, ACTION) <= 0) {
-				setMapValue(currentTX.sender, WITHDRAWAL, 1);
-			} else {
-				SendBack();
-			}
+			SendBack();
 		}
 		
 	} else {
@@ -216,21 +206,33 @@ void VoteForPoll(void) {
 		return;
 	}
 	
-	long polling = getMapValue(pollsterID, pollType);
+	long pollingTargetContract = getMapValue(pollsterID, pollType);
 	
-	// if there is no will to ACT or WITHDRAWAL then break
-	if(polling == 0) {
+	// if there is no will for ACTION then break
+	if(pollingTargetContract == 0) {
 		SendBack();
 		return;
 	}
-
+	
 	// get pollsterID's DEPOSIT
 	long pollingAmount = getMapValue(pollsterID, DEPOSIT);
 	long vote = currentTX.amount;
 	long votingEntitled = getMapValue(currentTX.sender, DEPOSIT);
 	
-	// check if withdrawal and entitled
+	// check if entitled to vote
 	if(pollingAmount > 0 && votingEntitled > 0) {
+		
+		// get TimeOut as Value from PollingTargetContract as ContractID with PollsterID as Key1, PollType as Key2
+		long isTimeUp = GetTimeIsUp(getExtMapValue(pollsterID, pollType, pollingTargetContract));
+		if(isTimeUp == 2) {
+			SendBack();
+			return;
+		} else {
+			if(isTimeUp == 1) {
+				CheckThePoll(pollsterID, pollType, pollingAmount, 1);
+				return;
+			}
+		}
 		
 		long votingResult = Voting(vote, pollingAmount);
 
@@ -265,7 +267,7 @@ void VoteForPoll(void) {
 				// set vote points +1 for the voter
 				setMapValue(currentTX.sender, VOTEPOINTS, maxVotePoints +1);
 				// checking withdrawal
-				CheckThePoll(pollsterID, pollType, pollingAmount);
+				CheckThePoll(pollsterID, pollType, pollingAmount, 0);
 			} else {
 				SendBack();
 			}
@@ -282,59 +284,11 @@ void VoteForPoll(void) {
 	}
 }
 
-// STILL IN DEVELOPEMENT
-void FullPayoutContractBalance(void) {
-	long payoutVotes = 0;
-	long maxPayoutSum = 0;
-	long memberID = 0;
-	
-	for (long j = 0; j < contractProvider; j++) {
-		long i = 0;
-		
-		do {
-			memberID = getMapValue(i, i);
-		    maxPayoutSum += getMapValue(memberID, 0);
-			if(maxPayoutSum > 0) {
-				payoutVotes++;
-			}
-			i++;
-		} while(memberID != 0);
-	}
-	
-	memberID = 0;
-	
-	if(payoutVotes == contractProvider) {
-		long maxPayoutOne = 0;
-		long k = 0;
-		if(maxPayoutSum == Get_Current_Balance()) {
-			//TODO: withdrawal
-			do {
-				memberID = getMapValue(k, k);
-				maxPayoutOne = getMapValue(memberID, 0);
-				
-				// TODO: withdrawaling(memberID, maxPayoutOne)
-				
-				// set withdrawal to zero
-				setMapValue(memberID, 0, 0);
-				k++;
-			} while(memberID != 0);
-		} else {
-			do {
-				memberID = getMapValue(k, k);
-				// set withdrawal to zero
-				setMapValue(memberID, 0, 0);
-				k++;
-			} while(memberID != 0);
-		}
-	}
-	// wait for more...
-}
-
 // ### INTERNAL METHODS AND FUNCTIONS ###
 
 // counting the votes of the deregistration
 // a vote of >50% is required for a successful deregistration (and withdrawaling)
-void CheckThePoll(long pollsterID, long pollType, long pollingAmount) {
+void CheckThePoll(long pollsterID, long pollType, long pollingAmount, long timeOut) {
 	
 	if(contractProvider > 2) {
 		
@@ -366,6 +320,11 @@ void CheckThePoll(long pollsterID, long pollType, long pollingAmount) {
 				// poll is NOT OK and voting has ended because they cant reach a OK end anymore
 				ExecuteAndCleanUpMap(pollsterID, REJECT, pollingAmount);
 			} else {
+				
+				if(timeOut == 1) {
+					ExecuteAndCleanUpMap(pollsterID, REJECT, pollingAmount);
+				}
+				
 				// poll is still NOT OK, wait for more votes...
 			}
 		}
@@ -424,17 +383,12 @@ void ExecuteAndCleanUpMap(long pollsterID, long pollType, long pollingAmount) {
 			// get command parameter from targetContractID
 			long parameter = getExtMapValue(0, command, targetContractID);
 			// send ACT as method, command, parameter and 1 as executeflag to targetContractID
-			sendMessageSC(targetContractID, ACT, command, parameter, 1);
+			
+			SetSendBufferForTargetContract(ACT, command, parameter, currentTX.sender, 1, 0, 0, 0);
+			SendMessageSC(currentTX.message[1]);
 			
 			break;
-		case WITHDRAWAL:
-			// set pollster's vote points back to 0
-			setMapValue(pollsterID, VOTEPOINTS, 0);
-			// set pollster's DEPOSIT to 0
-			setMapValue(pollsterID, DEPOSIT, 0);
-			// send back pollster's deposit
-			sendAmount(pollingAmount, pollsterID);
-			break;
+		
 	}
 	
 	// set pollType to 0
@@ -443,7 +397,7 @@ void ExecuteAndCleanUpMap(long pollsterID, long pollType, long pollingAmount) {
 
 void SendBack(void) {sendAmount(currentTX.amount, currentTX.sender);}
 
-//### SUPPORT FUNCTIONS ###
+// ### SUPPORT FUNCTIONS ###
 
 long GetLastIndexOfProvidersInMap() {
 	return GetIndexOfProviderInMap(0);
@@ -471,7 +425,7 @@ long GetNextZeroValue(long withdrawerID) {
 }
 
 long IsIDOK(long id) {
-	if(id != DEPOSIT && id != ACTION && id != VOTEPOINTS && id != WITHDRAWAL) {
+	if(id != DEPOSIT && id != ACTION && id != VOTEPOINTS) {
 		return 1;
 	} else {
 		return 0;
@@ -485,21 +439,24 @@ long GetPollType(long pollsterID) {
 		return ACTION;
 	}
 	
-	tempValue = getMapValue(pollsterID, WITHDRAWAL);
-	
-	if(tempValue > 0) {
-		return WITHDRAWAL;
-	} else {
-		return REJECT;
-	}
+	return REJECT;
 	
 }
 
-void sendMessageSC(long recipient, long messageToSend1, long messageToSend2, long messageToSend3, long messageToSend4) {
-    Set_B1(recipient);
-    Set_A1_A2(messageToSend1, messageToSend2);
-    Set_A3_A4(messageToSend3, messageToSend4);
-    Send_A_To_Address_In_B();
+void SetSendBufferForTargetContract(long pollType, long command, long parameter, long sender, long executeTime, long reserve1, long reserve2, long reserve3) {
+	sendBuffer[0] = pollType;
+	sendBuffer[1] = command;
+	sendBuffer[2] = parameter;
+	sendBuffer[3] = sender;
+	sendBuffer[4] = executeTime;
+	sendBuffer[5] = reserve1;
+	sendBuffer[6] = reserve2;
+	sendBuffer[7] = reserve3;
+}
+
+void SendMessageSC(long recipient) {
+	sendAmountAndMessage(currentFee, sendBuffer, recipient);
+	sendMessage(sendBuffer + 4, recipient);
 }
 
 // 0 = voting error
@@ -530,3 +487,33 @@ long IsVoteValid(long vote, long target, long maxDeviationPercent) {
 	}
 
 }
+
+void SetMaxVotePoints() {
+	maxGlobalVotePoints = 0;
+	long i = 0;
+	long mapID = 0;
+	do {
+		mapID = getMapValue(i, i);
+		long tempVotePoints = getMapValue(mapID, VOTEPOINTS);
+		if(tempVotePoints > maxGlobalVotePoints) {
+			maxGlobalVotePoints = tempVotePoints;
+		}
+		i++;
+	} while(mapID != 0);
+}
+
+long SetTimeOut(long time){return Get_Block_Timestamp() + ((time / 4) << 32);} //+(360 << 32); 15 * ~4min/block = 60min = 1 hour locktime
+long GetTimeIsUp(long timeOut) {
+	
+	if(timeOut == 0) {
+		return 2;
+	}
+	
+	if(Get_Block_Timestamp() <= timeOut) {
+		return 0;
+	} else {
+		return 1;
+	}
+	
+}
+
