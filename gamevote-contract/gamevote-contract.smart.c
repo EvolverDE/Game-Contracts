@@ -13,10 +13,14 @@
  */
 
 #include APIFunctions
-#program name AXTPoolContractRef
+
+#program name GameVoteContract
+#program description This contract serves as a consensus regulator (from a few to many voters) for target contracts
 #program activationAmount .5
-#pragma optimizationLevel 3
+
 #pragma maxAuxVars 3
+#pragma maxConstVars 3
+#pragma optimizationLevel 3
 #pragma version 2.2.1
 
 #define ONESIGNA 100000000
@@ -44,6 +48,8 @@ long contractProvider = 0;
 long maxGlobalVotePoints = 0; // 100%
 
 long sendBuffer[8];
+
+long providerIDs[100];
 
 long currentFee = ONESIGNA;
 
@@ -107,8 +113,10 @@ void Depositing(void) {
 			// set new entry as last entry
 			// TODO: optimize 
 			setMapValue(providerIndex, providerIndex, currentTX.sender);
+		
 		}
 		setMapValue(currentTX.sender, DEPOSIT, currentTX.amount);
+		providerIDs[contractProvider] = currentTX.sender;
 		contractProvider++;
 	} else {
 		SendBack();
@@ -118,6 +126,16 @@ void Depositing(void) {
 
 // this serves to initiate an action
 void Act(void) {
+	
+	// currentTX.sender = providerID (for reward)
+	// currentTX.message[0] = method (ACT)
+	// currentTX.message[1] = targetContractID (to process the pollresult)
+	// currentTX.message[2] = command (mining)
+	// currentTX.message[3] = parameter (123)
+	// currentTX.message[4] = endTargetContractID (to process command(parameter))
+	// currentTX.message[5] = free
+	// currentTX.message[6] = free
+	// currentTX.message[7] = free
 	
 	if(IsIDOK(currentTX.sender) == 0) {
 		SendBack();
@@ -136,13 +154,19 @@ void Act(void) {
 	} else {
 		// check if there is no other poll active...
 		if(getMapValue(currentTX.sender, ACTION) <= 0) {
-			// set action poll with currentTX.message[1] as targetContractID
-			setMapValue(currentTX.sender, ACTION, currentTX.message[1]);
-			// send ACT as method, currentTX.message[2] as command, currentTX.message[3] as parameter and a time in the future to currentTX.message[1] as targetContractID
-			// command: mining, fitting, other contract activities
-			// parameter: mining(123), fitting(contractID/objectID)
 			
-			SetSendBufferForTargetContract(ACT, currentTX.message[2], currentTX.message[3], currentTX.sender, SetTimeOut(ONEHOUR), 0, 0, 0);
+			// recipientID = targetContractID (to process the pollresult)
+			// message[0] = method (ACT)
+			// message[1] = command (mining)
+			// message[2] = parameter (123)
+			// message[3] = endTargetContractID (to process command(parameter))
+			// message[4] = providerID (for reward)
+			// message[5] = timestamp (vote timeout in the future)
+			// message[6] = free
+			// message[7] = free
+			
+			setMapValue(currentTX.sender, ACTION, currentTX.message[1]);
+			SetSendBufferForTargetContract(ACT, currentTX.message[2], currentTX.message[3], currentTX.sender, currentTX.message[4], SetTimeOut(ONEHOUR), 0, 0);
 			SendMessageSC(currentTX.message[1]);
 			
 		} else {
@@ -247,7 +271,7 @@ void VoteForPoll(void) {
 			setMapValue(currentTX.sender, DEPOSIT, votingEntitled + vote);
 		}
 
-		votingEntitled = getMapValue(pollsterID, currentTX.sender);
+		votingEntitled = getMapValue(currentTX.sender, pollsterID);
 		// check if already voted
 		if(votingEntitled == 0) {
 			// check voteCost with currentTX.amount as vote
@@ -413,11 +437,11 @@ long GetIndexOfProviderInMap(long providerID) {
 	return i -1;
 }
 
-long GetNextZeroValue(long withdrawerID) {
+long GetNextZeroValue(long pollsterID) {
 	
-	// get the last vote index for the withdrawerID.
+	// get the last vote index for the pollsterID.
 	for (long i = 0; i < contractProvider; i++) {
-		long result = getMapValue(i, withdrawerID);
+		long result = getMapValue(i, pollsterID);
 		if(result == 0) {
 			return i;
 		}
