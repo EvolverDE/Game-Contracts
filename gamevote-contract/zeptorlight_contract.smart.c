@@ -56,3 +56,30 @@ void main(void) {
 		}
 	}
 }
+
+getTxDetails();
+
+switch (currentTX.message[0]) {
+case DEPOSITING:
+    EquipComponents();
+    break;
+case ACT:
+    Act();
+    break;
+default:
+    break;
+}
+    } while (true);
+}
+
+void EquipComponents() {
+    // Initialize ship components
+    shipComponents[0] = WEAPON_SLOT_1;
+    shipComponents[1] = WEAPON_SLOT_2;
+    shipComponents[2] = ENGINE_SLOT;
+    shipComponents[3] = SHIELD_SLOT;
+    shipComponents[4] = CARGO_SLOT;
+
+    // Set initial component quantities
+    long initialQuantities[5] = { 1, 1, 1, 1, 1 };
+
