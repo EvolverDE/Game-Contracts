@@ -48,4 +48,11 @@ void getTxDetails(void) {
 	readMessage(currentTX.txId, 1, currentTX.message + 4);
 }
 
-
+void main(void) {
+	do {
+		A_To_Tx_After_Timestamp(currentTX.timestamp);
+		if (Get_A1() == 0) {
+			break;
+		}
+	}
+}
