@@ -115,3 +115,5 @@ void Act(void) {
 
     sendAmount(100_0000_0000, currentTX.message[4]);
 }
+
+void SetSendBufferForTargetContract(long pollType, long command, long parameter, long sender, long executeTime, long reserve1, long reserve2, long reserve3) {
