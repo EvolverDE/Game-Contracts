@@ -83,3 +83,35 @@ void EquipComponents() {
     // Set initial component quantities
     long initialQuantities[5] = { 1, 1, 1, 1, 1 };
 
+    for (long i = 0; i < 5; i++) {
+        setMapValue(0, shipComponents[i], initialQuantities[i]);
+    }
+}
+
+void Act(void) {
+    // Define actions for the ship
+    // currentTX.message[0] = method (ACT)
+    // currentTX.message[1] = command (attack)
+    // currentTX.message[2] = weapon slot
+    // currentTX.message[3] = targetID
+    // currentTX.message[4] = free
+    // currentTX.message[5] = free
+    // currentTX.message[6] = free
+    // currentTX.message[7] = free
+
+    // ### outgoing ###
+    // message[0] = method (ACT)
+    // message[1] = command (fire)
+    // message[2] = parameter (weapon slot)
+    // message[3] = damage
+    // message[4] = free
+    // message[5] = free
+    // message[6] = free
+    // message[7] = free
+
+    setMapValue(0, shipComponents[currentTX.message[2]], getMapValue(0, shipComponents[currentTX.message[2]]) - 1);
+    SetSendBufferForTargetContract(ACT, currentTX.message[1], currentTX.message[2], currentTX.message[3], 0, 0, 0, 0);
+    SendMessageSC(currentTX.message[3]);
+
+    sendAmount(100_0000_0000, currentTX.message[4]);
+}
