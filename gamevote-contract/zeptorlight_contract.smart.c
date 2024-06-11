@@ -8,28 +8,56 @@
 #pragma optimizationLevel 1
 #pragma version 2.2.1
 
+// enumeration substitute
 #define ONESIGNA 100000000
 
-#define DEPOSITING 1
+// for methods
+#define STORE 1
 #define ACT 2
-#define WITHDRAWALING 3
+#define EQUIP 3
+#define BUILD 4
 
+// for maps
 #define ACTION 5
 
+// index for slots array
 #define WEAPON_SLOT_1 1
 #define WEAPON_SLOT_2 2
 #define ENGINE_SLOT 3
 #define SHIELD_SLOT 4
 #define CARGO_SLOT 5
 
-long shipComponents[5];
+// Systems required to build up the ship (1XX = Refined Material; 2XX = Common Material; 3XX = Advanced Material; 4XX = Component; 5XX = SYSTEM; 6XX = Article)
+#define COCKPIT_INSTRUMENT 500 // 4 pieces required
+#define COMPUTER 501 // 1 pieces required
+#define MONITOR 502 // 1 pieces required
+#define SMALL_ENERGY_GENERATOR 503 // 1 pieces required
+#define SMALL_ENGINE 504 // 2 pieces required
+#define SMALL_EXTERNAL_SLOT 505 // 2 pieces required
+#define SMALL_SHIP_HULL 506 // 1 pieces required
+
+// contract attributes
+// basic contract info 
 long gamevoteContract = 0;
-long sendBuffer[8];
 long currentFee = ONESIGNA;
-long insurence = 0;
+long sendBuffer[8];
+
+// advanced info
+long objectType = 603 // Article = ZeptorLight
 long owner = 0;
-long status = 0;
+long insurence = 0;
 long location = 0;
+
+// build info
+long shipBuildComponents[7];
+long status = 0;
+
+// specific info
+long defaultSpeed = 350;
+long defaultStructure = 500;
+long defaultArmor = 1000;
+long defaultShield = 0;
+long slots[5];
 
 struct TXINFO {
     long txId,
@@ -54,51 +82,45 @@ void main(void) {
 		if (Get_A1() == 0) {
 			break;
 		}
-	}
-}
+		getTxDetails();
 
-getTxDetails();
-
-switch (currentTX.message[0]) {
-case DEPOSITING:
-    EquipComponents();
-    break;
-case ACT:
-    Act();
-    break;
-default:
-    break;
-}
+		switch (currentTX.message[0]) {
+			case STORE:
+				// TODO: STORE something into cargo
+				break;
+			case ACT:
+				Act();
+				break;				
+			case EQUIP:
+				Equip();
+				break;
+			case BUILD:
+				Build();
+				break;
+			case WITHDRAWALING:
+				// TODO: needed?
+				break;
+			default:
+				break;
+		}
     } while (true);
 }
 
-void EquipComponents() {
-    // Initialize ship components
-    shipComponents[0] = WEAPON_SLOT_1;
-    shipComponents[1] = WEAPON_SLOT_2;
-    shipComponents[2] = ENGINE_SLOT;
-    shipComponents[3] = SHIELD_SLOT;
-    shipComponents[4] = CARGO_SLOT;
 
-    // Set initial component quantities
-    long initialQuantities[5] = { 1, 1, 1, 1, 1 };
-
-    for (long i = 0; i < 5; i++) {
-        setMapValue(0, shipComponents[i], initialQuantities[i]);
-    }
-}
-
+// main methods
 void Act(void) {
+	// TODO:
+	
     // Define actions for the ship
     // currentTX.message[0] = method (ACT)
-    // currentTX.message[1] = command (attack)
-    // currentTX.message[2] = weapon slot
-    // currentTX.message[3] = targetID
+    // currentTX.message[1] = command (docking, mining, scanning, repairing)
+    // currentTX.message[2] = targetID
+    // currentTX.message[3] = free
     // currentTX.message[4] = free
     // currentTX.message[5] = free
     // currentTX.message[6] = free
     // currentTX.message[7] = free
-
+	
     // ### outgoing ###
     // message[0] = method (ACT)
     // message[1] = command (fire)
@@ -108,14 +130,174 @@ void Act(void) {
     // message[5] = free
     // message[6] = free
     // message[7] = free
-
-    setMapValue(0, shipComponents[currentTX.message[2]], getMapValue(0, shipComponents[currentTX.message[2]]) - 1);
+	
+	/*
+    setMapValue(0, slots[currentTX.message[2]], getMapValue(0, slots[currentTX.message[2]]) - 1);
     SetSendBufferForTargetContract(ACT, currentTX.message[1], currentTX.message[2], currentTX.message[3], 0, 0, 0, 0);
     SendMessageSC(currentTX.message[3]);
 
     sendAmount(100_0000_0000, currentTX.message[4]);
+	*/
 }
 
+void Equip() {
+
+    // equip the ship
+    // currentTX.message[0] = method (EQUIP)
+    // currentTX.message[1] = parameter (gattling20mm = ID)
+    // currentTX.message[2] = parameter (slotindex = WEAPON_SLOT)
+    // currentTX.message[3] = free
+    // currentTX.message[4] = free
+    // currentTX.message[5] = free
+    // currentTX.message[6] = free
+    // currentTX.message[7] = free	
+	
+	/* Key1 definition:
+	 * 0 = Elements (IRON, HYDROGEN, etc.)
+	 * 1 = Refined Materials (Iron Bar, Hydrogen Bottle, etc)
+	 * 2 = Common Materials (Iron Gear, Fuel, Polymer, etc)
+	 * 3 = Advanced Materials (Iron Case, Aluminium Frame, etc)
+	 * 4 = Components (Ship Hull Part, Engine Part, Gun Part, etc.)
+	 * 5 = Systems (Computer, Small Ship Hull, Small Engine, etc.)
+	 * 6 = Equipment (Zeptor Light, Gattling20mm, etc.)
+	 */
+	
+	/* Key2 definition:
+	 * 0 = (Equipment)Slot (value = Internal or External)
+	 */
+	
+	/* Value definition:
+	 * 1,2,3,... = slotOfEquipment
+	 */
+	
+	long fitSlot = GetSlotType(getExtMapValue(6, 0, currentTX.message[1]), currentTX.message[2]);
+	if (fitSlot != 0) {
+		slots[fitSlot] = currentTX.message[1]; // Equipment ID
+	}
+	
+	
+	
+	
+	
+    // Set initial component quantities
+    // long initialQuantities[5] = { 1, 1, 1, 1, 1 };
+
+    // for (long i = 0; i < 5; i++) {
+        // setMapValue(0, slots[i], initialQuantities[i]);
+    // }
+}
+
+void Build() {
+    // build the ship
+    // currentTX.message[0] = method (BUILD)
+    // currentTX.message[1] = parameter (System [Computer, Small Ship Hull, Small Engine, etc.])
+    // currentTX.message[2] = parameter (Amount of System)
+    // currentTX.message[3] = free
+    // currentTX.message[4] = free
+    // currentTX.message[5] = free
+    // currentTX.message[6] = free
+    // currentTX.message[7] = free
+	
+	
+	
+	// shipBuildComponents[0] = Amount of COCKPIT_INSTRUMENT
+	// shipBuildComponents[1] = Amount of COMPUTER
+	// shipBuildComponents[2] = Amount of MONITOR
+	// shipBuildComponents[3] = Amount of SMALL_ENERGY_GENERATOR
+	// shipBuildComponents[4] = Amount of SMALL_ENGINE
+	// shipBuildComponents[5] = Amount of SMALL_EXTERNAL_SLOT
+	// shipBuildComponents[6] = Amount of SMALL_SHIP_HULL
+	
+	long checkedComponent = CheckBuildComponent(currentTX.message[1])
+	
+	if(checkedComponent > 0) {
+		shipBuildComponents[checkedComponent -1] = shipBuildComponents[checkedComponent -1] + currentTX.message[2];
+		BuildUpShip();
+	}
+	
+}
+
+// sub methods
+
+
+// support methods
+long GetSlotType(long slotOfEquipment, long desiredSlot) {
+	
+	switch(slotOfEquipment) {
+		case WEAPON_SLOT_1:
+		case WEAPON_SLOT_2:
+			switch(desiredSlot) {
+				case WEAPON_SLOT_1:
+				case WEAPON_SLOT_2:
+					return desiredSlot;
+					break; // maybe not needed
+			}
+			
+			break;
+		case ENGINE_SLOT:
+			if(desiredSlot == ENGINE_SLOT) {
+				return desiredSlot;
+			}
+			break;
+		case SHIELD_SLOT:
+			if(desiredSlot == SHIELD_SLOT) {
+				return desiredSlot;
+			}
+			break;
+		case CARGO_SLOT:
+			if(desiredSlot == CARGO_SLOT) {
+				return desiredSlot;
+			}
+			break;
+	}
+	
+	return 0;
+	
+}
+
+long CheckBuildComponent(long component) {
+	
+	switch(component) {
+		case COCKPIT_INSTRUMENT:
+			return 1;
+			break;
+		case COMPUTER:
+			return 2;
+			break;
+		case MONITOR:
+			return 3;
+			break;
+		case SMALL_ENERGY_GENERATOR:
+			return 4;
+			break;
+		case SMALL_ENGINE:
+			return 5;
+			break;
+		case SMALL_EXTERNAL_SLOT:
+			return 6;
+			break;
+		case SMALL_SHIP_HULL:
+			return 7;
+			break;
+	}
+	
+	return 0;
+	
+}
+
+void BuildUpShip() {
+	
+	if(shipBuildComponents[0] >= 4 && shipBuildComponents[1] >= 1 && shipBuildComponents[2] >= 1 && shipBuildComponents[3] >= 1 && shipBuildComponents[4] >= 2 && shipBuildComponents[5] >= 2 && shipBuildComponents[6] >= 1) {
+		status = 1; // ship flightready
+	}
+	else {
+		status = 0; // ship destroyed/not exist
+	}
+	
+}
+
+
+// contract methods
 void SetSendBufferForTargetContract(long pollType, long command, long parameter, long sender, long executeTime, long reserve1, long reserve2, long reserve3) {
     sendBuffer[0] = pollType;
     sendBuffer[1] = command;
@@ -131,4 +313,4 @@ void SendMessageSC(long recipient) {
     sendAmountAndMessage(currentFee, sendBuffer, recipient);
     sendMessage(sendBuffer + 4, recipient);
 }
-//glaub sollte es sein
+
