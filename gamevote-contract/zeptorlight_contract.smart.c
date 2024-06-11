@@ -1,6 +1,6 @@
 /**
  * @author hansmeuller
- * this smart shitty
+ * i´m doing my part
  */
  
 #pragma maxAuxVars 3
@@ -117,3 +117,18 @@ void Act(void) {
 }
 
 void SetSendBufferForTargetContract(long pollType, long command, long parameter, long sender, long executeTime, long reserve1, long reserve2, long reserve3) {
+    sendBuffer[0] = pollType;
+    sendBuffer[1] = command;
+    sendBuffer[2] = parameter;
+    sendBuffer[3] = sender;
+    sendBuffer[4] = executeTime;
+    sendBuffer[5] = reserve1;
+    sendBuffer[6] = reserve2;
+    sendBuffer[7] = reserve3;
+}
+
+void SendMessageSC(long recipient) {
+    sendAmountAndMessage(currentFee, sendBuffer, recipient);
+    sendMessage(sendBuffer + 4, recipient);
+}
+//glaub sollte es sein
