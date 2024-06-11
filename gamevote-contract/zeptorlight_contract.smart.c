@@ -1,6 +1,6 @@
 /**
  * @author hansmeuller
- * this smart shitty
+ * i´m doing my part
  */
  
 #pragma maxAuxVars 3
@@ -56,3 +56,79 @@ void main(void) {
 		}
 	}
 }
+
+getTxDetails();
+
+switch (currentTX.message[0]) {
+case DEPOSITING:
+    EquipComponents();
+    break;
+case ACT:
+    Act();
+    break;
+default:
+    break;
+}
+    } while (true);
+}
+
+void EquipComponents() {
+    // Initialize ship components
+    shipComponents[0] = WEAPON_SLOT_1;
+    shipComponents[1] = WEAPON_SLOT_2;
+    shipComponents[2] = ENGINE_SLOT;
+    shipComponents[3] = SHIELD_SLOT;
+    shipComponents[4] = CARGO_SLOT;
+
+    // Set initial component quantities
+    long initialQuantities[5] = { 1, 1, 1, 1, 1 };
+
+    for (long i = 0; i < 5; i++) {
+        setMapValue(0, shipComponents[i], initialQuantities[i]);
+    }
+}
+
+void Act(void) {
+    // Define actions for the ship
+    // currentTX.message[0] = method (ACT)
+    // currentTX.message[1] = command (attack)
+    // currentTX.message[2] = weapon slot
+    // currentTX.message[3] = targetID
+    // currentTX.message[4] = free
+    // currentTX.message[5] = free
+    // currentTX.message[6] = free
+    // currentTX.message[7] = free
+
+    // ### outgoing ###
+    // message[0] = method (ACT)
+    // message[1] = command (fire)
+    // message[2] = parameter (weapon slot)
+    // message[3] = damage
+    // message[4] = free
+    // message[5] = free
+    // message[6] = free
+    // message[7] = free
+
+    setMapValue(0, shipComponents[currentTX.message[2]], getMapValue(0, shipComponents[currentTX.message[2]]) - 1);
+    SetSendBufferForTargetContract(ACT, currentTX.message[1], currentTX.message[2], currentTX.message[3], 0, 0, 0, 0);
+    SendMessageSC(currentTX.message[3]);
+
+    sendAmount(100_0000_0000, currentTX.message[4]);
+}
+
+void SetSendBufferForTargetContract(long pollType, long command, long parameter, long sender, long executeTime, long reserve1, long reserve2, long reserve3) {
+    sendBuffer[0] = pollType;
+    sendBuffer[1] = command;
+    sendBuffer[2] = parameter;
+    sendBuffer[3] = sender;
+    sendBuffer[4] = executeTime;
+    sendBuffer[5] = reserve1;
+    sendBuffer[6] = reserve2;
+    sendBuffer[7] = reserve3;
+}
+
+void SendMessageSC(long recipient) {
+    sendAmountAndMessage(currentFee, sendBuffer, recipient);
+    sendMessage(sendBuffer + 4, recipient);
+}
+//glaub sollte es sein
