@@ -23,15 +23,18 @@
 #pragma optimizationLevel 3
 #pragma version 2.2.1
 
+// enumeration substitute
 #define ONESIGNA 100000000
-
-#define DEPOSITING 1
-#define ACT 2
-#define WITHDRAWALING 3
-#define VOTE_FOR_POLL 4
-
 #define ONEHOUR 60
 #define TWENTYFOURHOURS 1440
+
+// contract methods
+#define DEPOSITING 1
+#define ACT 2
+#define STOREPOLL 3
+#define CHECKPOLL 4
+#define WITHDRAWALING 5
+#define VOTE_FOR_POLL 6
 
 // gutes conversion tool: https://www.simonv.fr/TypesConvert/?integers
 // #define DEPOSITING 0xc915c24f95f28d9d
@@ -39,12 +42,15 @@
 // #define WITHDRAWALING 0x64ff1046423d38df
 // #define VOTE_FOR_POLL 0xddca044a939d3bb7
 
+
+// map flags
 #define REJECT 5
 #define DEPOSIT 6
 #define ACTION 7
 #define VOTEPOINTS 8
 
 long contractProvider = 0;
+long pollContractID = 0; // set static before deploy contract
 long maxGlobalVotePoints = 0; // 100%
 
 long sendBuffer[8];
@@ -129,10 +135,10 @@ void Act(void) {
 	
 	// currentTX.sender = providerID (for reward)
 	// currentTX.message[0] = method (ACT)
-	// currentTX.message[1] = targetContractID (to process the pollresult)
-	// currentTX.message[2] = command (mining)
-	// currentTX.message[3] = parameter (123)
-	// currentTX.message[4] = endTargetContractID (to process command(parameter))
+	// currentTX.message[1] = sub method (mining)
+	// currentTX.message[2] = parameter (123)
+	// currentTX.message[3] = actorContractID (to process sub method(parameter))
+	// currentTX.message[4] = targetContractID (to process sub method(parameter))
 	// currentTX.message[5] = free
 	// currentTX.message[6] = free
 	// currentTX.message[7] = free
@@ -146,28 +152,30 @@ void Act(void) {
 		// no voting necessary
 		
 		setMapValue(currentTX.sender, ACTION, 0);
-		// send ACT as method, currentTX.message[2] as command, currentTX.message[3] as parameter and 1 as executeflag to currentTX.message[1] as targetContractID
+		// send STOREPOLL as contract method, currentTX.message[1] as sub method, currentTX.message[2] as parameter, currentTX.message[3] as actorContractID, currentTX.message[4] as targetContractID, currentTX.sender as rewardRecipient and 1 as timeout for executing immediately
 		
-		SetSendBufferForTargetContract(ACT, currentTX.message[2], currentTX.message[3], currentTX.sender, 1, 0, 0, 0);
-		SendMessageSC(currentTX.message[1]);
+		SetSendBufferForTargetContract(STOREPOLL, currentTX.message[1], currentTX.message[2], currentTX.message[3], currentTX.message[4], currentTX.sender, 1, 0);
+		SendBufferWithFee(pollContractID);
 		
 	} else {
 		// check if there is no other poll active...
 		if(getMapValue(currentTX.sender, ACTION) <= 0) {
 			
-			// recipientID = targetContractID (to process the pollresult)
-			// message[0] = method (ACT)
-			// message[1] = command (mining)
+			// recipientID = pollContractID (to process the pollresult)
+			// message[0] = contract method (STOREPOLL)
+			// message[1] = sub method (mining)
 			// message[2] = parameter (123)
-			// message[3] = endTargetContractID (to process command(parameter))
-			// message[4] = providerID (for reward)
-			// message[5] = timestamp (vote timeout in the future)
-			// message[6] = free
+			// message[3] = actorContractID (to process sub method(parameter))
+			// message[4] = targetContractID (to process sub method(parameter))
+			// message[5] = providerID/pollsterID (for reward)
+			// message[6] = timestamp (vote timeout in the future)
 			// message[7] = free
 			
-			setMapValue(currentTX.sender, ACTION, currentTX.message[1]);
-			SetSendBufferForTargetContract(ACT, currentTX.message[2], currentTX.message[3], currentTX.sender, currentTX.message[4], SetTimeOut(ONEHOUR), 0, 0);
-			SendMessageSC(currentTX.message[1]);
+			// save actorContractID in map for polling (his intend is voted on)
+			setMapValue(currentTX.sender, ACTION, currentTX.message[3]);
+			// send STOREPOLL as contract method, currentTX.message[1] as sub method, currentTX.message[2] as parameter, currentTX.message[3] as actorContractID, currentTX.message[4] as targetContractID, currentTX.sender as rewardRecipient and timeout time 
+			SetSendBufferForTargetContract(STOREPOLL, currentTX.message[1], currentTX.message[2], currentTX.message[3], currentTX.message[4], currentTX.sender, SetTimeOut(ONEHOUR), 0);
+			SendBufferWithFee(pollContractID);
 			
 		} else {
 			SendBack();
@@ -230,10 +238,10 @@ void VoteForPoll(void) {
 		return;
 	}
 	
-	long pollingTargetContract = getMapValue(pollsterID, pollType);
+	long pollingActorContract = getMapValue(pollsterID, pollType);
 	
 	// if there is no will for ACTION then break
-	if(pollingTargetContract == 0) {
+	if(pollingActorContract == 0) {
 		SendBack();
 		return;
 	}
@@ -246,8 +254,8 @@ void VoteForPoll(void) {
 	// check if entitled to vote
 	if(pollingAmount > 0 && votingEntitled > 0) {
 		
-		// get TimeOut as Value from PollingTargetContract as ContractID with PollsterID as Key1, PollType as Key2
-		long isTimeUp = GetTimeIsUp(getExtMapValue(pollsterID, pollType, pollingTargetContract));
+		// get TimeOut as Value from pollContractID as ContractID with PollsterID as Key1, pollingActorContract as Key2
+		long isTimeUp = GetTimeIsUp(getExtMapValue(pollsterID, pollingActorContract, pollContractID));
 		if(isTimeUp == 2) {
 			SendBack();
 			return;
@@ -400,16 +408,23 @@ void ExecuteAndCleanUpMap(long pollsterID, long pollType, long pollingAmount) {
 			
 			// send the execution action to target contract
 			
-			// get targetContractID from action poll
-			long targetContractID = getMapValue(pollsterID, ACTION);
-			// get command from targetContractID
-			long command = getExtMapValue(0, ACTION, targetContractID);
-			// get command parameter from targetContractID
-			long parameter = getExtMapValue(0, command, targetContractID);
-			// send ACT as method, command, parameter and 1 as executeflag to targetContractID
+			// get actorContractID from action poll
+			long actorContractID = getMapValue(pollsterID, ACTION);
 			
-			SetSendBufferForTargetContract(ACT, command, parameter, currentTX.sender, 1, 0, 0, 0);
-			SendMessageSC(currentTX.message[1]);
+			// ### outgoing ###
+			// recipient = pollContractID
+			// message[0] = contract method (CHECKPOLL)
+			// message[1] = pollsterID (poll initiator)
+			// message[2] = actorContractID (action initiator)
+			// message[3] = free
+			// message[4] = free
+			// message[5] = free
+			// message[6] = free
+			// message[7] = free
+			
+			// send CHECKPOLL as method, pollsterID as rewardRecipient, actorContractID as initiator to pollContractID
+			SetSendBufferForTargetContract(CHECKPOLL, pollsterID, actorContractID, 0, 0, 0, 0, 0);
+			SendBufferWithFee(pollContractID);
 			
 			break;
 		
@@ -467,9 +482,9 @@ long GetPollType(long pollsterID) {
 	
 }
 
-void SetSendBufferForTargetContract(long pollType, long command, long parameter, long sender, long executeTime, long reserve1, long reserve2, long reserve3) {
+void SetSendBufferForTargetContract(long pollType, long subMethod, long parameter, long sender, long executeTime, long reserve1, long reserve2, long reserve3) {
 	sendBuffer[0] = pollType;
-	sendBuffer[1] = command;
+	sendBuffer[1] = subMethod;
 	sendBuffer[2] = parameter;
 	sendBuffer[3] = sender;
 	sendBuffer[4] = executeTime;
@@ -478,7 +493,7 @@ void SetSendBufferForTargetContract(long pollType, long command, long parameter,
 	sendBuffer[7] = reserve3;
 }
 
-void SendMessageSC(long recipient) {
+void SendBufferWithFee(long recipient) {
 	sendAmountAndMessage(currentFee, sendBuffer, recipient);
 	sendMessage(sendBuffer + 4, recipient);
 }

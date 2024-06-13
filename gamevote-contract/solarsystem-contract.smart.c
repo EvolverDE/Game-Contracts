@@ -14,12 +14,18 @@
 #pragma optimizationLevel 3
 #pragma version 2.2.1
 
+// enumeration substitute
 #define ONESIGNA 100000000
 
+// contract methods
 #define DEPOSITING 1
 #define ACT 2
 #define WITHDRAWALING 3
 
+// sub methods
+
+
+// map flags
 #define ACTION 5
 
 // Metals(17)
@@ -237,11 +243,11 @@ void GenerateElements() {
 
 void Act(void) {
 	// ### income ###
-	// currentTX.sender = gamevote contract
-	// currentTX.message[0] = method (ACT)
-	// currentTX.message[1] = command (mining)
+	// currentTX.sender = gamevoteContract or creatorID
+	// currentTX.message[0] = contract method (ACT)
+	// currentTX.message[1] = sub method (mining)
 	// currentTX.message[2] = parameter (123)
-	// currentTX.message[3] = endTargetContractID (to process command(parameter))
+	// currentTX.message[3] = endTargetContractID (to process sub method(parameter))
 	// currentTX.message[4] = providerID (for reward)
 	// currentTX.message[5] = timestamp (vote timeout in the future)
 	// currentTX.message[6] = free
@@ -249,9 +255,9 @@ void Act(void) {
 	
 	
 	// ### outgoing ###
-	// recipientID = endTargetContractID (to process command(parameter))
-	// message[0] = method (ACT)
-	// message[1] = command (store)
+	// recipientID = endTargetContractID (to process sub method(parameter))
+	// message[0] = contract method (ACT)
+	// message[1] = sub method (store)
 	// message[2] = parameter (IRON)
 	// message[3] = parameter (123)
 	// message[4] = free
@@ -259,10 +265,11 @@ void Act(void) {
 	// message[6] = free
 	// message[7] = free
 	
-	setMapValue(0, IRON, getMapValue(0, IRON) - currentTX.message[2]);
-	SetSendBufferForTargetContract(ACT, currentTX.message[1], IRON, currentTX.message[2], 0, 0, 0, 0);
+	setMapValue(0, currentTX.message[2], getMapValue(0, currentTX.message[2]) - currentTX.message[3]);
+	SetSendBufferForTargetContract(ACT, currentTX.message[1], currentTX.message[2], currentTX.message[2], 0, 0, 0, 0);
 	SendMessageSC(currentTX.message[1]);
 	
+	// send reward for contract providing
 	sendAmount(100_0000_0000, currentTX.message[4]);
 	
 }
@@ -296,9 +303,9 @@ long CalculatePrevalence(long toRound) {
 	return tenth / 10;
 }
 
-void SetSendBufferForTargetContract(long pollType, long command, long parameter, long sender, long executeTime, long reserve1, long reserve2, long reserve3) {
+void SetSendBufferForTargetContract(long pollType, long subMethod, long parameter, long sender, long executeTime, long reserve1, long reserve2, long reserve3) {
 	sendBuffer[0] = pollType;
-	sendBuffer[1] = command;
+	sendBuffer[1] = subMethod;
 	sendBuffer[2] = parameter;
 	sendBuffer[3] = sender;
 	sendBuffer[4] = executeTime;

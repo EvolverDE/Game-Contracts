@@ -11,13 +11,19 @@
 // enumeration substitute
 #define ONESIGNA 100000000
 
-// for methods
-#define STORE 1
-#define ACT 2
+// sub methods
+#define ACT 0
+#define BUILD 1
+#define DOCK 2
 #define EQUIP 3
-#define BUILD 4
+#define EXPLODE 4
+#define MINING 5
+#define REPAIR 6
+#define SCAN 7
+#define STORE 8
+#define TREAT 9
 
-// for maps
+// map flags
 #define ACTION 5
 
 // index for slots array
@@ -37,22 +43,22 @@
 #define SMALL_SHIP_HULL 506 // 1 pieces required
 
 // contract attributes
-// basic contract info 
+// basic contract 
 long gamevoteContract = 0;
 long currentFee = ONESIGNA;
 long sendBuffer[8];
 
-// advanced info
+// advanced
 long objectType = 603 // Article = ZeptorLight
 long owner = 0;
 long insurence = 0;
 long location = 0;
 
-// build info
+// build
 long shipBuildComponents[7];
 long status = 0;
 
-// specific info
+// specific
 long defaultSpeed = 350;
 long defaultStructure = 500;
 long defaultArmor = 1000;
@@ -85,17 +91,35 @@ void main(void) {
 		getTxDetails();
 
 		switch (currentTX.message[0]) {
-			case STORE:
-				// TODO: STORE something into cargo
-				break;
 			case ACT:
 				Act();
-				break;				
-			case EQUIP:
-				Equip();
 				break;
 			case BUILD:
 				Build();
+				break;
+			case DOCK:
+				Dock();
+				break;	
+			case EQUIP:
+				
+				break;
+			case EXPLODE:
+				
+				break;
+			case MINING:
+				Mine();
+				break;
+			case REPAIR:
+				
+				break;
+			case SCAN:
+				
+				break;
+			case STORE:
+				
+				break;
+			case TREAT:
+				
 				break;
 			case WITHDRAWALING:
 				// TODO: needed?
@@ -112,8 +136,9 @@ void Act(void) {
 	// TODO:
 	
     // Define actions for the ship
+	// currentTX.sender = gamevoteContractID or ownerID or creatorID
     // currentTX.message[0] = method (ACT)
-    // currentTX.message[1] = command (docking, mining, scanning, repairing)
+    // currentTX.message[1] = command (build, equip, docking, mining, storing, scanning, repairing)
     // currentTX.message[2] = targetID
     // currentTX.message[3] = free
     // currentTX.message[4] = free
@@ -138,53 +163,6 @@ void Act(void) {
 
     sendAmount(100_0000_0000, currentTX.message[4]);
 	*/
-}
-
-void Equip() {
-
-    // equip the ship
-    // currentTX.message[0] = method (EQUIP)
-    // currentTX.message[1] = parameter (gattling20mm = ID)
-    // currentTX.message[2] = parameter (slotindex = WEAPON_SLOT)
-    // currentTX.message[3] = free
-    // currentTX.message[4] = free
-    // currentTX.message[5] = free
-    // currentTX.message[6] = free
-    // currentTX.message[7] = free	
-	
-	/* Key1 definition:
-	 * 0 = Elements (IRON, HYDROGEN, etc.)
-	 * 1 = Refined Materials (Iron Bar, Hydrogen Bottle, etc)
-	 * 2 = Common Materials (Iron Gear, Fuel, Polymer, etc)
-	 * 3 = Advanced Materials (Iron Case, Aluminium Frame, etc)
-	 * 4 = Components (Ship Hull Part, Engine Part, Gun Part, etc.)
-	 * 5 = Systems (Computer, Small Ship Hull, Small Engine, etc.)
-	 * 6 = Equipment (Zeptor Light, Gattling20mm, etc.)
-	 */
-	
-	/* Key2 definition:
-	 * 0 = (Equipment)Slot (value = Internal or External)
-	 */
-	
-	/* Value definition:
-	 * 1,2,3,... = slotOfEquipment
-	 */
-	
-	long fitSlot = GetSlotType(getExtMapValue(6, 0, currentTX.message[1]), currentTX.message[2]);
-	if (fitSlot != 0) {
-		slots[fitSlot] = currentTX.message[1]; // Equipment ID
-	}
-	
-	
-	
-	
-	
-    // Set initial component quantities
-    // long initialQuantities[5] = { 1, 1, 1, 1, 1 };
-
-    // for (long i = 0; i < 5; i++) {
-        // setMapValue(0, slots[i], initialQuantities[i]);
-    // }
 }
 
 void Build() {
@@ -214,6 +192,81 @@ void Build() {
 		shipBuildComponents[checkedComponent -1] = shipBuildComponents[checkedComponent -1] + currentTX.message[2];
 		BuildUpShip();
 	}
+	
+}
+
+void Dock() {
+	
+}
+
+void Equip() {
+
+    // equip the ship
+    // currentTX.message[0] = method (ACT)
+    // currentTX.message[1] = command (EQUIP)
+    // currentTX.message[2] = parameter (gattling20mm = ID)
+    // currentTX.message[3] = parameter (slotindex = WEAPON_SLOT)
+    // currentTX.message[4] = free
+    // currentTX.message[5] = free
+    // currentTX.message[6] = free
+    // currentTX.message[7] = free	
+	
+	/* Key1 definition:
+	 * 0 = Elements (IRON, HYDROGEN, etc.)
+	 * 1 = Refined Materials (Iron Bar, Hydrogen Bottle, etc)
+	 * 2 = Common Materials (Iron Gear, Fuel, Polymer, etc)
+	 * 3 = Advanced Materials (Iron Case, Aluminium Frame, etc)
+	 * 4 = Components (Ship Hull Part, Engine Part, Gun Part, etc.)
+	 * 5 = Systems (Computer, Small Ship Hull, Small Engine, etc.)
+	 * 6 = Equipment (Zeptor Light, Gattling20mm, etc.)
+	 */
+	
+	/* Key2 definition:
+	 * 0 = (Equipment)Slot (value = Internal or External)
+	 */
+	
+	/* Value definition:
+	 * 1,2,3,... = slotOfEquipment
+	 */
+	
+	long fitSlot = GetSlotType(getExtMapValue(6, 0, currentTX.message[2]), currentTX.message[3]);
+	if (fitSlot != 0) {
+		slots[fitSlot] = currentTX.message[2]; // Equipment ID
+	}
+	
+	
+	
+	
+	
+    // Set initial component quantities
+    // long initialQuantities[5] = { 1, 1, 1, 1, 1 };
+
+    // for (long i = 0; i < 5; i++) {
+        // setMapValue(0, slots[i], initialQuantities[i]);
+    // }
+}
+
+void Explode() {
+	
+}
+
+void Mine() {
+	
+}
+
+void Repair() {
+	
+}
+
+void Scan() {
+	
+}
+
+void Store() {
+	
+}
+
+void Treat() {
 	
 }
 
