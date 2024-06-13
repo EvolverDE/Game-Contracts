@@ -2,14 +2,24 @@
  * @author hansmeuller
  * i´m doing my part
  */
- 
+
+#include APIFunctions
+
+#program name ZeptorLightContract
+#program description This contract serves as a actor/target contract and represent a zeptor light
+#program activationAmount .5
+
 #pragma maxAuxVars 3
 #pragma maxConstVars 3
-#pragma optimizationLevel 1
+#pragma optimizationLevel 3
 #pragma version 2.2.1
 
 // enumeration substitute
 #define ONESIGNA 100000000
+
+// contract methods
+
+
 
 // sub methods
 #define ACT 0
@@ -24,7 +34,10 @@
 #define TREAT 9
 
 // map flags
-#define ACTION 5
+#define ACTOR 12
+#define TARGET 13
+#define SUBMETHOD 14
+#define PARAMETER 15
 
 // index for slots array
 #define WEAPON_SLOT_1 1
@@ -351,15 +364,15 @@ void BuildUpShip() {
 
 
 // contract methods
-void SetSendBufferForTargetContract(long pollType, long command, long parameter, long sender, long executeTime, long reserve1, long reserve2, long reserve3) {
-    sendBuffer[0] = pollType;
-    sendBuffer[1] = command;
-    sendBuffer[2] = parameter;
-    sendBuffer[3] = sender;
-    sendBuffer[4] = executeTime;
-    sendBuffer[5] = reserve1;
-    sendBuffer[6] = reserve2;
-    sendBuffer[7] = reserve3;
+void SetSendBufferForTargetContract(long buffer1, long buffer2, long buffer3, long buffer4, long buffer5, long buffer6, long buffer7, long buffer8) {
+	sendBuffer[0] = buffer1;
+	sendBuffer[1] = buffer2;
+	sendBuffer[2] = buffer3;
+	sendBuffer[3] = buffer4;
+	sendBuffer[4] = buffer5;
+	sendBuffer[5] = buffer6;
+	sendBuffer[6] = buffer7;
+	sendBuffer[7] = buffer8;
 }
 
 void SendMessageSC(long recipient) {

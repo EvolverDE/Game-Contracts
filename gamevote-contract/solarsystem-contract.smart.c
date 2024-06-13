@@ -6,7 +6,7 @@
 #include APIFunctions
 
 #program name SolarSystemContract
-#program description This contract serves as a target contract and represent a solar system
+#program description This contract serves as a actor/target contract and represent a solar system
 #program activationAmount .5
 
 #pragma maxAuxVars 3
@@ -19,14 +19,25 @@
 
 // contract methods
 #define DEPOSITING 1
-#define ACT 2
-#define WITHDRAWALING 3
+#define WITHDRAWALING 2
 
 // sub methods
-
+#define ACT 0
+#define BUILD 1
+#define DOCK 2
+#define EQUIP 3
+#define EXPLODE 4
+#define MINING 5
+#define REPAIR 6
+#define SCAN 7
+#define STORE 8
+#define TREAT 9
 
 // map flags
-#define ACTION 5
+#define ACTOR 12
+#define TARGET 13
+#define SUBMETHOD 14
+#define PARAMETER 15
 
 // Metals(17)
 #define IRON 26
@@ -105,9 +116,37 @@ void main(void) {
 			case ACT:
 				Act();
 				break;
+			case BUILD:
+				// so you want to buildup an entire solar system, huh?
+				break;
+			case DOCK:
+				// what are you thinking of docking an entire solar system to?
+				break;	
+			case EQUIP:
+				// there is much room for a dysonsphere...NOT! TODO: maybe for stations?
+				break;
+			case EXPLODE:
+				// are you thinking about a supernova?
+				break;
+			case MINING:
+				// TODO: well, you can actually mine the resources of a solar system, yes.
+				break;
+			case REPAIR:
+				// lets hope its not to late for the earth...
+				break;
+			case SCAN:
+				// solar systems are indifferent to everything...
+				break;
+			case STORE:
+				// TODO: how big is the cargo of a solar system? i think there is much room for stations!
+				break;
+			case TREAT:
+				// maybe one day the solar system collide/handle with another one... but not in this game universe
+				break;
 			default:
 				break;
         }
+		
     } while (true);
 }
 
@@ -303,15 +342,15 @@ long CalculatePrevalence(long toRound) {
 	return tenth / 10;
 }
 
-void SetSendBufferForTargetContract(long pollType, long subMethod, long parameter, long sender, long executeTime, long reserve1, long reserve2, long reserve3) {
-	sendBuffer[0] = pollType;
-	sendBuffer[1] = subMethod;
-	sendBuffer[2] = parameter;
-	sendBuffer[3] = sender;
-	sendBuffer[4] = executeTime;
-	sendBuffer[5] = reserve1;
-	sendBuffer[6] = reserve2;
-	sendBuffer[7] = reserve3;
+void SetSendBufferForTargetContract(long buffer1, long buffer2, long buffer3, long buffer4, long buffer5, long buffer6, long buffer7, long buffer8) {
+	sendBuffer[0] = buffer1;
+	sendBuffer[1] = buffer2;
+	sendBuffer[2] = buffer3;
+	sendBuffer[3] = buffer4;
+	sendBuffer[4] = buffer5;
+	sendBuffer[5] = buffer6;
+	sendBuffer[6] = buffer7;
+	sendBuffer[7] = buffer8;
 }
 
 void SendMessageSC(long recipient) {

@@ -1,12 +1,12 @@
 
 /**
  * @author evolver
- * this is the smart contract for the flashwork second layer solution
+ * this contract implements a gamevote contract based on the flashwork second layer solution
  * features:
  * - depositing and lock a amount for the second layer
  * - get profit with votepoints
- * - request a withdrawal that needs to be voted on
- * - vote for withdrawal requests
+ * - request a action that needs to be voted on
+ * - vote for action requests
  * - prevent doublevotes
  * - prevent fraud
  * still in developement
@@ -36,6 +36,9 @@
 #define WITHDRAWALING 5
 #define VOTE_FOR_POLL 6
 
+// sub methods
+
+
 // gutes conversion tool: https://www.simonv.fr/TypesConvert/?integers
 // #define DEPOSITING 0xc915c24f95f28d9d
 // #define ACT 0x4b8e064b14d74d64
@@ -44,10 +47,18 @@
 
 
 // map flags
-#define REJECT 5
-#define DEPOSIT 6
-#define ACTION 7
-#define VOTEPOINTS 8
+#define REJECT 7
+#define DEPOSIT 8
+#define ACTION 9
+#define VOTEPOINTS 10
+
+// extMap (pollContract) flags
+#define POLLSTER 11
+#define ACTOR 12
+#define TARGET 13
+#define SUBMETHOD 14
+#define PARAMETER 15
+#define TIMESTAMP 16
 
 long contractProvider = 0;
 long pollContractID = 0; // set static before deploy contract
@@ -172,7 +183,8 @@ void Act(void) {
 			// message[7] = free
 			
 			// save actorContractID in map for polling (his intend is voted on)
-			setMapValue(currentTX.sender, ACTION, currentTX.message[3]);
+			long hash = GetB4FromHash256(currentTX.sender, currentTX.message[3], currentTX.message[4], 0);
+			setMapValue(currentTX.sender, ACTION, hash);
 			// send STOREPOLL as contract method, currentTX.message[1] as sub method, currentTX.message[2] as parameter, currentTX.message[3] as actorContractID, currentTX.message[4] as targetContractID, currentTX.sender as rewardRecipient and timeout time 
 			SetSendBufferForTargetContract(STOREPOLL, currentTX.message[1], currentTX.message[2], currentTX.message[3], currentTX.message[4], currentTX.sender, SetTimeOut(ONEHOUR), 0);
 			SendBufferWithFee(pollContractID);
@@ -238,13 +250,15 @@ void VoteForPoll(void) {
 		return;
 	}
 	
-	long pollingActorContract = getMapValue(pollsterID, pollType);
+	long hash = getMapValue(pollsterID, pollType);
 	
 	// if there is no will for ACTION then break
-	if(pollingActorContract == 0) {
+	if(hash == 0) {
 		SendBack();
 		return;
 	}
+	
+	// long actorContractID = getExtMapValue(hash, ACTOR, pollContractID);
 	
 	// get pollsterID's DEPOSIT
 	long pollingAmount = getMapValue(pollsterID, DEPOSIT);
@@ -254,8 +268,8 @@ void VoteForPoll(void) {
 	// check if entitled to vote
 	if(pollingAmount > 0 && votingEntitled > 0) {
 		
-		// get TimeOut as Value from pollContractID as ContractID with PollsterID as Key1, pollingActorContract as Key2
-		long isTimeUp = GetTimeIsUp(getExtMapValue(pollsterID, pollingActorContract, pollContractID));
+		// get TimeOut as Value from pollContractID
+		long isTimeUp = GetTimeIsUp(getExtMapValue(hash, TIMESTAMP, pollContractID));
 		if(isTimeUp == 2) {
 			SendBack();
 			return;
@@ -314,7 +328,9 @@ void VoteForPoll(void) {
 		}
 		SendBack();
 	}
+	
 }
+
 
 // ### INTERNAL METHODS AND FUNCTIONS ###
 
@@ -408,22 +424,22 @@ void ExecuteAndCleanUpMap(long pollsterID, long pollType, long pollingAmount) {
 			
 			// send the execution action to target contract
 			
-			// get actorContractID from action poll
-			long actorContractID = getMapValue(pollsterID, ACTION);
+			// get pollHash from action poll
+			long hash = getMapValue(pollsterID, ACTION);
 			
 			// ### outgoing ###
 			// recipient = pollContractID
 			// message[0] = contract method (CHECKPOLL)
-			// message[1] = pollsterID (poll initiator)
-			// message[2] = actorContractID (action initiator)
+			// message[1] = pollHash (mapIndex)
+			// message[2] = free
 			// message[3] = free
 			// message[4] = free
 			// message[5] = free
 			// message[6] = free
 			// message[7] = free
 			
-			// send CHECKPOLL as method, pollsterID as rewardRecipient, actorContractID as initiator to pollContractID
-			SetSendBufferForTargetContract(CHECKPOLL, pollsterID, actorContractID, 0, 0, 0, 0, 0);
+			// send CHECKPOLL as method and pollHash as mapIndex to pollContractID
+			SetSendBufferForTargetContract(CHECKPOLL, hash, 0, 0, 0, 0, 0, 0);
 			SendBufferWithFee(pollContractID);
 			
 			break;
@@ -482,15 +498,15 @@ long GetPollType(long pollsterID) {
 	
 }
 
-void SetSendBufferForTargetContract(long pollType, long subMethod, long parameter, long sender, long executeTime, long reserve1, long reserve2, long reserve3) {
-	sendBuffer[0] = pollType;
-	sendBuffer[1] = subMethod;
-	sendBuffer[2] = parameter;
-	sendBuffer[3] = sender;
-	sendBuffer[4] = executeTime;
-	sendBuffer[5] = reserve1;
-	sendBuffer[6] = reserve2;
-	sendBuffer[7] = reserve3;
+void SetSendBufferForTargetContract(long buffer1, long buffer2, long buffer3, long buffer4, long buffer5, long buffer6, long buffer7, long buffer8) {
+	sendBuffer[0] = buffer1;
+	sendBuffer[1] = buffer2;
+	sendBuffer[2] = buffer3;
+	sendBuffer[3] = buffer4;
+	sendBuffer[4] = buffer5;
+	sendBuffer[5] = buffer6;
+	sendBuffer[6] = buffer7;
+	sendBuffer[7] = buffer8;
 }
 
 void SendBufferWithFee(long recipient) {
@@ -548,7 +564,7 @@ long GetTimeIsUp(long timeOut) {
 		return 2;
 	}
 	
-	if(Get_Block_Timestamp() <= timeOut) {
+	if(Get_Block_Timestamp() < timeOut) {
 		return 0;
 	} else {
 		return 1;
@@ -556,3 +572,9 @@ long GetTimeIsUp(long timeOut) {
 	
 }
 
+long GetB4FromHash256(long a1, long a2, long a3, long a4) {
+	Set_A1_A2(a1, a2);
+    Set_A3_A4(a3, a4);
+	SHA256_A_To_B();
+	return Get_B4();
+}

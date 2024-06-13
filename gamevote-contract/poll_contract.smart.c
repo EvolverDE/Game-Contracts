@@ -1,4 +1,11 @@
-
+/**
+ * @author evolver
+ * this contract implements a poll contract as a supplement to the gamevote contract
+ * features:
+ * - store poll information for actor/target contracts (like sub methods and parameters)
+ * still in developement
+ */
+ 
 #include APIFunctions
 
 #program name PollContract
@@ -32,13 +39,12 @@
 #define TREAT 9
 
 // map flags
-#define TIMESTAMP 0
-#define HASH256 1
-#define ACTOR 2
-#define TARGET 3
-#define SUBMETHOD 4
-#define PARAMETER 5
-
+#define POLLSTER 11
+#define ACTOR 12
+#define TARGET 13
+#define SUBMETHOD 14
+#define PARAMETER 15
+#define TIMESTAMP 16
 
 struct TXINFO {
     long txId,
@@ -93,15 +99,14 @@ void StorePollInMap() {
 	// currentTX.message[6] = timestamp (vote timeout in the future)
 	// currentTX.message[7] = free
 	
-	setMapValue(currentTX.message[5], currentTX.message[3], currentTX.message[6]); // save timestamp into map
+	long hash = GetB4FromHash256(currentTX.message[5], currentTX.message[3], currentTX.message[4], 0);
 	
-	long hashResult = GetB4FromHash256(currentTX.message[5], currentTX.message[3], currentTX.message[4], currentTX.message[6]);
-	setMapValue(currentTX.message[5], 0, hashResult) // save hash256 into map
-	setMapValue(hashResult, TIMESTAMP, currentTX.message[6]) // save timestamp into map
-	setMapValue(hashResult, ACTOR, currentTX.message[3]); // save actorID into map
-	setMapValue(hashResult, TARGET, currentTX.message[4]); // save targetID into map
-	setMapValue(hashResult, SUBMETHOD, currentTX.message[1]); // save sub method into map
-	setMapValue(hashResult, currentTX.message[1], currentTX.message[2]); // save parameter into map
+	setMapValue(hash, POLLSTER, currentTX.message[5]); // save pollsterID into map
+	setMapValue(hash, ACTOR, currentTX.message[3]); // save actorID into map
+	setMapValue(hash, TARGET, currentTX.message[4]); // save targetID into map
+	setMapValue(hash, SUBMETHOD, currentTX.message[1]); // save sub method into map
+	setMapValue(hash, PARAMETER, currentTX.message[2]); // save parameter into map
+	setMapValue(hash, TIMESTAMP, currentTX.message[6]); // save timestamp into map
 	
 }
 
@@ -109,24 +114,54 @@ void CheckPoll() {
 	// ### incoming ###
 	// currentTX.sender = gamevoteContract
 	// currentTX.message[0] = contract method (CHECKPOLL)
-	// currentTX.message[1] = pollsterID (poll initiator)
-	// currentTX.message[2] = actorContractID (action initiator)
+	// currentTX.message[1] = pollHash (mapIndex)
+	// currentTX.message[2] = free
 	// currentTX.message[3] = free
 	// currentTX.message[4] = free
 	// currentTX.message[5] = free
 	// currentTX.message[6] = free
 	// currentTX.message[7] = free
 	
+	long isTimeUp = GetTimeIsUp(getMapValue(currentTX.message[1], TIMESTAMP));
+	if(isTimeUp == 1 || isTimeUp == 2) {
+		ClearMap(hash);
+	} else {
+		ExecutePollInMap(hash);
+	}
 	
 }
-
 
 // sub methods
-void ExecutePollInMap () {
+void ExecutePollInMap(long hash) {
 	
-}
-
-void RejectPollInMap() {
+	// ### outgoing to ACTOR ###
+	// recipient = actorContractID
+	// message[0] = sub method
+	// message[1] = PARAMETER
+	// message[2] = free
+	// message[3] = free
+	// message[4] = free
+	// message[5] = free
+	// message[6] = free
+	// message[7] = free
+	
+	SetSendBufferForTargetContract(ACT, 0, 0, 0, 0, 0, 0, 0);
+	SendBufferWithFee(getMapValue(hash, ACTOR));
+	
+	
+	// ### outgoing to TARGET ###
+	// recipient = actorContractID
+	// message[0] = sub method
+	// message[1] = PARAMETER
+	// message[2] = free
+	// message[3] = free
+	// message[4] = free
+	// message[5] = free
+	// message[6] = free
+	// message[7] = free
+	
+	SetSendBufferForTargetContract(0, 0, 0, 0, 0, 0, 0, 0);
+	SendBufferWithFee(getMapValue(hash, TARGET));
 	
 }
 
@@ -136,4 +171,43 @@ long GetB4FromHash256(long a1, long a2, long a3, long a4) {
     Set_A3_A4(a3, a4);
 	SHA256_A_To_B();
 	return Get_B4();
+}
+
+long GetTimeIsUp(long timeOut) {
+	
+	if(timeOut == 0) {
+		return 2;
+	}
+	
+	if(Get_Block_Timestamp() <= timeOut) {
+		return 0;
+	} else {
+		return 1;
+	}
+	
+}
+
+void ClearMap(long hash) {
+	// setMapValue(hash, POLLSTER, 0);
+	// setMapValue(hash, ACTOR, 0);
+	// setMapValue(hash, TARGET, 0);
+	setMapValue(hash, SUBMETHOD, 0);
+	setMapValue(hash, PARAMETER, 0);
+	setMapValue(hash, TIMESTAMP, 0);
+}
+
+void SetSendBufferForTargetContract(long buffer1, long buffer2, long buffer3, long buffer4, long buffer5, long buffer6, long buffer7, long buffer8) {
+	sendBuffer[0] = buffer1;
+	sendBuffer[1] = buffer2;
+	sendBuffer[2] = buffer3;
+	sendBuffer[3] = buffer4;
+	sendBuffer[4] = buffer5;
+	sendBuffer[5] = buffer6;
+	sendBuffer[6] = buffer7;
+	sendBuffer[7] = buffer8;
+}
+
+void SendBufferWithFee(long recipient) {
+	sendAmountAndMessage(currentFee, sendBuffer, recipient);
+	sendMessage(sendBuffer + 4, recipient);
 }
