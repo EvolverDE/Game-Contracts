@@ -1,13 +1,13 @@
 /**
  * @author hansmeuller
- * i´m doing my part
+ * im doing my part
  */
 
 #include APIFunctions
 
 #program name ZeptorLightContract
 #program description This contract serves as a actor/target contract and represent a zeptor light
-#program activationAmount .5
+#program activationAmount .9
 
 #pragma maxAuxVars 3
 #pragma maxConstVars 3
@@ -47,13 +47,20 @@
 #define CARGO_SLOT 5
 
 // Systems required to build up the ship (1XX = Refined Material; 2XX = Common Material; 3XX = Advanced Material; 4XX = Component; 5XX = SYSTEM; 6XX = Article)
-#define COCKPIT_INSTRUMENT 500 // 4 pieces required
-#define COMPUTER 501 // 1 pieces required
-#define MONITOR 502 // 1 pieces required
-#define SMALL_ENERGY_GENERATOR 503 // 1 pieces required
-#define SMALL_ENGINE 504 // 2 pieces required
-#define SMALL_EXTERNAL_SLOT 505 // 2 pieces required
-#define SMALL_SHIP_HULL 506 // 1 pieces required
+// 4 pieces required:
+#define COCKPIT_INSTRUMENT 500
+// 1 pieces required:
+#define COMPUTER 501
+// 1 pieces required:
+#define MONITOR 502
+// 1 pieces required:
+#define SMALL_ENERGY_GENERATOR 503
+// 2 pieces required:
+#define SMALL_ENGINE 504
+// 2 pieces required:
+#define SMALL_EXTERNAL_SLOT 505
+// 1 pieces required:
+#define SMALL_SHIP_HULL 506
 
 // contract attributes
 // basic contract 
@@ -62,7 +69,7 @@ long currentFee = ONESIGNA;
 long sendBuffer[8];
 
 // advanced
-long objectType = 603 // Article = ZeptorLight
+long objectType = 603; // Article = ZeptorLight
 long owner = 0;
 long insurence = 0;
 long location = 0;
@@ -89,7 +96,7 @@ struct TXINFO {
 void getTxDetails(void) {
 	currentTX.txId = Get_A1();
 	currentTX.amount = getAmount(currentTX.txId);
-	currentTX.timestamp = get_Timestamp_For_Tx_In_A();
+	currentTX.timestamp = Get_Timestamp_For_Tx_In_A();
 	currentTX.sender = getSender(currentTX.txId);
 	readMessage(currentTX.txId, 0, currentTX.message);
 	readMessage(currentTX.txId, 1, currentTX.message + 4);
@@ -114,28 +121,25 @@ void main(void) {
 				Dock();
 				break;	
 			case EQUIP:
-				
+				Equip();
 				break;
 			case EXPLODE:
-				
+				Explode();
 				break;
 			case MINING:
 				Mine();
 				break;
 			case REPAIR:
-				
+				Repair();
 				break;
 			case SCAN:
-				
+				Scan();
 				break;
 			case STORE:
-				
+				Store();
 				break;
 			case TREAT:
-				
-				break;
-			case WITHDRAWALING:
-				// TODO: needed?
+				Treat();
 				break;
 			default:
 				break;
@@ -199,7 +203,7 @@ void Build() {
 	// shipBuildComponents[5] = Amount of SMALL_EXTERNAL_SLOT
 	// shipBuildComponents[6] = Amount of SMALL_SHIP_HULL
 	
-	long checkedComponent = CheckBuildComponent(currentTX.message[1])
+	long checkedComponent = CheckBuildComponent(currentTX.message[1]);
 	
 	if(checkedComponent > 0) {
 		shipBuildComponents[checkedComponent -1] = shipBuildComponents[checkedComponent -1] + currentTX.message[2];

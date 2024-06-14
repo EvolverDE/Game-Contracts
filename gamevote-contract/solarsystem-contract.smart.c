@@ -7,7 +7,7 @@
 
 #program name SolarSystemContract
 #program description This contract serves as a actor/target contract and represent a solar system
-#program activationAmount .5
+#program activationAmount 1.6
 
 #pragma maxAuxVars 3
 #pragma maxConstVars 3

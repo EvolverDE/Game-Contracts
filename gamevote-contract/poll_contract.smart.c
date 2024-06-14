@@ -46,6 +46,10 @@
 #define PARAMETER 15
 #define TIMESTAMP 16
 
+long voteContractMachineCodeHashID = 0;
+long currentFee = ONESIGNA;
+long sendBuffer[8];
+
 struct TXINFO {
     long txId,
         timestamp,
@@ -122,7 +126,9 @@ void CheckPoll() {
 	// currentTX.message[6] = free
 	// currentTX.message[7] = free
 	
-	long isTimeUp = GetTimeIsUp(getMapValue(currentTX.message[1], TIMESTAMP));
+	long hash = currentTX.message[1];
+	
+	long isTimeUp = GetTimeIsUp(getMapValue(hash, TIMESTAMP));
 	if(isTimeUp == 1 || isTimeUp == 2) {
 		ClearMap(hash);
 	} else {
@@ -145,12 +151,12 @@ void ExecutePollInMap(long hash) {
 	// message[6] = free
 	// message[7] = free
 	
-	SetSendBufferForTargetContract(ACT, 0, 0, 0, 0, 0, 0, 0);
+	SetSendBufferForTargetContract(getMapValue(hash, SUBMETHOD), getMapValue(hash, PARAMETER), ACTOR, 0, 0, 0, 0, 0);
 	SendBufferWithFee(getMapValue(hash, ACTOR));
 	
 	
 	// ### outgoing to TARGET ###
-	// recipient = actorContractID
+	// recipient = targetContractID
 	// message[0] = sub method
 	// message[1] = PARAMETER
 	// message[2] = free
@@ -160,9 +166,10 @@ void ExecutePollInMap(long hash) {
 	// message[6] = free
 	// message[7] = free
 	
-	SetSendBufferForTargetContract(0, 0, 0, 0, 0, 0, 0, 0);
+	SetSendBufferForTargetContract(getMapValue(hash, SUBMETHOD), getMapValue(hash, PARAMETER), TARGET, 0, 0, 0, 0, 0);
 	SendBufferWithFee(getMapValue(hash, TARGET));
 	
+	ClearMap(hash);
 }
 
 // support methods

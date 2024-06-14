@@ -10,13 +10,14 @@
  * - prevent doublevotes
  * - prevent fraud
  * still in developement
+ * good conversion tool for hex/numerics: https://www.simonv.fr/TypesConvert/?integers
  */
 
 #include APIFunctions
 
 #program name GameVoteContract
 #program description This contract serves as a consensus regulator (from a few to many voters) for target contracts
-#program activationAmount .5
+#program activationAmount 2.6
 
 #pragma maxAuxVars 3
 #pragma maxConstVars 3
@@ -30,21 +31,23 @@
 
 // contract methods
 #define DEPOSITING 1
-#define ACT 2
+#define ACTING 2
 #define STOREPOLL 3
 #define CHECKPOLL 4
 #define WITHDRAWALING 5
 #define VOTE_FOR_POLL 6
 
 // sub methods
-
-
-// gutes conversion tool: https://www.simonv.fr/TypesConvert/?integers
-// #define DEPOSITING 0xc915c24f95f28d9d
-// #define ACT 0x4b8e064b14d74d64
-// #define WITHDRAWALING 0x64ff1046423d38df
-// #define VOTE_FOR_POLL 0xddca044a939d3bb7
-
+#define ACT 0
+#define BUILD 1
+#define DOCK 2
+#define EQUIP 3
+#define EXPLODE 4
+#define MINING 5
+#define REPAIR 6
+#define SCAN 7
+#define STORE 8
+#define TREAT 9
 
 // map flags
 #define REJECT 7
@@ -60,9 +63,10 @@
 #define PARAMETER 15
 #define TIMESTAMP 16
 
+long pollContractMachineCodeHashID = 0;
 long contractProvider = 0;
-long pollContractID = 0; // set static before deploy contract
-long maxGlobalVotePoints = 0; // 100%
+long pollContractID = 0;
+long maxGlobalVotePoints = 0;
 
 long sendBuffer[8];
 
@@ -100,8 +104,8 @@ void main(void) {
 			case DEPOSITING:
 				Depositing();
 				break;
-			case ACT:
-				Act();
+			case ACTING:
+				Acting();
 				break;
 			case WITHDRAWALING:
 				Withdrawaling();
@@ -119,6 +123,24 @@ void main(void) {
 
 // this is for a registration into the contract (get vote entitlement)
 void Depositing(void) {
+	
+	// ### incoming ###
+	// currentTX.sender = some of the depositers ID
+	// currentTX.amount <= 100 signa TODO: change for mainnet
+	// currentTX.message[0] = free
+	// currentTX.message[1] = free
+	// currentTX.message[2] = free
+	// currentTX.message[3] = free
+	// currentTX.message[4] = free
+	// currentTX.message[5] = free
+	// currentTX.message[6] = free
+	// currentTX.message[7] = free
+	
+	if(getCodeHashOf(currentTX.sender) != 0) {
+		// contracts can't deposit signa for voting
+		return;
+	}
+	
 	// check minimal depositAmount
 	// get the last map entry index.
 	long providerIndex = GetIndexOfProviderInMap(currentTX.sender);
@@ -142,10 +164,10 @@ void Depositing(void) {
 }
 
 // this serves to initiate an action
-void Act(void) {
+void Acting(void) {
 	
 	// currentTX.sender = providerID (for reward)
-	// currentTX.message[0] = method (ACT)
+	// currentTX.message[0] = method (ACTING)
 	// currentTX.message[1] = sub method (mining)
 	// currentTX.message[2] = parameter (123)
 	// currentTX.message[3] = actorContractID (to process sub method(parameter))
@@ -154,7 +176,7 @@ void Act(void) {
 	// currentTX.message[6] = free
 	// currentTX.message[7] = free
 	
-	if(IsIDOK(currentTX.sender) == 0) {
+	if(IsIDOK(currentTX.sender) == 0 || IsIDOK(currentTX.message[3]) == 0 || IsIDOK(currentTX.message[4]) == 0 || IsSubMethodOK(currentTX.message[1]) == 0) {
 		SendBack();
 		return;
 	}
@@ -198,6 +220,17 @@ void Act(void) {
 // this is for a complete deregistration from the contract (no vote entitlement anymore)
 void Withdrawaling(void) {
 	
+	// ### incoming ###
+	// currentTX.sender = some of the depositers ID
+	// currentTX.message[0] = free
+	// currentTX.message[1] = free
+	// currentTX.message[2] = free
+	// currentTX.message[3] = free
+	// currentTX.message[4] = free
+	// currentTX.message[5] = free
+	// currentTX.message[6] = free
+	// currentTX.message[7] = free
+	
 	if(IsIDOK(currentTX.sender) == 1 && GetIndexOfProviderInMap(currentTX.sender) < GetLastIndexOfProvidersInMap()) {
 		
 		long deposit = getMapValue(currentTX.sender, DEPOSIT);
@@ -231,6 +264,17 @@ void Withdrawaling(void) {
 // vote != pollingAmount -> vote rejected
 // vote == pollingAmount -> vote accepted
 void VoteForPoll(void) {
+	
+	// ### incoming ###
+	// currentTX.sender = some other contractProviderID as voter
+	// currentTX.message[0] = contract method (VOTE_FOR_POLL)
+	// currentTX.message[1] = pollsterID (initiator providerID, will get provider reward)
+	// currentTX.message[2] = free
+	// currentTX.message[3] = free
+	// currentTX.message[4] = free
+	// currentTX.message[5] = free
+	// currentTX.message[6] = free
+	// currentTX.message[7] = free
 	
 	// no vote needed
 	if(contractProvider <= 1) {
@@ -480,11 +524,14 @@ long GetNextZeroValue(long pollsterID) {
 }
 
 long IsIDOK(long id) {
+	// ID can't be one of the map flags
 	if(id != DEPOSIT && id != ACTION && id != VOTEPOINTS) {
-		return 1;
-	} else {
-		return 0;
+		// contractIDs are excluded
+		if(getCodeHashOf(id) == 0) {
+			return 1;
+		}
 	}
+	return 0;
 }
 
 long GetPollType(long pollsterID) {
@@ -577,4 +624,24 @@ long GetB4FromHash256(long a1, long a2, long a3, long a4) {
     Set_A3_A4(a3, a4);
 	SHA256_A_To_B();
 	return Get_B4();
+}
+
+long IsSubMethodOK(long subMethod) {
+	
+	switch(subMethod) {
+		case ACT:
+		case BUILD:
+		case DOCK:
+		case EQUIP:
+		case EXPLODE:
+		case MINING:
+		case REPAIR:
+		case SCAN:
+		case STORE:
+		case TREAT:
+			return 1;
+	}
+	
+	return 0;
+	
 }
