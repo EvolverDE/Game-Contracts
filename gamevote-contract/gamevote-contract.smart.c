@@ -34,8 +34,9 @@
 #define ACTING 2
 #define STOREPOLL 3
 #define CHECKPOLL 4
-#define WITHDRAWALING 5
-#define VOTE_FOR_POLL 6
+#define REGISTER 5
+#define WITHDRAWALING 6
+#define VOTE_FOR_POLL 7
 
 // sub methods
 #define ACT 0
@@ -63,16 +64,20 @@
 #define PARAMETER 15
 #define TIMESTAMP 16
 
-long pollContractMachineCodeHashID = 0;
+// special initiatives
+#define CREATOR 14112568674072130140
+
+// contract attributes
+// basic contract 
+// long authIDs[10];
+long sendBuffer[8];
+long currentFee = ONESIGNA;
+
 long contractProvider = 0;
-long pollContractID = 0;
+long pollContractID = CREATOR;
 long maxGlobalVotePoints = 0;
 
-long sendBuffer[8];
-
-long providerIDs[100];
-
-long currentFee = ONESIGNA;
+//long providerIDs[100];
 
 struct TXINFO {
     long txId,
@@ -100,7 +105,17 @@ void main(void) {
         }
         getTxDetails();
 		
+		if (getCodeHashOf(pollContractID) == 0 && currentTX.sender != CREATOR) {
+			break;
+		} else if (getCodeHashOf(pollContractID) == 0 && currentTX.sender == CREATOR) {
+			pollContractID = currentTX.message[0];
+			break;
+		}
+		
         switch (currentTX.message[0]) {
+			case REGISTER:
+				Register();
+				break;
 			case DEPOSITING:
 				Depositing();
 				break;
@@ -155,7 +170,7 @@ void Depositing(void) {
 		
 		}
 		setMapValue(currentTX.sender, DEPOSIT, currentTX.amount);
-		providerIDs[contractProvider] = currentTX.sender;
+		//providerIDs[contractProvider] = currentTX.sender;
 		contractProvider++;
 	} else {
 		SendBack();
@@ -163,9 +178,77 @@ void Depositing(void) {
 	
 }
 
+
+void Register(void) {
+	
+	// ### incoming ###
+	// currentTX.sender = providerID (for reward)
+	// currentTX.message[0] = method (REGISTER)
+	// currentTX.message[1] = sub method (SetAuthenticator)
+	// currentTX.message[2] = authID (123)
+	// currentTX.message[3] = targetContractID (123 (eg. ZeptorLight))
+	// currentTX.message[4] = free
+	// currentTX.message[5] = free
+	// currentTX.message[6] = free
+	// currentTX.message[7] = free
+	
+	if(IsIDOK(currentTX.sender) == 0 || IsIDOK(currentTX.message[2]) == 0 ) {
+		SendBack();
+		return;
+	}
+	
+	if(contractProvider <= 1) {
+		// no voting necessary
+		
+		setMapValue(currentTX.sender, ACTION, 0);
+		
+		// ### outgoing ###
+		// recipientID = pollContractID (to process the pollresult)
+		// message[0] = contract method (REGISTER)
+		// message[1] = parameter (0-9)
+		// message[2] = authID (123)
+		// message[3] = targetContractID (123 (eg. ZeptorLight))
+		// message[4] = timestamp (1 for act immediately)
+		// message[5] = free
+		// message[6] = free
+		// message[7] = free
+		
+		SetSendBufferForTargetContract(REGISTER, currentTX.message[1], currentTX.message[2], currentTX.message[3], 1, 0, 0, 0);
+		SendBufferWithFee(pollContractID);
+		
+	} else {
+		// check if there is no other poll active...
+		if(getMapValue(currentTX.sender, ACTION) <= 0) {
+			
+			// ### outgoing ###
+			// recipientID = pollContractID (to process the pollresult)
+			// message[0] = contract method (REGISTER)
+			// message[1] = parameter (0-9)
+			// message[2] = authID (123)
+			// message[3] = targetContractID (123 (eg. ZeptorLight))
+			// message[4] = timestamp (vote timeout in the future)
+			// message[5] = free
+			// message[6] = free
+			// message[7] = free
+			
+			// save actorContractID in map for polling (his intend is voted on)
+			long hash = GetB4FromHash256(currentTX.sender, currentTX.message[2], currentTX.message[3], 0);
+			setMapValue(currentTX.sender, ACTION, hash);
+			SetSendBufferForTargetContract(REGISTER, currentTX.message[1], currentTX.message[2], currentTX.message[3], SetTimeOut(ONEHOUR), 0, 0, 0);
+			SendBufferWithFee(pollContractID);
+			
+		} else {
+			SendBack();
+		}
+	}
+	
+	
+}
+
 // this serves to initiate an action
 void Acting(void) {
 	
+	// ### incoming ###
 	// currentTX.sender = providerID (for reward)
 	// currentTX.message[0] = method (ACTING)
 	// currentTX.message[1] = sub method (mining)
@@ -185,8 +268,18 @@ void Acting(void) {
 		// no voting necessary
 		
 		setMapValue(currentTX.sender, ACTION, 0);
-		// send STOREPOLL as contract method, currentTX.message[1] as sub method, currentTX.message[2] as parameter, currentTX.message[3] as actorContractID, currentTX.message[4] as targetContractID, currentTX.sender as rewardRecipient and 1 as timeout for executing immediately
-		
+			
+			// ### outgoing ###
+			// recipientID = pollContractID (to process the pollresult)
+			// message[0] = contract method (STOREPOLL)
+			// message[1] = sub method (mining)
+			// message[2] = parameter (123)
+			// message[3] = actorContractID (to process sub method(parameter))
+			// message[4] = targetContractID (to process sub method(parameter))
+			// message[5] = providerID/pollsterID (for reward)
+			// message[6] = timestamp (1 for act immediately)
+			// message[7] = free
+			
 		SetSendBufferForTargetContract(STOREPOLL, currentTX.message[1], currentTX.message[2], currentTX.message[3], currentTX.message[4], currentTX.sender, 1, 0);
 		SendBufferWithFee(pollContractID);
 		
@@ -194,6 +287,7 @@ void Acting(void) {
 		// check if there is no other poll active...
 		if(getMapValue(currentTX.sender, ACTION) <= 0) {
 			
+			// ### outgoing ###
 			// recipientID = pollContractID (to process the pollresult)
 			// message[0] = contract method (STOREPOLL)
 			// message[1] = sub method (mining)
@@ -207,7 +301,6 @@ void Acting(void) {
 			// save actorContractID in map for polling (his intend is voted on)
 			long hash = GetB4FromHash256(currentTX.sender, currentTX.message[3], currentTX.message[4], 0);
 			setMapValue(currentTX.sender, ACTION, hash);
-			// send STOREPOLL as contract method, currentTX.message[1] as sub method, currentTX.message[2] as parameter, currentTX.message[3] as actorContractID, currentTX.message[4] as targetContractID, currentTX.sender as rewardRecipient and timeout time 
 			SetSendBufferForTargetContract(STOREPOLL, currentTX.message[1], currentTX.message[2], currentTX.message[3], currentTX.message[4], currentTX.sender, SetTimeOut(ONEHOUR), 0);
 			SendBufferWithFee(pollContractID);
 			
@@ -498,7 +591,7 @@ void SendBack(void) {sendAmount(currentTX.amount, currentTX.sender);}
 
 // ### SUPPORT FUNCTIONS ###
 
-long GetLastIndexOfProvidersInMap() {
+long GetLastIndexOfProvidersInMap(void) {
 	return GetIndexOfProviderInMap(0);
 }
 
@@ -525,12 +618,22 @@ long GetNextZeroValue(long pollsterID) {
 
 long IsIDOK(long id) {
 	// ID can't be one of the map flags
-	if(id != DEPOSIT && id != ACTION && id != VOTEPOINTS) {
-		// contractIDs are excluded
-		if(getCodeHashOf(id) == 0) {
-			return 1;
-		}
+	
+	switch(id) {
+		case REJECT:
+		case DEPOSIT:
+		case ACTION:
+		case VOTEPOINTS:
+			
+			break;
+		default:
+			// contractIDs are excluded
+			if(getCodeHashOf(id) == 0) {
+				return 1;
+			}
+			break;
 	}
+	
 	return 0;
 }
 
@@ -590,7 +693,7 @@ long IsVoteValid(long vote, long target, long maxDeviationPercent) {
 
 }
 
-void SetMaxVotePoints() {
+void SetMaxVotePoints(void) {
 	maxGlobalVotePoints = 0;
 	long i = 0;
 	long mapID = 0;

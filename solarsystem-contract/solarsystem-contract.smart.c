@@ -75,14 +75,18 @@
 #define SULFUR 16
 #define XENON 54
 
+// contract attributes
+// basic contract 
+long authIDs[10];
+long sendBuffer[8];
+long currentFee = ONESIGNA;
+
+// specific
 long metals[17];
 long semimetals[5];
 long nonmetals[8];
-
 long quantities[30];
-long gamevoteContract = 0;
-long sendBuffer[8];
-long currentFee = ONESIGNA;
+
 
 struct TXINFO {
     long txId,
@@ -91,6 +95,13 @@ struct TXINFO {
         amount,
         message[8];
 } currentTX;
+
+constructor();
+
+void constructor(void) {
+    // this function will be called only once on first activation.
+	authIDs[0] = 0; //TODO: set initial ID
+}
 
 void getTxDetails(void) {
     currentTX.txId = Get_A1();
@@ -109,7 +120,15 @@ void main(void) {
         }
         getTxDetails();
 		
+		// if sender is not authenticated then break
+		if(IsAuthenticated(currentTX.sender) == 0) {
+			break;
+		}
+		
         switch (currentTX.message[0]) {
+			case SETAUTHENTICATOR:
+				SetAuthenticator();
+				break;
 			case DEPOSITING:
 				GenerateElements();
 				break;
@@ -123,7 +142,7 @@ void main(void) {
 				// what are you thinking of docking an entire solar system to?
 				break;	
 			case EQUIP:
-				// there is much room for a dysonsphere...NOT! TODO: maybe for stations?
+				// TODO: maybe for stations?
 				break;
 			case EXPLODE:
 				// are you thinking about a supernova?
@@ -138,7 +157,7 @@ void main(void) {
 				// solar systems are indifferent to everything...
 				break;
 			case STORE:
-				// TODO: how big is the cargo of a solar system? i think there is much room for stations!
+				// TODO: maybe for debris and ennobled elements?
 				break;
 			case TREAT:
 				// maybe one day the solar system collide/handle with another one... but not in this game universe
@@ -150,7 +169,12 @@ void main(void) {
     } while (true);
 }
 
-void GenerateElements() {
+// main methods
+void SetAuthenticator(void) {
+	authIDs[currentTX.message[0]] = currentTX.message[1];
+}
+
+void GenerateElements(void) {
 	
 	//metals
 	metals[0] = IRON;
@@ -304,15 +328,16 @@ void Act(void) {
 	// message[6] = free
 	// message[7] = free
 	
-	setMapValue(0, currentTX.message[2], getMapValue(0, currentTX.message[2]) - currentTX.message[3]);
-	SetSendBufferForTargetContract(ACT, currentTX.message[1], currentTX.message[2], currentTX.message[2], 0, 0, 0, 0);
-	SendMessageSC(currentTX.message[1]);
+	// setMapValue(0, currentTX.message[2], getMapValue(0, currentTX.message[2]) - currentTX.message[3]);
+	// SetSendBufferForTargetContract(ACT, currentTX.message[1], currentTX.message[2], currentTX.message[2], 0, 0, 0, 0);
+	// SendMessageSC(currentTX.message[1]);
 	
-	// send reward for contract providing
-	sendAmount(100_0000_0000, currentTX.message[4]);
+	// // send reward for contract providing
+	// sendAmount(100_0000_0000, currentTX.message[4]);
 	
 }
 
+// support methods
 void CalculateElementQuantities(long signaAmount) {
 	quantities[] = 0;
 	long i = 0;
@@ -342,6 +367,18 @@ long CalculatePrevalence(long toRound) {
 	return tenth / 10;
 }
 
+long IsAuthenticated(long sender) {
+	
+	for(long i = 0; i < authIDs.length; i++) {
+		if(authIDs[i] == sender) {
+			return 1;
+		}
+	}
+	
+	return 0;
+}
+
+// contract methods
 void SetSendBufferForTargetContract(long buffer1, long buffer2, long buffer3, long buffer4, long buffer5, long buffer6, long buffer7, long buffer8) {
 	sendBuffer[0] = buffer1;
 	sendBuffer[1] = buffer2;

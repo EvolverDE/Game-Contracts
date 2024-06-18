@@ -18,8 +18,7 @@
 #define ONESIGNA 100000000
 
 // contract methods
-
-
+#define REGISTER 5
 
 // sub methods
 #define ACT 0
@@ -38,6 +37,9 @@
 #define TARGET 13
 #define SUBMETHOD 14
 #define PARAMETER 15
+
+// extMap (pollContract) flags
+#define REGISTER 5
 
 // index for slots array
 #define WEAPON_SLOT_1 1
@@ -64,7 +66,7 @@
 
 // contract attributes
 // basic contract 
-long gamevoteContract = 0;
+long authIDs[10];
 long currentFee = ONESIGNA;
 long sendBuffer[8];
 
@@ -93,6 +95,13 @@ struct TXINFO {
         message[8];
 } currentTX;
 
+constructor();
+
+void constructor(void) {
+    // this function will be called only once on first activation.
+	authIDs[0] = 0; //TODO: set initial ID
+}
+
 void getTxDetails(void) {
 	currentTX.txId = Get_A1();
 	currentTX.amount = getAmount(currentTX.txId);
@@ -109,8 +118,16 @@ void main(void) {
 			break;
 		}
 		getTxDetails();
-
+		
+		// if sender is not authenticated then break
+		if(IsAuthenticated(currentTX.sender) == 0) {
+			break;
+		}
+		
 		switch (currentTX.message[0]) {
+			case REGISTER:
+				Register();
+				break;
 			case ACT:
 				Act();
 				break;
@@ -147,9 +164,25 @@ void main(void) {
     } while (true);
 }
 
-
 // main methods
+void Register(void) {
+
+	// ### incoming ###
+	// currentTX.sender = pollContractID
+	// currentTX.message[0] = method (REGISTER)
+	// currentTX.message[1] = parameter (0-9)
+	// currentTX.message[2] = authID (123)
+	// currentTX.message[3] = free
+	// currentTX.message[4] = free
+	// currentTX.message[5] = free
+	// currentTX.message[6] = free
+	// currentTX.message[7] = free
+
+	authIDs[currentTX.message[1]] = currentTX.message[2];
+}
+
 void Act(void) {
+		
 	// TODO:
 	
     // Define actions for the ship
@@ -182,7 +215,13 @@ void Act(void) {
 	*/
 }
 
-void Build() {
+void Build(void) {
+	
+	// if sender is no contract, break
+	if(getCodeHashOf(currentTX.sender) == 0) {
+		return;
+	}
+	
     // build the ship
     // currentTX.message[0] = method (BUILD)
     // currentTX.message[1] = parameter (System [Computer, Small Ship Hull, Small Engine, etc.])
@@ -212,12 +251,17 @@ void Build() {
 	
 }
 
-void Dock() {
+void Dock(void) {
 	
 }
 
-void Equip() {
+void Equip(void) {
 
+	// if sender is no contract, break
+	if(getCodeHashOf(currentTX.sender) == 0) {
+		return;
+	}
+	
     // equip the ship
     // currentTX.message[0] = method (ACT)
     // currentTX.message[1] = command (EQUIP)
@@ -263,27 +307,27 @@ void Equip() {
     // }
 }
 
-void Explode() {
+void Explode(void) {
 	
 }
 
-void Mine() {
+void Mine(void) {
 	
 }
 
-void Repair() {
+void Repair(void) {
 	
 }
 
-void Scan() {
+void Scan(void) {
 	
 }
 
-void Store() {
+void Store(void) {
 	
 }
 
-void Treat() {
+void Treat(void) {
 	
 }
 
@@ -355,7 +399,7 @@ long CheckBuildComponent(long component) {
 	
 }
 
-void BuildUpShip() {
+void BuildUpShip(void) {
 	
 	if(shipBuildComponents[0] >= 4 && shipBuildComponents[1] >= 1 && shipBuildComponents[2] >= 1 && shipBuildComponents[3] >= 1 && shipBuildComponents[4] >= 2 && shipBuildComponents[5] >= 2 && shipBuildComponents[6] >= 1) {
 		status = 1; // ship flightready
@@ -366,6 +410,16 @@ void BuildUpShip() {
 	
 }
 
+long IsAuthenticated(long sender) {
+	
+	for(long i = 0; i < authIDs.length; i++) {
+		if(authIDs[i] == sender) {
+			return 1;
+		}
+	}
+	
+	return 0;
+}
 
 // contract methods
 void SetSendBufferForTargetContract(long buffer1, long buffer2, long buffer3, long buffer4, long buffer5, long buffer6, long buffer7, long buffer8) {
