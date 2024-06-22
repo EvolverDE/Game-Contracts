@@ -45,3 +45,33 @@ struct TXINFO {
         message[8];
 } currentTX;
 
+void getTxDetails(void) {
+    currentTX.txId = Get_A1();
+    currentTX.amount = getAmount(currentTX.txId);
+    currentTX.timestamp = get_Timestamp_For_Tx_In_A();
+    currentTX.sender = getSender(currentTX.txId);
+    readMessage(currentTX.txId, 0, currentTX.message);
+    readMessage(currentTX.txId, 1, currentTX.message + 4);
+}
+
+void main(void) {
+    do {
+        A_To_Tx_After_Timestamp(currentTX.timestamp);
+        if (Get_A1() == 0) {
+            break;
+        }
+        getTxDetails();
+
+        switch (currentTX.message[0]) {
+        case DEPOSITING:
+            EquipComponents();
+            break;
+        case ACT:
+            Act();
+            break;
+        default:
+            break;
+        }
+    } while (true);
+}
+
