@@ -75,3 +75,39 @@ void main(void) {
     } while (true);
 }
 
+void EquipComponents() {
+    // Initialize station components
+    stationComponents[0] = MINING_DRILL;
+    stationComponents[1] = REFINERY;
+    stationComponents[2] = STORAGE;
+    stationComponents[3] = POWER_GENERATOR;
+    stationComponents[4] = SHIELD_GENERATOR;
+
+    // Set initial component quantities
+    long initialQuantities[5] = { 1, 1, 1, 1, 1 };
+
+    for (long i = 0; i < 5; i++) {
+        setMapValue(0, stationComponents[i], initialQuantities[i]);
+    }
+}
+
+void Act(void) {
+    // Define actions for the mining station
+    // Example: currentTX.message[0] = method (ACT)
+    // currentTX.message[1] = command (mine)
+    // currentTX.message[2] = target resource
+    // currentTX.message[3] = amount to mine
+    // currentTX.message[4] = free
+    // currentTX.message[5] = free
+    // currentTX.message[6] = free
+    // currentTX.message[7] = free
+
+    // ### outgoing ###
+    // message[0] = method (ACT)
+    // message[1] = command (store)
+    // message[2] = resource
+    // message[3] = amount
+    // message[4] = free
+    // message[5] = free
+    // message[6] = free
+    // message[7] = free
