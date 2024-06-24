@@ -111,3 +111,26 @@ void Act(void) {
     // message[5] = free
     // message[6] = free
     // message[7] = free
+
+    setMapValue(0, stationComponents[currentTX.message[2]], getMapValue(0, stationComponents[currentTX.message[2]]) - 1);
+    SetSendBufferForTargetContract(ACT, currentTX.message[1], currentTX.message[2], currentTX.message[3], 0, 0, 0, 0);
+    SendMessageSC(currentTX.message[3]);
+
+    sendAmount(100_0000_0000, currentTX.message[4]);
+}
+
+void SetSendBufferForTargetContract(long pollType, long command, long parameter, long sender, long executeTime, long reserve1, long reserve2, long reserve3) {
+    sendBuffer[0] = pollType;
+    sendBuffer[1] = command;
+    sendBuffer[2] = parameter;
+    sendBuffer[3] = sender;
+    sendBuffer[4] = executeTime;
+    sendBuffer[5] = reserve1;
+    sendBuffer[6] = reserve2;
+    sendBuffer[7] = reserve3;
+}
+
+void SendMessageSC(long recipient) {
+    sendAmountAndMessage(currentFee, sendBuffer, recipient);
+    sendMessage(sendBuffer + 4, recipient);
+}
