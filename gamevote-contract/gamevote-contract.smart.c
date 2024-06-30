@@ -33,7 +33,8 @@
 #define DEPOSITING 1
 #define REGISTER 2
 #define ACTING 3
-#define WITHDRAWALING 4
+#define VOTE_FOR_POLL 4
+#define WITHDRAWALING 5
 
 // map flags
 #define DEPOSITMENT 1
@@ -114,7 +115,7 @@ void getPollDetails(long hashValue, long currentAmount) {
 		currentPOLL.mainMethod = getMapValue(MAINMETHOD, hashValue);
 		currentPOLL.subMethod = getMapValue(SUBMETHOD, hashValue);
 		currentPOLL.parameter = getMapValue(PARAMETER, hashValue);
-		currentPOLL.timeStamp = getMapValue(TIMEOUT, hashValue)
+		currentPOLL.timeStamp = getMapValue(TIMEOUT, hashValue);
 	}
 	
 	currentPOLL.status = CheckThePoll(hashValue);
@@ -448,7 +449,7 @@ void VoteForPoll(void) {
 		setMapValue(VOTEPOINTS, currentTX.sender, maxVotePoints);
 		
 		// if status == 2 then wait for more votes else execute the poll
-		if (status != 2) {
+		if (currentPOLL.status != 2) {
 			Execute(currentPOLL.status);
 		}
 		
@@ -491,10 +492,6 @@ long CheckThePoll(long hashValue) {
 	} else if(accepters > (contractProvider / 2)) {
 		// poll accepted
 		return 1;
-	}
-	
-	if (contractProvider == 2 && ) {
-		
 	}
 	
 	// not enough votes
@@ -639,7 +636,7 @@ void SendBufferWithFee(long recipient) {
 // 2 = voting accepted
 long Voting(long vote) {
 	
-	if(vote == 0 || pollingAmount == 0) {
+	if(vote == 0) {
 		return 0;
 	}
 	
