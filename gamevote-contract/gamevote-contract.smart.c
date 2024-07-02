@@ -118,7 +118,7 @@ void getPollDetails(long hashValue, long currentAmount) {
 		currentPOLL.timeStamp = getMapValue(TIMEOUT, hashValue);
 	}
 	
-	currentPOLL.status = CheckThePoll(hashValue);
+	//currentPOLL.status = CheckThePoll(hashValue);
 	currentPOLL.timeOut = GetTimeIsUp(currentPOLL.timeStamp);
 	
 	if (currentAmount != 0) {
@@ -186,13 +186,14 @@ void Depositing(void) {
 	 * - the senderID has no deposit right now
 	 * - TODO: take the CreatorID into account when contract providers count = 0
 	 */
-	if(getCodeHashOf(currentTX.sender) == 0 && (contractProvider == 0 || currentTX.amount <= 100_0000_0000) && IsIDOK(currentTX.sender) == 1 && getMapValue(currentTX.sender, DEPOSITMENT) == 0) {
+	if(getCodeHashOf(currentTX.sender) == 0 && (contractProvider == 0 || currentTX.amount <= 100_0000_0000) && IsIDOK(currentTX.sender) == 1 && getMapValue(DEPOSITMENT, currentTX.sender) == 0) {
 		
 		// Deposits amount
-		setMapValue(currentTX.sender, DEPOSITMENT, currentTX.amount);
+		setMapValue(DEPOSITMENT, currentTX.sender, currentTX.amount);
 		
 		if(contractProvider <= 1) {
-			setMapValue(currentTX.sender, ENTITLEMENT, 1);
+			setMapValue(ENTITLEMENT, currentTX.sender, 1);
+			contractProvider++;
 		} else {
 			
 			long timeout = SetTimeOut(ONEHOUR);
@@ -200,14 +201,12 @@ void Depositing(void) {
 			
 			setMapValue(ELECTIONS, contractElections++, hashValue);
 			
-			setMapValue(currentTX.sender, ENTITLEMENT, 0);
+			setMapValue(ENTITLEMENT, currentTX.sender, 0);
 			setMapValue(PROVIDER_ID, hashValue, currentTX.sender);
 			setMapValue(MAINMETHOD, hashValue, DEPOSITMENT);
 			setMapValue(TIMEOUT, hashValue, timeout);
 			
 		}
-		
-		contractProvider++;
 		
 	} else {
 		SendBack();
@@ -434,6 +433,9 @@ void VoteForPoll(void) {
 			setMapValue(AGREEERS, currentPOLL.hash, getMapValue(AGREEERS, currentPOLL.hash) + 1);
 		}
 		
+		// refresh status
+		currentPOLL.status = CheckThePoll(currentPOLL.hash);
+		
 		// set to already voted
 		setMapValue(currentPOLL.hash, currentTX.sender, 1);
 		
@@ -509,7 +511,8 @@ void Execute(long pollStatus) {
 		
 		switch (currentPOLL.mainMethod) {
 			case DEPOSITING:
-				setMapValue(currentPOLL.providerID, ENTITLEMENT, 1);
+				setMapValue(ENTITLEMENT, currentPOLL.providerID, 1);
+				contractProvider++;
 				break;
 			case REGISTER:
 				
