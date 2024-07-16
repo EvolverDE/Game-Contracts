@@ -84,22 +84,51 @@ namespace MapController_Polls
             }
         }
 
-        private void ProcessProvider(MapEntry entry)
+        private void HandleProviderEntry(MapEntry entry)
         {
             if (entry.Key2 == 0)
             {
-                providerIdCounter++;
+                currentProviderIndex++;
             }
-            else
+            else if (entry.Key2 == 1)
             {
-                var hashValue = entry.Value.ToString();
-                if (!polls.ContainsKey(hashValue))
+
+                var providerID = (int)(entry.Value >> 32);
+                var amountNQT = entry.Value & 0xFFFFFFFF;
+                if (!polls.ContainsKey(providerID.ToString()))
+
                 {
-                    polls[hashValue] = new Poll();
+                    polls[providerID.ToString()] = new Poll { ProviderID = providerID, AmountNQT = amountNQT };
                 }
-                polls[hashValue].ProviderID = (int)entry.Value;
             }
         }
 
+        private void HandleEntitledEntry(MapEntry entry)
+        {
+            if (entry.Key2 == 0) return;
+            var providerID = (int)entry.Value;
+            if (polls.ContainsKey(providerID.ToString()))
+            {
+                polls[providerID.ToString()].IsEntitled = entry.Value != 0;
+            }
+        }
+
+        private void HandleElectionEntry(MapEntry entry)
+        {
+            if (entry.Key2 == 0)
+            {
+                currentElectionIndex++;
+            }
+            else if (entry.Key2 == 1)
+            {
+
+                var hashValue = entry.Value.ToString("X");
+                if (!polls.ContainsKey(hashValue))
+
+                {
+                    polls[hashValue] = new Poll { HashValue = hashValue };
+                }
+            }
+        }
 
     }
