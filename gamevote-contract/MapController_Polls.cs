@@ -131,4 +131,31 @@ namespace MapController_Polls
             }
         }
 
+        private void HandleProviderIDEntry(MapEntry entry)
+        {
+            var hashValue = entry.Key2.ToString("X");
+            if (polls.ContainsKey(hashValue))
+            {
+                polls[hashValue].ProviderID = (int)entry.Value;
+            }
+        }
+
+        private void HandleActorIDEntry(MapEntry entry)
+        {
+            var hashValue = entry.Key2.ToString("X");
+            if (polls.ContainsKey(hashValue))
+            {
+                polls[hashValue].ActorID = entry.Value;
+            }
+        }
+
+        private void HandleTargetIDEntry(MapEntry entry)
+        {
+            var hashValue = entry.Key2.ToString("X");
+            if (polls.ContainsKey(hashValue))
+            {
+                polls[hashValue].TargetID = entry.Value;
+            }
+        }
+
     }
