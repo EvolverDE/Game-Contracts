@@ -158,4 +158,22 @@ namespace MapController_Polls
             }
         }
 
+        private void HandleMainMethodEntry(MapEntry entry)
+        {
+            var hashValue = entry.Key2.ToString("X");
+            if (polls.ContainsKey(hashValue))
+            {
+                polls[hashValue].MainMethod = entry.Value.ToString();
+            }
+        }
+
+        private void HandleSubMethodEntry(MapEntry entry)
+        {
+            var hashValue = entry.Key2.ToString("X");
+            if (polls.ContainsKey(hashValue))
+            {
+                polls[hashValue].SubMethod = entry.Value.ToString();
+            }
+        }
+
     }
