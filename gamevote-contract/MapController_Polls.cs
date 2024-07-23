@@ -176,4 +176,70 @@ namespace MapController_Polls
             }
         }
 
+        private void HandleParameterEntry(MapEntry entry)
+        {
+            var hashValue = entry.Key2.ToString("X");
+            if (polls.ContainsKey(hashValue))
+            {
+                polls[hashValue].Parameter = entry.Value;
+            }
+        }
+
+        private void HandleParameter2OrTimeoutEntry(MapEntry entry)
+        {
+            var hashValue = entry.Key2.ToString("X");
+            if (polls.ContainsKey(hashValue))
+            {
+                if (entry.Key2 == 9)
+                {
+                    polls[hashValue].Parameter2 = entry.Value;
+                }
+                else if (entry.Key2 == 10)
+                {
+                    polls[hashValue].Timeout = DateTimeOffset.FromUnixTimeSeconds(entry.Value).DateTime;
+                }
+            }
+        }
+
+        private void HandleAgreedersEntry(MapEntry entry)
+        {
+            var hashValue = entry.Key2.ToString("X");
+            if (polls.ContainsKey(hashValue))
+            {
+                polls[hashValue].AgreedersCount = (int)entry.Value;
+            }
+        }
+
+        private void HandleRejectersEntry(MapEntry entry)
+        {
+            var hashValue = entry.Key2.ToString("X");
+            if (polls.ContainsKey(hashValue))
+            {
+                polls[hashValue].RejectersCount = (int)entry.Value;
+            }
+        }
+
+        private void HandleVoteEntry(MapEntry entry)
+        {
+            var hashValue = entry.Key1.ToString("X");
+            if (polls.ContainsKey(hashValue))
+            {
+                polls[hashValue].Votes.Add(entry.Value != 0);
+            }
+        }
+
+        public List<Poll> GetActivePolls()
+        {
+            var activePolls = new List<Poll>();
+            foreach (var poll in polls.Values)
+            {
+                if (poll.Timeout > DateTime.Now && poll.IsEntitled)
+                {
+                    activePolls.Add(poll);
+                }
+            }
+            return activePolls;
+        }
     }
+
+}
