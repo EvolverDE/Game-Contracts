@@ -752,6 +752,27 @@ void Equip(void)
 	 * currentPOLL.parameter3 = 
 	 * currentPOLL.parameter4 = 
 	 */
+	void Equip(void)
+	{
+		// zu beaucoup???
+		long slotIndex = GetArticleMatchSlotIndex(currentPOLL.parameter, currentPOLL.parameter2);
+
+		if (slotIndex == 0)
+		{
+			return;
+		}
+
+		// check slot
+		long currentEquipment = getMapValue(SLOTS, slotIndex);
+
+		if (currentEquipment != 0)
+		{
+			// warning?
+		}
+
+		// get 
+		setMapValue(SLOTS, slotIndex, currentPOLL.parameter);
+	}
 
 	long slotIndex = GetArticleMatchSlotIndex(currentPOLL.parameter, currentPOLL.parameter2);
 	if (slotIndex != 0)
