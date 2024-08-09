@@ -707,6 +707,29 @@ void Dock(void)
 	* currentPOLL.parameter3 = todo (?)
 	* currentPOLL.parameter4 = todo (?)
 	*/
+	void Dock(void)
+	{
+		//if activ
+		if (getMapValue(STATUS, 0) == 0)
+		{
+			return;
+		}
+
+		long hangarIndex = currentPOLL.parameter; // hangar
+		getHangarDetails(hangarIndex);
+
+		// zu beaucoup???
+		long shipSize = currentPOLL.parameter2;
+		if (currentHangar.size >= shipSize)
+		{
+			// docking
+			setMapValue(HANGAR, hangarIndex, currentPOLL.actorID);
+		}
+		else
+		{
+			//try?
+		}
+	}
 }
 void Equip(void)
 {
