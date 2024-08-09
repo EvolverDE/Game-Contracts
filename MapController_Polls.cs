@@ -230,7 +230,7 @@ public class MapController
         var activePolls = new List<Poll>();
         foreach (var poll in polls.Values)
         {
-            if (poll.Timeout > DateTime.Now && poll.IsEntitled)
+            if (pol.Timeout > DateTime.Now && pol.IsEntitled)
             {
                 activePolls.Add(poll);
             }
