@@ -93,9 +93,8 @@ TODO
 {"blockheight": 0, "sender": "10000n", "recipient": "1111n", "amount": "10000000000", "messageHex": "40420f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"}
 ]
 ```
-# Set Object Inventions into Item Base Contract
 
-
+### Invention Example
 [42420f0000000000 = 0f4242 = #define GAME_SPECIFIC 1_000_002](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/gamevote-contract.smart.c#L35 "messageHEX")<br>
 [194a0f0000000000 = 0f4a19 = #define INVENT 1_002_009](https://github.com/EvolverDE/Game-Contracts/blob/main/object-contract/object_contract.smart.c#L42 "messageHEX")<br>
 726142696d756c41(HEX Little Endian) = 416c756d69426172(HEX Big Endian) = 4714272022727909746(long) = AlumiBar(string)<br>
@@ -106,6 +105,7 @@ TODO
 0f27000000000000 = 270f = 9999 (Target Contract ID) (see Legend 9999n)<br>
 all together = messageHex: 42420f0000000000194a0f0000000000726142696d756c410d0000000000000000e40b5402000000010000000000000010270000000000000f27000000000000<br>
 
+# Set Object Inventions into Item Base Contract
 #### most of the simulation transactions interact with gamevote-Contract
 ```js
 [
