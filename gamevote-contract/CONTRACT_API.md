@@ -87,7 +87,9 @@ to vote a poll, one in the map has to pay the votefee and set the parameter to P
 [
 {"blockheight": 0, "sender": "10000n", "recipient": "1111n", "amount": "10000000000", "messageHex": "40420f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"}
 ]
-//INVENT ( [Map of Item Base Inventions](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/1_MapOfItemBase_Inventions.png "1_MapOfItemBase_Inventions.png") ): 
+```
+[Map of Item Base Inventions](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/1_MapOfItemBase_Inventions.png "1_MapOfItemBase_Inventions.png") : 
+```js
 [
 {"blockheight": 2, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f0000000000194a0f0000000000726142696d756c410d0000000000000000e40b5402000000010000000000000010270000000000000f27000000000000"},
 {"blockheight": 6, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f0000000000194a0f000000000072614269636c6143140000000000000000e40b5402000000010000000000000010270000000000000f27000000000000"},
