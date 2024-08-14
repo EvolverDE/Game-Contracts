@@ -508,10 +508,11 @@ void GameSpecific(void)
 // sub methods
 void Act(void)
 {
-
+	// maybe not needed
 }
 void Build(void)
 {
+	// #### TESTED ####
 	/* build the object itself
 	* currentPOLL.actorID = initiatorID (of build order)
 	* currentPOLL.mainMethod = GAME_SPECIFIC
@@ -607,6 +608,170 @@ void Build(void)
 
 }
 
+void Deliver(void)
+{
+	// maybe not needed
+}
+void Describe(void)
+{
+	// maybe not needed
+}
+void Dock(void)
+{
+	// TODO: Implement and Test
+	/* dock the zeptor on the station
+	* currentPOLL.actorID = initiatorID
+	* currentPOLL.mainMethod = GAME_SPECIFIC
+	* currentPOLL.subMethod = DOCK
+	* currentPOLL.parameter = todo (maybe hangar number (1..n))
+	* currentPOLL.parameter2 = todo (what to dock? (small ship, medium ship, big ship))
+	* currentPOLL.parameter3 = todo (?)
+	* currentPOLL.parameter4 = todo (?)
+	*/
+}
+void Equip(void)
+{
+	// TODO: Test
+	// equip the object
+	// currentTX.message[0] = method (ACT)
+	// currentTX.message[1] = command (EQUIP)
+	// currentTX.message[2] = parameter (gattling20mm = ID)
+	// currentTX.message[3] = parameter2 (slotindex = 1...n)
+	// currentTX.message[4] = free
+	// currentTX.message[5] = free
+	// currentTX.message[6] = free
+	// currentTX.message[7] = free
+
+	/* equip the object
+	 * currentPOLL.actorID = owner / authID
+	 * currentPOLL.mainMethod = GAME_SPECIFIC
+	 * currentPOLL.subMethod = EQUIP
+	 * currentPOLL.parameter = articleSymbol
+	 * currentPOLL.parameter2 = slotIndex (1...n)
+	 * currentPOLL.parameter3 = 
+	 * currentPOLL.parameter4 = 
+	 */
+
+	long slotIndex = GetArticleMatchSlotIndex(currentPOLL.parameter, currentPOLL.parameter2);
+	if (slotIndex != 0)
+	{
+		setMapValue(SLOTS, slotIndex, currentPOLL.parameter);
+	}
+}
+void Explode(void)
+{
+	// TODO: Test
+	// station destroyed/not exist
+	setMapValue(STATUS, 0, 0);
+	long count = getExtMapValue(INVENT, objectName, itemBaseID);
+	for (long i = 1; i <= count; i++)
+	{
+		setMapValue(BUILD, getExtMapValue(PARAMETER2, getExtMapValue(objectName, i, itemBaseID), authIDs[0]), 0);
+	}
+
+}
+void Insure(void)
+{
+	// TODO: Complement and Test if needed
+	insurence = currentPOLL.parameter;
+}
+void Invent(void)
+{
+	// TODO: Implement and Test if needed
+}
+void Mining(void)
+{
+	// #### TESTED ###
+	if (getCodeHashOf(currentPOLL.targetID) != 0 || getCodeHashOf(currentPOLL.actorID) == 0)
+	{
+		SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2);
+	}
+
+}
+void Refining(void)
+{
+	// #### TESTED ####
+	/* refine the object
+	* currentPOLL.actorID = initiatorID, not contract
+	* currentPOLL.mainMethod = GAME_SPECIFIC
+	* currentPOLL.subMethod = REFINE
+	* currentPOLL.parameter = refinery slot (2)
+	* currentPOLL.parameter2 = Refined Materials (GoldBar)
+	* currentPOLL.parameter3 = Amount (1)
+	* currentPOLL.parameter4 = 0
+	*/
+
+	if (getMapValue(STATUS, 0) != 0)
+	{
+		getArticleDetails(getMapValue(SLOT, currentPOLL.parameter));
+		if (currentArticle.type == REFINERY_FACILITY && currentArticle.type == getExtMapValue(TYPE, currentPOLL.parameter2, itemBaseID) && currentArticle.size > getExtMapValue(SIZE, currentPOLL.parameter2, itemBaseID) && getCodeHashOf(currentPOLL.actorID) == 0)
+		{
+			long needMaterialCount = getExtMapValue(INVENT, currentPOLL.parameter2, itemBaseID);
+			if (CheckSubItems(currentPOLL.parameter2, needMaterialCount, currentPOLL.parameter3, 0) == 1)
+			{
+				if (currentPOLL.parameter4 == 0)
+				{
+					// set into local cargo
+					SetItemIntoCargo(currentPOLL.parameter2, currentPOLL.parameter3);
+				}
+				else if (getCodeHashOf(currentPOLL.parameter4) != 0)
+				{
+					// send buildup materials to target contract
+					SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, currentPOLL.parameter2, currentPOLL.parameter3, 0, 0, currentPOLL.actorID, currentPOLL.parameter4);
+					SendBufferWithAmount(ONE_WHOLE, currentPOLL.parameter4);
+				}
+
+				// refresh input materials amounts in map 
+				for (long i = 1; i <= needMaterialCount; i++)
+				{
+					long hash = getExtMapValue(currentPOLL.parameter2, i, itemBaseID);
+					GetItemOutOfCargo(getExtMapValue(PARAMETER2, hash, authIDs[0]), getExtMapValue(PARAMETER3, hash, authIDs[0]) * (currentPOLL.parameter3 / ONE_WHOLE));
+				}
+			}
+		}
+	}
+
+}
+void Repair(void)
+{
+	// TODO: Implement and Test
+}
+void Scan(void)
+{
+	// TODO: Implement and Test
+}
+void Store(void)
+{
+	// #### TESTED ####
+	if (getMapValue(STATUS, 0) == 0)
+	{
+		if (currentPOLL.partOfPoll == TARGET)
+		{
+			setMapValue(BUILD, currentPOLL.parameter, getMapValue(BUILD, currentPOLL.parameter) + currentPOLL.parameter2);
+		}
+	}
+	else
+	{
+		if (currentPOLL.partOfPoll == ACTOR && getCodeHashOf(currentPOLL.targetID) != 0)
+		{
+			// currentPOLL.parameter = Element (IRON)
+			// currentPOLL.parameter2 = Amount (123)
+
+			GetItemOutOfCargo(currentPOLL.parameter, currentPOLL.parameter2);
+		}
+		else if (currentPOLL.partOfPoll == TARGET)
+		{
+			SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2);
+		}
+	}
+	
+}
+void Treat(void)
+{
+	// TODO: Implement and Test if needed
+}
+
+// support methods
 long CheckSubItems(long objectID, long needMaterialCount, long wishAmount, long targetID)
 {
 	long status = getMapValue(STATUS, 0);
@@ -685,218 +850,6 @@ long CheckSubItems(long objectID, long needMaterialCount, long wishAmount, long 
 	{
 		return 0;
 	}
-
-}
-
-void Deliver(void)
-{
-
-}
-void Describe(void)
-{
-
-}
-void Dock(void)
-{
-	/* dock the zeptor on the station
-	* currentPOLL.actorID = initiatorID
-	* currentPOLL.mainMethod = GAME_SPECIFIC
-	* currentPOLL.subMethod = DOCK
-	* currentPOLL.parameter = todo (maybe hangar number (1..n))
-	* currentPOLL.parameter2 = todo (what to dock? (small ship, medium ship, big ship))
-	* currentPOLL.parameter3 = todo (?)
-	* currentPOLL.parameter4 = todo (?)
-	*/
-}
-void Equip(void)
-{
-	// equip the object
-	// currentTX.message[0] = method (ACT)
-	// currentTX.message[1] = command (EQUIP)
-	// currentTX.message[2] = parameter (gattling20mm = ID)
-	// currentTX.message[3] = parameter2 (slotindex = 1...n)
-	// currentTX.message[4] = free
-	// currentTX.message[5] = free
-	// currentTX.message[6] = free
-	// currentTX.message[7] = free
-
-	/* equip the object
-	 * currentPOLL.actorID = owner / authID
-	 * currentPOLL.mainMethod = GAME_SPECIFIC
-	 * currentPOLL.subMethod = EQUIP
-	 * currentPOLL.parameter = articleSymbol
-	 * currentPOLL.parameter2 = slotIndex (1...n)
-	 * currentPOLL.parameter3 = 
-	 * currentPOLL.parameter4 = 
-	 */
-
-	long slotIndex = GetArticleMatchSlotIndex(currentPOLL.parameter, currentPOLL.parameter2);
-	if (slotIndex != 0)
-	{
-		setMapValue(SLOTS, slotIndex, currentPOLL.parameter);
-	}
-}
-void Explode(void)
-{
-	// station destroyed/not exist
-	setMapValue(STATUS, 0, 0);
-	long count = getExtMapValue(INVENT, objectName, itemBaseID);
-	for (long i = 1; i <= count; i++)
-	{
-		setMapValue(BUILD, getExtMapValue(PARAMETER2, getExtMapValue(objectName, i, itemBaseID), authIDs[0]), 0);
-	}
-
-}
-void Insure(void)
-{
-	insurence = currentPOLL.parameter;
-}
-void Invent(void)
-{
-
-}
-void Mining(void)
-{
-
-	if (getCodeHashOf(currentPOLL.targetID) != 0 || getCodeHashOf(currentPOLL.actorID) == 0)
-	{
-		SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2);
-	}
-
-	//if (currentPOLL.partOfPoll == ACTOR)
-	//{
-	//    if (getCodeHashOf(currentPOLL.targetID) != 0)
-	//    {
-	//        /* mining ELEMENT 
-	//         * currentPOLL.actorID = this
-	//         * currentPOLL.targetID = contract
-	//         * currentPOLL.mainMethod = GAME_SPECIFIC
-	//         * currentPOLL.subMethod = MINING
-	//         * currentPOLL.parameter = Element (IRON)
-	//         * currentPOLL.parameter2 = Amount (123)
-	//         * currentPOLL.parameter3 = 0
-	//         * currentPOLL.parameter4 = 0
-	//         */
-
-	//        SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2);
-	//    }
-	//}
-	//else if (currentPOLL.partOfPoll == TARGET)
-	//{
-	//    if (getCodeHashOf(currentPOLL.actorID) == 0)
-	//    {
-	//        /* mining ELEMENT 
-	//         * currentPOLL.actorID = account, non contract
-	//         * currentPOLL.targetID = this
-	//         * currentPOLL.mainMethod = GAME_SPECIFIC
-	//         * currentPOLL.subMethod = MINING
-	//         * currentPOLL.parameter = Element (IRON)
-	//         * currentPOLL.parameter2 = Amount (123)
-	//         * currentPOLL.parameter3 = 0
-	//         * currentPOLL.parameter4 = 0
-	//         */
-
-	//        SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2);
-	//    }
-
-	//    // forward to solarsystem ID (as location)
-
-	//    // ### outgoing to TARGET ###
-	//    // recipient = targetContractID
-	//    // message[0] = currentHash
-	//    // message[1] = TARGET (wich part on this poll)
-	//    // message[2] = voteContractID (optional)
-	//    // message[3] = free
-	//    // message[4] = free
-	//    // message[5] = free
-	//    // message[6] = free
-	//    // message[7] = free
-
-	//    SetSendBufferForTargetContract(currentPOLL.hash, TARGET, authIDs[0], 0, 0, 0, 0, 0);
-	//    SendBufferWithAmount(currentPOLL.pollAmount, location);
-
-	//}
-
-}
-void Refining(void)
-{
-
-	/* refine the object
-	* currentPOLL.actorID = initiatorID, not contract
-	* currentPOLL.mainMethod = GAME_SPECIFIC
-	* currentPOLL.subMethod = REFINE
-	* currentPOLL.parameter = refinery slot (2)
-	* currentPOLL.parameter2 = Refined Materials (GoldBar)
-	* currentPOLL.parameter3 = Amount (1)
-	* currentPOLL.parameter4 = 0
-	*/
-
-	if (getMapValue(STATUS, 0) != 0)
-	{
-		getArticleDetails(getMapValue(SLOT, currentPOLL.parameter));
-		if (currentArticle.type == REFINERY_FACILITY && currentArticle.type == getExtMapValue(TYPE, currentPOLL.parameter2, itemBaseID) && currentArticle.size > getExtMapValue(SIZE, currentPOLL.parameter2, itemBaseID) && getCodeHashOf(currentPOLL.actorID) == 0)
-		{
-			long needMaterialCount = getExtMapValue(INVENT, currentPOLL.parameter2, itemBaseID);
-			if (CheckSubItems(currentPOLL.parameter2, needMaterialCount, currentPOLL.parameter3, 0) == 1)
-			{
-				if (currentPOLL.parameter4 == 0)
-				{
-					// set into local cargo
-					SetItemIntoCargo(currentPOLL.parameter2, currentPOLL.parameter3);
-				}
-				else if (getCodeHashOf(currentPOLL.parameter4) != 0)
-				{
-					// send buildup materials to target contract
-					SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, currentPOLL.parameter2, currentPOLL.parameter3, 0, 0, currentPOLL.actorID, currentPOLL.parameter4);
-					SendBufferWithAmount(ONE_WHOLE, currentPOLL.parameter4);
-				}
-
-				// refresh input materials amounts in map 
-				for (long i = 1; i <= needMaterialCount; i++)
-				{
-					long hash = getExtMapValue(currentPOLL.parameter2, i, itemBaseID);
-					GetItemOutOfCargo(getExtMapValue(PARAMETER2, hash, authIDs[0]), getExtMapValue(PARAMETER3, hash, authIDs[0]) * (currentPOLL.parameter3 / ONE_WHOLE));
-				}
-			}
-		}
-	}
-
-}
-void Repair(void)
-{
-
-}
-void Scan(void)
-{
-
-}
-void Store(void)
-{
-	if (getMapValue(STATUS, 0) == 0)
-	{
-		if (currentPOLL.partOfPoll == TARGET)
-		{
-			setMapValue(BUILD, currentPOLL.parameter, getMapValue(BUILD, currentPOLL.parameter) + currentPOLL.parameter2);
-		}
-	}
-	else
-	{
-		if (currentPOLL.partOfPoll == ACTOR && getCodeHashOf(currentPOLL.targetID) != 0)
-		{
-			// currentPOLL.parameter = Element (IRON)
-			// currentPOLL.parameter2 = Amount (123)
-
-			GetItemOutOfCargo(currentPOLL.parameter, currentPOLL.parameter2);
-		}
-		else if (currentPOLL.partOfPoll == TARGET)
-		{
-			SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2);
-		}
-	}
-	
-}
-void Treat(void)
-{
 
 }
 
@@ -1059,7 +1012,6 @@ long GetWichHash(void)
 	long y = GetB3FromHash256(STORE, GetWich(), 0, 0);
 	return y;
 }
-
 
 void SetSendBufferForTargetContract(long buffer1, long buffer2, long buffer3, long buffer4, long buffer5, long buffer6, long buffer7, long buffer8)
 {
