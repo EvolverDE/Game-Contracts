@@ -98,7 +98,7 @@ TODO
 [42420f0000000000 = 0f4242 = #define GAME_SPECIFIC 1_000_002](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/gamevote-contract.smart.c#L35 "messageHEX")<br>
 [194a0f0000000000 = 0f4a19 = #define INVENT 1_002_009](https://github.com/EvolverDE/Game-Contracts/blob/main/object-contract/object_contract.smart.c#L42 "messageHEX")<br>
 726142696d756c41(HEX Little Endian) = 416c756d69426172(HEX Big Endian) = 4714272022727909746(long) = AlumiBar(string)<br>
-0d0000000000000000 = d = 13 (Ordernumber of Aluminium)<br>
+0d00000000000000 = d = 13 (Ordernumber of Aluminium)<br>
 00e40b5402000000 = 2540be400 = 100_0000_0000 (Amount needed to refine)<br>
 0100000000000000 = 1 = 1 (Output Amount of AlumiBar)<br>
 1027000000000000 = 2710 = 10000 (Initiator ID) (see Legend 10000n)<br>
