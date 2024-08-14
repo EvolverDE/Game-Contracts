@@ -88,7 +88,7 @@ to vote a poll, one in the map has to pay the votefee and set the parameter to P
 {"blockheight": 0, "sender": "10000n", "recipient": "1111n", "amount": "10000000000", "messageHex": "40420f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"}
 ]
 ```
-[Map of Item Base Inventions](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/1_MapOfItemBase_Inventions.png "1_MapOfItemBase_Inventions.png") : 
+![Map of Item Base Inventions](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/1_MapOfItemBase_Inventions.png "1_MapOfItemBase_Inventions.png") 
 ```js
 [
 {"blockheight": 2, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f0000000000194a0f0000000000726142696d756c410d0000000000000000e40b5402000000010000000000000010270000000000000f27000000000000"},
@@ -333,7 +333,9 @@ to vote a poll, one in the map has to pay the votefee and set the parameter to P
 {"blockheight": 958, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f0000000000194a0f00000000006867694c7470655a6f6c536e49616d5300c2eb0b00000000070000000000000010270000000000000f27000000000000"},
 {"blockheight": 962, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f0000000000194a0f00000000006867694c7470655a6c75486853616d5300e1f50500000000080000000000000010270000000000000f27000000000000"}
 ]
-//ELEMENT Properties ( [Map of Item Base Properties](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/2_MapOfItemBase_Properties.png "2_MapOfItemBase_Properties.png") ): 
+```
+![Map of Item Base Properties](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/2_MapOfItemBase_Properties.png "2_MapOfItemBase_Properties.png")
+```js
 [
 {"blockheight": 966, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f0000000000144a0f0000000000c9550f0000000000726142696d756c41e1c8100000000000000000000000000010270000000000000f27000000000000"},
 {"blockheight": 970, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f0000000000144a0f0000000000ca550f0000000000726142696d756c41bb590f0000000000000000000000000010270000000000000f27000000000000"},
@@ -523,7 +525,9 @@ to vote a poll, one in the map has to pay the votefee and set the parameter to P
 {"blockheight": 1622, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "41420f0000000000ca550f00000000006867694c7470655a00000000000000000000000000000000000000000000000010270000000000005c11000000000000"},
 {"blockheight": 1626, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "41420f00000000002a460f0000000000050d00000000000000000000000000000000000000000000000000000000000010270000000000005c11000000000000"}
 ]
-//BIG BANG ( [Map of Solar System](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/4_MapOfSolarSystem.png "4_MapOfSolarSystem.png") ): 
+```
+![Map of Solar System](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/4_MapOfSolarSystem.png "4_MapOfSolarSystem.png") 
+```js
 [
 {"blockheight": 1630, "sender": "10000n", "recipient": "2222n", "amount": "1234500000000", "messageHex": "050d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"}
 ]
@@ -568,8 +572,11 @@ to vote a poll, one in the map has to pay the votefee and set the parameter to P
 [
 {"blockheight": 1730, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f00000000001a4a0f00000000001a0000000000000000d85aa6130900000000000000000000050d0000000000001027000000000000ae08000000000000"}
 ]
-//Build results( [Map of Station Contract](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/5_MapOfStationContract.png "5_MapOfStationContract.png") ; [Map of Zeptor Light Contract](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/6_MapOfZeptorLightContract.png "6_MapOfZeptorLightContract.png") ) 
+```
+![Map of Station Contract](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/5_MapOfStationContract.png "5_MapOfStationContract.png") 
+![Map of Zeptor Light Contract](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/6_MapOfZeptorLightContract.png "6_MapOfZeptorLightContract.png") 
 //Build ZeptLigh(1):
+```js
 [
 {"blockheight": 1738, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f0000000000124a0f000000000002000000000000006c6c69506c6c695300e1f5050000000000000000000000001027000000000000050d000000000000"},
 {"blockheight": 1742, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f0000000000124a0f000000000002000000000000006b7369446c6c695300e40b540200000000000000000000001027000000000000050d000000000000"},
