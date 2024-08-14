@@ -78,6 +78,16 @@ TODO
 
 #### most of the simulation transactions interact with gamevote-Contract
 
+### Message Description
+
+#### Deposit Example
+```
+40420f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+=
+40420f (little endian)
+```
+[Line 33 of Game Vote Contract](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/gamevote-contract.smart.c#L33 "DEPOSITING = 1_000_000") 
+![Result in Big Endian](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/LittleEndian.png "LittleEndian.png")
 ```js
 //DEPOSITING:
 [
