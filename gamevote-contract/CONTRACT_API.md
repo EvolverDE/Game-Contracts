@@ -4,38 +4,33 @@ This smart contract ...
 
 |                    |                         |
 |--------------------|-------------------------|
-| Code Hash          |                         |
-| Testnet Account Id |                         |
-| Mainnet Account Id |                         |
+|                    |                         |
 
 ## Data Stack
 
 | Name                | Stack Index (0-based) | Initializable | Values | Description |
 |---------------------|-----------------------|---------------|--------|-------------|
-| contractProvider    | 4                     | no            |        | <TODO>      |
-| maxGlobalVotePoints | 5                     | no            |        | <TODO>      |
+|                     |                       | no            |        | <TODO>      |
+|                     |                       | no            |        | <TODO>      |
 
 ## Methods:
 
 | Method        | Arg0 | Arg1         | Arg2    | Arg3      | Role/Permission | Description                |
 |---------------|------|--------------|---------|-----------|-----------------|----------------------------|
-| Deposit       | 1    | Recipient Id |         |           | Everybody       | Deposits Signa on contract |
-| Act           | 2    | Method       | Command | Parameter | one in the map  | initiate a act poll        |
-| Withdraw      | 3    | 2nd Key      | Value   |           | one in the map  | initiate a withdrawal poll |
-| Vote for Poll | 4    | PollsterID   | Vote    |           | one in the map  | vote for a initiated poll  |
+|               |      |              |         |           | <TODO>          | <TODO>                     |
 
 
 ### Act
 
-Deposits Signa on Contract (maybe maximum of 100 signa?)
+TODO
 
 ### Withdrawal
 
-Initiates an Act Poll to deregister from contract and get the deposit back
+TODO
 
 ### Vote for Poll
 
-to vote a poll, one in the map has to pay the votefee and set the parameter to PollsterID and vote
+TODO
 
 ### Mathematics
 - voteTarget = depositFromPollsterID / maxProviders / 50%
@@ -43,7 +38,6 @@ to vote a poll, one in the map has to pay the votefee and set the parameter to P
 - voters votePoints increments
 - voteFee < voteTarget -> reject
 - voteFee >= voteTarget -> reject
-
 
 ## Maps
 
@@ -69,8 +63,10 @@ to vote a poll, one in the map has to pay the votefee and set the parameter to P
 | preventing double votes      | hash of election as long           | providerID                         | !=0 (alrady voted)                         |
 | the votepoints of providerID | VOTEPOINTS                         | providerID                         | 0                                          |
 
+### Example:
+![Map of Game Vote Contract](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/0_MapOfGameVoteContract.png "0_MapOfGameVoteContract.png") 
 
-## Simulation cases
+# Simulation Cases
 
 ### Legend
 * Account = 10000n
@@ -585,7 +581,7 @@ to vote a poll, one in the map has to pay the votefee and set the parameter to P
 {"blockheight": 1730, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f00000000001a4a0f00000000001a0000000000000000d85aa6130900000000000000000000050d0000000000001027000000000000ae08000000000000"}
 ]
 ```
-### Result after Mining:
+### Result after Mining (currently not correct):
 ![Map of Solar System](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/4_MapOfSolarSystem.png "4_MapOfSolarSystem.png") 
 
 ### Result after Building:
