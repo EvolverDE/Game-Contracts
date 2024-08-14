@@ -520,14 +520,20 @@ TODO
 ```js
 //Register Feldspat Drilling Station:
 [
+// set itembaseID into Object Contract (Feldspat Drilling Station)
 {"blockheight": 1606, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "41420f000000000029460f00000000000f270000000000000000000000000000000000000000000000000000000000001027000000000000050d000000000000"},
+// set objectName (and type) into Object Contract (Feldspat Drilling Station)
 {"blockheight": 1610, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "41420f0000000000ca550f00000000006c6c6972446c65460000000000000000000000000000000000000000000000001027000000000000050d000000000000"},
+// set solarsystemID / Object location into Object Contract (Feldspat Drilling Station)
 {"blockheight": 1614, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "41420f00000000002a460f0000000000ae080000000000000000000000000000000000000000000000000000000000001027000000000000050d000000000000"}
 ]
 //Register ZeptorLight:
 [
+// set itembaseID into Object Contract (Zeptor Light)
 {"blockheight": 1618, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "41420f000000000029460f00000000000f2700000000000000000000000000000000000000000000000000000000000010270000000000005c11000000000000"},
+// set objectName (and type) into Object Contract (Zeptor Light)
 {"blockheight": 1622, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "41420f0000000000ca550f00000000006867694c7470655a00000000000000000000000000000000000000000000000010270000000000005c11000000000000"},
+// set solarsystemID / Object location into Object Contract (Zeptor Light)
 {"blockheight": 1626, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "41420f00000000002a460f0000000000050d00000000000000000000000000000000000000000000000000000000000010270000000000005c11000000000000"}
 ]
 ```
