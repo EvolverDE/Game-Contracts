@@ -76,11 +76,9 @@ TODO
 * miningstation-Contract = 3333n
 * zeptorlight-Contract = 4444n
 
-#### most of the simulation transactions interact with gamevote-Contract
+## Message Description
 
-### Message Description
-
-#### Deposit Example
+### Deposit Example
 ```
 40420f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 =
@@ -96,6 +94,7 @@ TODO
 ]
 ```
 # Set Object Inventions into Item Base Contract
+#### most of the simulation transactions interact with gamevote-Contract
 ```js
 [
 {"blockheight": 2, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f0000000000194a0f0000000000726142696d756c410d0000000000000000e40b5402000000010000000000000010270000000000000f27000000000000"},
