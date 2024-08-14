@@ -88,7 +88,7 @@ to vote a poll, one in the map has to pay the votefee and set the parameter to P
 {"blockheight": 0, "sender": "10000n", "recipient": "1111n", "amount": "10000000000", "messageHex": "40420f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"}
 ]
 ```
-
+# Set Object Inventions into Item Base Contract
 ```js
 [
 {"blockheight": 2, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f0000000000194a0f0000000000726142696d756c410d0000000000000000e40b5402000000010000000000000010270000000000000f27000000000000"},
@@ -336,6 +336,8 @@ to vote a poll, one in the map has to pay the votefee and set the parameter to P
 ```
 ### Result:
 ![Map of Item Base Inventions](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/1_MapOfItemBase_Inventions.png "1_MapOfItemBase_Inventions.png") 
+
+# Set Object Properties into Item Base Contract
 ```js
 [
 {"blockheight": 966, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f0000000000144a0f0000000000c9550f0000000000726142696d756c41e1c8100000000000000000000000000010270000000000000f27000000000000"},
@@ -517,6 +519,8 @@ to vote a poll, one in the map has to pay the votefee and set the parameter to P
 ```
 ### Result:
 ![Map of Item Base Properties](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/2_MapOfItemBase_Properties.png "2_MapOfItemBase_Properties.png")
+
+# Register Objects / Convert Contracts to Objects
 ```js
 //Register Feldspat Drilling Station:
 [
@@ -531,12 +535,14 @@ to vote a poll, one in the map has to pay the votefee and set the parameter to P
 {"blockheight": 1626, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "41420f00000000002a460f0000000000050d00000000000000000000000000000000000000000000000000000000000010270000000000005c11000000000000"}
 ]
 ```
-### Result:
-![Map of Solar System](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/4_MapOfSolarSystem.png "4_MapOfSolarSystem.png") 
+# BIG BANG
 ```js
 [
 {"blockheight": 1630, "sender": "10000n", "recipient": "2222n", "amount": "1234500000000", "messageHex": "050d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"}
 ]
+```
+# Mining and Building
+```js
 //Mining IRON(7000):
 [
 {"blockheight": 1634, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f00000000001a4a0f00000000001a00000000000000005840fba20000000000000000000000050d0000000000001027000000000000ae08000000000000"}
@@ -579,7 +585,10 @@ to vote a poll, one in the map has to pay the votefee and set the parameter to P
 {"blockheight": 1730, "sender": "10000n", "recipient": "1111n", "amount": "100000000", "messageHex": "42420f00000000001a4a0f00000000001a0000000000000000d85aa6130900000000000000000000050d0000000000001027000000000000ae08000000000000"}
 ]
 ```
-### Result:
+### Result after Mining:
+![Map of Solar System](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/4_MapOfSolarSystem.png "4_MapOfSolarSystem.png") 
+
+### Result after Building:
 ![Map of Station Contract](https://github.com/EvolverDE/Game-Contracts/blob/main/gamevote-contract/results/5_MapOfStationContract.png "5_MapOfStationContract.png") 
 
 ```js
