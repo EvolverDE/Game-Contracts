@@ -101,8 +101,8 @@ TODO
 0d00000000000000 = d = 13 (Ordernumber of Aluminium)<br>
 00e40b5402000000 = 2540be400 = 100_0000_0000 (Amount needed to refine)<br>
 0100000000000000 = 1 = 1 (Output Amount of AlumiBar)<br>
-1027000000000000 = 2710 = 10000 [(Actor ID)](#Legend)<br>
-0f27000000000000 = 270f = 9999 (Target ID) (see Legend 9999n)<br>
+1027000000000000 = 2710 = 10000 [Actor ID (Account)](#Legend)<br>
+0f27000000000000 = 270f = 9999 [Target ID (ItemBase)](#Legend)<br>
 all together = messageHex: 42420f0000000000194a0f0000000000726142696d756c410d0000000000000000e40b5402000000010000000000000010270000000000000f27000000000000<br>
 
 # Set Object Inventions into Item Base Contract
