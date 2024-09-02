@@ -556,46 +556,10 @@ void Build(void)
 		}
 		else if (currentArticle.type >= SHIP && currentPOLL.parameter4 != 0)
 		{
-			
+			// TODO: SetItemIntoHangar
 			if (getCodeHashOf(currentPOLL.parameter4) != 0 && status != 0)
 			{
 				if(CheckSubItems(objectID, needMaterialCount, currentPOLL.parameter3, currentPOLL.parameter4) == 1){
-					
-					void SetItemIntoHangar(long hangarIndex, long item, long amount)
-					{
-						// details hangar
-						getHangarDetails(hangarIndex);
-
-						// loong
-						long itemSize = getExtMapValue(SIZE, item, itemBaseID);
-
-						if (currentHangar.size >= itemSize)
-						{
-							// if full
-							long currentAmount = getMapValue(HANGAR, hangarIndex);
-							long maxCapacity = currentHangar.size; // Kapazität des Hangars
-
-							if (currentAmount + amount <= maxCapacity)
-							{
-								// einfügen
-								setMapValue(HANGAR, hangarIndex, currentAmount + amount);
-							}
-							else
-							{
-								// platz
-								// meldung
-								return;
-							}
-						}
-						else
-						{
-							// platz
-							// meldung
-							return;
-						}
-					}
-
-
 					long wichHash = GetWichHash();
 					setMapValue(HANGAR, GetWich(), wichHash);
 					setMapValue(wichHash, currentPOLL.parameter2, currentPOLL.parameter4);
@@ -664,47 +628,6 @@ void Dock(void)
 	* currentPOLL.parameter3 = todo (?)
 	* currentPOLL.parameter4 = todo (?)
 	*/
-	// Überprüfe, ob die Station aktiv ist
-	if (getMapValue(STATUS, 0) == 0)
-	{
-		return; // not active
-	}
-
-	// get loong
-	long hangarIndex = currentPOLL.parameter; // nr
-	long shipSize = currentPOLL.parameter2;   // size
-
-	// hangar details
-	getHangarDetails(hangarIndex);
-
-	// hangar size
-	if (currentHangar.size >= shipSize)
-	{
-		// is full
-		long currentAmount = getMapValue(HANGAR, hangarIndex);
-		long maxCapacity = currentHangar.size; // size
-
-		if (currentAmount + 1 <= maxCapacity) // 1hangar|1ship
-		{
-			// docking
-			setMapValue(HANGAR, hangarIndex, currentPOLL.actorID);
-
-			// message
-			SendDockingSuccessMessage(currentPOLL.actorID, hangarIndex);
-		}
-		else
-		{
-			// size<ship
-			// meldung
-			return;
-		}
-	}
-	else
-	{
-		// ship>hangar
-		// meldung
-		return;
-	}
 }
 void Equip(void)
 {
