@@ -1,6 +1,8 @@
 /**
-	* @author hansmeuller
-	* i´m doing my part
+* @author hansmeuller
+* i´m doing my part
+*
+* expanded by evolver
 */
 
 #include APIFunctions
@@ -24,7 +26,7 @@
 
 // sub CONTRACT_SPECIFIC methods
 #define SET_ITEMBASE 1_001_001
-#define SET_LOCATION 1_001_002
+#define LOCATION 1_001_002
 #define SET_OWNER 1_001_003
 #define SET_NFTID 1_001_004
 #define AUTHENTICATION 1_001_005
@@ -101,9 +103,10 @@
 #define REFINERY_FACILITY 1_006_011
 #define TRADE_HUB 1_006_012
 #define ADMINISTRATIVE_FACILITY 1_006_013
+#define HANGAR_MODULE 1_006_014
 
-#define SHIP 1_006_014
-#define STATION 1_006_015
+#define SHIP 1_006_015
+#define STATION 1_006_016
 
 // Slot and Hangar types
 #define INTERNAL 1_007_001
@@ -163,7 +166,7 @@ long currentFee = ONE_WHOLE;
 // advanced
 long contractID = 0;
 long itemBaseID = 0;
-long location = 0;
+//long location = 0;
 long objectName = 0; // Article = MngStati
 long objectType = 0; // smallShip; mediumStation
 long originalNFTID = 0;
@@ -203,6 +206,7 @@ struct PROPERTYINFO {
 	defaultShield,
 	defaultCargo,
 	freeCargoSpace,
+	freeHangars,
 	cockpits,
 	slotsHash,
 	hangarsHash;
@@ -236,6 +240,7 @@ void constructor(void) {
 	authIDs[0] = 1111; //TODO: set initial ID
 	currentPOLL.hash = 0;
 	currentArticle.category = 0;
+	currentINFO.freeHangars = 0;
 	contractID = GetContractID();
 }
 
@@ -296,15 +301,13 @@ void getHangarDetails(long hangarIndex) {
     currentHangar.size = getExtMapValue(SIZE, currentSlot.hash, itemBaseID);
     currentHangar.type = getExtMapValue(TYPE, currentSlot.hash, itemBaseID);
 }
-void getArticleDetails(long articleSymbol)
-{
+void getArticleDetails(long articleSymbol) {
     currentArticle.type = getExtMapValue(TYPE, articleSymbol, itemBaseID);
     currentArticle.size = getExtMapValue(SIZE, articleSymbol, itemBaseID);
     currentArticle.slot = getExtMapValue(SLOT, articleSymbol, itemBaseID);
 }
 
-void main(void)
-{
+void main(void) {
 	do
 	{
 		A_To_Tx_After_Timestamp(currentTX.timestamp);
@@ -313,7 +316,7 @@ void main(void)
 			break;
 		}
 		getTxDetails();
-
+		
 		// if sender is not authenticated then break
 		if (IsAuthenticated(currentTX.sender) == 0)
 		{
@@ -321,7 +324,7 @@ void main(void)
 		}
 		else
 		{
-
+			
 			// ### income ###
 			// currentTX.sender = voteContract
 			// currentTX.message[0] = currentHash
@@ -332,7 +335,7 @@ void main(void)
 			// currentTX.message[5] = free
 			// currentTX.message[6] = free
 			// currentTX.message[7] = free
-
+			
 			if (getCodeHashOf(currentTX.sender) != 0)
 			{
 				if (currentTX.message[0] == CONTRACT_SPECIFIC && currentTX.message[1] == CREATE_STATION)
@@ -342,20 +345,20 @@ void main(void)
 				}
 				else if (currentTX.message[0] == GAME_SPECIFIC)
 				{
-
+					
 					//SetSendBufferForTargetContract(GAME_SPECIFIC, BUILD, 0, 0, 0, 0, currentPOLL.actorID, currentPOLL.parameter4);
 					//SendBufferWithAmount(ONE_WHOLE, currentPOLL.parameter4);
-
+					
 					/* build the object itself
-					* currentPOLL.actorID = initiatorID (of build order)
-					* currentPOLL.mainMethod = GAME_SPECIFIC
-					* currentPOLL.subMethod = BUILD
-					* currentPOLL.parameter = assembly slot (1)
-					* currentPOLL.parameter2 = SYSTEM (Computer)
-					* currentPOLL.parameter3 = Amount (1)
-					* currentPOLL.parameter4 = 0
+						* currentPOLL.actorID = initiatorID (of build order)
+						* currentPOLL.mainMethod = GAME_SPECIFIC
+						* currentPOLL.subMethod = BUILD
+						* currentPOLL.parameter = assembly slot (1)
+						* currentPOLL.parameter2 = SYSTEM (Computer)
+						* currentPOLL.parameter3 = Amount (1)
+						* currentPOLL.parameter4 = 0
 					*/
-
+					
 					currentPOLL.hash = 0;
 					currentPOLL.mainMethod = GAME_SPECIFIC;
 					currentPOLL.subMethod = currentTX.message[1];
@@ -365,12 +368,12 @@ void main(void)
 					currentPOLL.parameter4 = currentTX.message[5];
 					currentPOLL.actorID = currentTX.message[6];
 					currentPOLL.targetID = currentTX.message[7];
-
+					
 					if(currentPOLL.targetID == contractID)
 					{
 						currentPOLL.partOfPoll = TARGET;
 					}
-
+					
 				}
 				else
 				{
@@ -382,153 +385,151 @@ void main(void)
 				break;
 			}
 		}
-
+		
 		switch (currentPOLL.mainMethod)
 		{
 			case CONTRACT_SPECIFIC:
-				ContractSpecific();
-				break;
+			ContractSpecific();
+			break;
 			case GAME_SPECIFIC:
-				GameSpecific();
-				break;
+			GameSpecific();
+			break;
 			default:
-				break;
+			break;
 		}
-
+		
 	} while (true);
 }
 
 // main methods
-void ContractSpecific(void)
-{
+void ContractSpecific(void) {
 	/*
-	 * currentPOLL.actorID = owner / authID
-	 * currentPOLL.mainMethod = CONTRACT_SPECIFIC
-	 * currentPOLL.subMethod = SET_ITEMBASE
-	 * currentPOLL.parameter = itemBaseID
-	 * currentPOLL.parameter2 = 
-	 * currentPOLL.parameter3 = 
-	 * currentPOLL.parameter4 = 
-	 */
-
+		* currentPOLL.actorID = owner / authID
+		* currentPOLL.mainMethod = CONTRACT_SPECIFIC
+		* currentPOLL.subMethod = SET_ITEMBASE
+		* currentPOLL.parameter = itemBaseID
+		* currentPOLL.parameter2 = 
+		* currentPOLL.parameter3 = 
+		* currentPOLL.parameter4 = 
+	*/
+	
 	if (itemBaseID == 0 && currentPOLL.subMethod != SET_ITEMBASE)
 	{
 		return;
 	}
-
+	
 	switch (currentPOLL.subMethod)
 	{
 		case SET_ITEMBASE:
-			itemBaseID = currentPOLL.parameter;
-			authIDs[1] = currentPOLL.parameter;
-			break;
+		itemBaseID = currentPOLL.parameter;
+		authIDs[1] = currentPOLL.parameter;
+		break;
 		case TYPE:
-			objectName = currentPOLL.parameter;
-			objectType = getExtMapValue(TYPE, objectName, itemBaseID);
-			break;
+		objectName = currentPOLL.parameter;
+		objectType = getExtMapValue(TYPE, objectName, itemBaseID);
+		break;
 		case SET_OWNER:
-			//owner = currentPOLL.actorID;
-			setMapValue(OWNER, 0, currentPOLL.actorID);
-			break;
+		//owner = currentPOLL.actorID;
+		setMapValue(OWNER, 0, currentPOLL.actorID);
+		break;
 		case SET_NFTID:
-			originalNFTID = currentPOLL.parameter;
-			break;
+		originalNFTID = currentPOLL.parameter;
+		break;
 		case AUTHENTICATION:
-			authIDs[currentPOLL.parameter] = currentPOLL.actorID;
-			break;
-		case SET_LOCATION:
-			location = currentPOLL.parameter;
-			authIDs[9] = currentPOLL.parameter;
-			break;
+		authIDs[currentPOLL.parameter] = currentPOLL.actorID;
+		break;
+		case LOCATION:
+		setMapValue(LOCATION, 0, currentPOLL.parameter);
+		authIDs[9] = currentPOLL.parameter;
+		break;
 		case CREATE_STATION:
-			if (getCodeHashOf(currentTX.sender) != 0 && currentTX.sender == location && objectType == STATION)
-			{
-				setMapValue(STATUS, 0, 1);
-				getPropertyDetails();
-				setMapValue(SLOT, 1, 5576974018634211683); // MedRfFac = 5576974018634211683
-				setMapValue(SLOT, 2, 5576973945837871459); // MedAsFac = 5576973945837871459
-			}
-			break;
+		if (getCodeHashOf(currentTX.sender) != 0 && currentTX.sender == getMapValue(LOCATION, 0) && objectType == STATION)
+		{
+			setMapValue(STATUS, 0, 1);
+			getPropertyDetails();
+			setMapValue(SLOT, 1, 5576974018634211683); // MedRfFac = 5576974018634211683
+			setMapValue(SLOT, 2, 5576973945837871459); // MedAsFac = 5576973945837871459
+			setMapValue(SLOT, 3, 5576973975701778276); // MedHgMod = 5576973975701778276
+			currentINFO.freeHangars = -1;
+		}
+		break;
 	}
 }
-void GameSpecific(void)
-{
+void GameSpecific(void) {
 	switch (currentPOLL.subMethod)
 	{
 		case ACT:
-			Act();
-			break;
+		Act();
+		break;
 		case BUILD:
-			Build();
-			break;
+		Build();
+		break;
 		case DELIVER:
-			Deliver();
-			break;
+		Deliver();
+		break;
 		case DESCRIBE:
-			Describe();
-			break;
+		Describe();
+		break;
 		case DOCK:
-			Dock();
-			break;
+		Dock();
+		break;
 		case EQUIP:
-			Equip();
-			break;
+		Equip();
+		break;
 		case EXPLODE:
-			Explode();
-			break;
+		Explode();
+		break;
 		case INSURE:
-			Insure();
-			break;
+		Insure();
+		break;
 		case INVENT:
-			Invent();
-			break;
+		Invent();
+		break;
 		case MINING:
-			Mining();
-			break;
+		Mining();
+		break;
 		case REFINE:
-			Refining();
-			break;
+		Refining();
+		break;
 		case REPAIR:
-			Repair();
-			break;
+		Repair();
+		break;
 		case SCAN:
-			Scan();
-			break;
+		Scan();
+		break;
 		case STORE:
-			Store();
-			break;
+		Store();
+		break;
 		case TREAT:
-			Treat();
-			break;
+		Treat();
+		break;
 		default:
-			break;
+		break;
 	}
 }
 
 // sub methods
-void Act(void)
-{
+void Act(void) {
 	// maybe not needed
 }
-void Build(void)
-{
+void Build(void) {
 	// #### TESTED ####
 	/* build the object itself
-	* currentPOLL.actorID = initiatorID (of build order)
-	* currentPOLL.mainMethod = GAME_SPECIFIC
-	* currentPOLL.subMethod = BUILD
-	* currentPOLL.parameter = assembly slot (1)
-	* currentPOLL.parameter2 = SYSTEM (Computer)
-	* currentPOLL.parameter3 = Amount (1)
-	* currentPOLL.parameter4 = 0
+		* currentPOLL.actorID = initiatorID (of build order)
+		* currentPOLL.mainMethod = GAME_SPECIFIC
+		* currentPOLL.subMethod = BUILD
+		* currentPOLL.parameter = assembly slot (1)
+		* currentPOLL.parameter2 = SYSTEM (Computer)
+		* currentPOLL.parameter3 = Amount (1)
+		* currentPOLL.parameter4 = 0
 	*/
-
+	
 	long objectID = objectName;
 	long status = getMapValue(STATUS, 0);
 	long tryBuild = 0;
-
+	
 	long hash = 0;
-
+	
 	if (status != 0)
 	{
 		objectID = currentPOLL.parameter2;
@@ -542,12 +543,12 @@ void Build(void)
 	{
 		tryBuild = 1;
 	}
-
+	
 	if (tryBuild == 1)
 	{
 		long needMaterialCount = getExtMapValue(INVENT, objectID, itemBaseID);
 		getArticleDetails(currentPOLL.parameter2);
-
+		
 		if (currentArticle.category == REFINED)
 		{
 			// get slot of refinery
@@ -560,10 +561,10 @@ void Build(void)
 			if (getCodeHashOf(currentPOLL.parameter4) != 0 && status != 0)
 			{
 				if(CheckSubItems(objectID, needMaterialCount, currentPOLL.parameter3, currentPOLL.parameter4) == 1){
-					long wichHash = GetWichHash();
+					long wichHash = GetWichHash(STORE);
 					setMapValue(HANGAR, GetWich(), wichHash);
 					setMapValue(wichHash, currentPOLL.parameter2, currentPOLL.parameter4);
-
+					
 					// send build to target contract
 					SetSendBufferForTargetContract(GAME_SPECIFIC, BUILD, currentPOLL.parameter2, currentPOLL.parameter3, 0, 0, currentPOLL.actorID, currentPOLL.parameter4);
 					SendBufferWithAmount(ONE_WHOLE, currentPOLL.parameter4);
@@ -592,45 +593,82 @@ void Build(void)
 						SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, currentPOLL.parameter2, currentPOLL.parameter3, 0, 0, currentPOLL.actorID, currentPOLL.parameter4);
 						SendBufferWithAmount(ONE_WHOLE, currentPOLL.parameter4);
 					}
-
+					
 					// refresh input materials amounts in map 
 					for (long i = 1; i <= needMaterialCount; i++)
 					{
 						hash = getExtMapValue(objectID, i, itemBaseID);
 						GetItemOutOfCargo(getExtMapValue(PARAMETER2, hash, authIDs[0]), getExtMapValue(PARAMETER3, hash, authIDs[0]) * (currentPOLL.parameter3 / ONE_WHOLE));
 					}
-
+					
 				}
 			}
-	
+			
 		}
 	}
-
+	
 }
 
-void Deliver(void)
-{
+void Deliver(void) {
 	// maybe not needed
 }
-void Describe(void)
-{
+void Describe(void) {
 	// maybe not needed
 }
-void Dock(void)
-{
-	// TODO: Implement and Test
+void Dock(void) {
+	
+	// TODO: Test
 	/* dock the zeptor on the station
 	* currentPOLL.actorID = initiatorID
 	* currentPOLL.mainMethod = GAME_SPECIFIC
 	* currentPOLL.subMethod = DOCK
-	* currentPOLL.parameter = todo (maybe hangar number (1..n))
-	* currentPOLL.parameter2 = todo (what to dock? (small ship, medium ship, big ship))
-	* currentPOLL.parameter3 = todo (?)
-	* currentPOLL.parameter4 = todo (?)
+	* currentPOLL.parameter = hangar module number (1..n)
+	* currentPOLL.parameter2 = objectSymbol (ZeptLigh (to get properties))
+	* currentPOLL.parameter3 = 0
+	* currentPOLL.parameter4 = objectContract (contractID)
 	*/
+	
+	// this object must exist
+	long status = getMapValue(STATUS, 0);
+	if (status != 0)
+	{
+		// dock the source object to a hangarslot of this objects hangar module
+		// the target must match the hangar module with a size less than or equal to the module itself 
+		getArticleDetails(getExtMapValue(SLOT, currentPOLL.parameter, currentPOLL.targetID));
+		if (currentArticle.type == HANGAR_MODULE && currentArticle.size >= getExtMapValue(SIZE, currentPOLL.parameter2, itemBaseID))
+		{
+			long dockedObject = getExtMapValue(currentPOLL.parameter4, GetWichHash(HANGAR), currentPOLL.targetID);
+			if (currentPOLL.partOfPoll == ACTOR)
+			{
+				if(dockedObject == 1)
+				{
+					// undock 
+					// set the location of this object to the location of the target object
+					setMapValue(LOCATION, 0, getExtMapValue(LOCATION, 0, currentPOLL.targetID));
+					} else {
+					// dock
+					// set the location of this object to the target object
+					setMapValue(LOCATION, 0, currentPOLL.targetID);
+				}
+				
+				} else {
+				
+				if(dockedObject == 1)
+				{ 
+					// undock
+					UndockObject(currentPOLL.parameter4);
+					} else {
+					// dock
+					DockObject(currentPOLL.parameter4);
+				}
+				
+			}
+		}
+		
+	}
+	
 }
-void Equip(void)
-{
+void Equip(void) {
 	// TODO: Test
 	// equip the object
 	// currentTX.message[0] = method (ACT)
@@ -641,25 +679,24 @@ void Equip(void)
 	// currentTX.message[5] = free
 	// currentTX.message[6] = free
 	// currentTX.message[7] = free
-
+	
 	/* equip the object
-	 * currentPOLL.actorID = owner / authID
-	 * currentPOLL.mainMethod = GAME_SPECIFIC
-	 * currentPOLL.subMethod = EQUIP
-	 * currentPOLL.parameter = articleSymbol
-	 * currentPOLL.parameter2 = slotIndex (1...n)
-	 * currentPOLL.parameter3 = 
-	 * currentPOLL.parameter4 = 
-	 */
-
+		* currentPOLL.actorID = owner / authID
+		* currentPOLL.mainMethod = GAME_SPECIFIC
+		* currentPOLL.subMethod = EQUIP
+		* currentPOLL.parameter = articleSymbol
+		* currentPOLL.parameter2 = slotIndex (1...n)
+		* currentPOLL.parameter3 = 
+		* currentPOLL.parameter4 = 
+	*/
+	
 	long slotIndex = GetArticleMatchSlotIndex(currentPOLL.parameter, currentPOLL.parameter2);
 	if (slotIndex != 0)
 	{
 		setMapValue(SLOTS, slotIndex, currentPOLL.parameter);
 	}
 }
-void Explode(void)
-{
+void Explode(void) {
 	// TODO: Test
 	// station destroyed/not exist
 	setMapValue(STATUS, 0, 0);
@@ -668,39 +705,35 @@ void Explode(void)
 	{
 		setMapValue(BUILD, getExtMapValue(PARAMETER2, getExtMapValue(objectName, i, itemBaseID), authIDs[0]), 0);
 	}
-
+	
 }
-void Insure(void)
-{
+void Insure(void) {
 	// TODO: Complement and Test if needed
 	insurence = currentPOLL.parameter;
 }
-void Invent(void)
-{
+void Invent(void) {
 	// TODO: Implement and Test if needed
 }
-void Mining(void)
-{
+void Mining(void) {
 	// #### TESTED ###
 	if (getCodeHashOf(currentPOLL.targetID) != 0 || getCodeHashOf(currentPOLL.actorID) == 0)
 	{
 		SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2);
 	}
-
+	
 }
-void Refining(void)
-{
+void Refining(void) {
 	// #### TESTED ####
 	/* refine the object
-	* currentPOLL.actorID = initiatorID, not contract
-	* currentPOLL.mainMethod = GAME_SPECIFIC
-	* currentPOLL.subMethod = REFINE
-	* currentPOLL.parameter = refinery slot (2)
-	* currentPOLL.parameter2 = Refined Materials (GoldBar)
-	* currentPOLL.parameter3 = Amount (1)
-	* currentPOLL.parameter4 = 0
+		* currentPOLL.actorID = initiatorID, not contract
+		* currentPOLL.mainMethod = GAME_SPECIFIC
+		* currentPOLL.subMethod = REFINE
+		* currentPOLL.parameter = refinery slot (2)
+		* currentPOLL.parameter2 = Refined Materials (GoldBar)
+		* currentPOLL.parameter3 = Amount (1)
+		* currentPOLL.parameter4 = 0
 	*/
-
+	
 	if (getMapValue(STATUS, 0) != 0)
 	{
 		getArticleDetails(getMapValue(SLOT, currentPOLL.parameter));
@@ -720,7 +753,7 @@ void Refining(void)
 					SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, currentPOLL.parameter2, currentPOLL.parameter3, 0, 0, currentPOLL.actorID, currentPOLL.parameter4);
 					SendBufferWithAmount(ONE_WHOLE, currentPOLL.parameter4);
 				}
-
+				
 				// refresh input materials amounts in map 
 				for (long i = 1; i <= needMaterialCount; i++)
 				{
@@ -730,18 +763,15 @@ void Refining(void)
 			}
 		}
 	}
-
+	
 }
-void Repair(void)
-{
+void Repair(void) {
 	// TODO: Implement and Test
 }
-void Scan(void)
-{
+void Scan(void) {
 	// TODO: Implement and Test
 }
-void Store(void)
-{
+void Store(void) {
 	// #### TESTED ####
 	if (getMapValue(STATUS, 0) == 0)
 	{
@@ -756,7 +786,7 @@ void Store(void)
 		{
 			// currentPOLL.parameter = Element (IRON)
 			// currentPOLL.parameter2 = Amount (123)
-
+			
 			GetItemOutOfCargo(currentPOLL.parameter, currentPOLL.parameter2);
 		}
 		else if (currentPOLL.partOfPoll == TARGET)
@@ -766,22 +796,20 @@ void Store(void)
 	}
 	
 }
-void Treat(void)
-{
+void Treat(void) {
 	// TODO: Implement and Test if needed
 }
 
 // support methods
-long CheckSubItems(long objectID, long needMaterialCount, long wishAmount, long targetID)
-{
+long CheckSubItems(long objectID, long needMaterialCount, long wishAmount, long targetID) {
 	long status = getMapValue(STATUS, 0);
-
+	
 	long hash = 0;
 	long material = 0;
 	long materialNeedAmount = 0;
 	long materialAvailableAmount = 0;
 	long materialCount = 0;
-
+	
 	// check input materials amounts
 	for (long i = 1; i <= needMaterialCount; i++)
 	{
@@ -791,23 +819,23 @@ long CheckSubItems(long objectID, long needMaterialCount, long wishAmount, long 
 		materialAvailableAmount = 0;
 		long atLeastNQT = materialNeedAmount;
 		long atLeast = atLeastNQT / ONE_WHOLE;
-
+		
 		if (atLeastNQT <= 0)
 		{
 			continue;
 		}
-
+		
 		if (atLeastNQT / ONE_WHOLE == 0)
 		{
 			atLeast = ONE_WHOLE / atLeastNQT;
 			//atLeastNQT = atLeast * ONE_WHOLE;
 			wishAmount = wishAmount / atLeastNQT * atLeastNQT;
-
+			
 			if (wishAmount * atLeast < atLeastNQT)
 			{
 				wishAmount = atLeastNQT;
 			}
-
+			
 		}
 		else
 		{
@@ -816,7 +844,7 @@ long CheckSubItems(long objectID, long needMaterialCount, long wishAmount, long 
 				wishAmount = ONE_WHOLE;
 			}
 		}
-
+		
 		if (status == 0)
 		{
 			materialAvailableAmount = getMapValue(BUILD, material);
@@ -833,15 +861,15 @@ long CheckSubItems(long objectID, long needMaterialCount, long wishAmount, long 
 				materialAvailableAmount = GetAmountAvailable(material);
 			}
 		}
-
+		
 		if (materialAvailableAmount > 0 && materialAvailableAmount >= materialNeedAmount * (wishAmount / ONE_WHOLE))
 		{
 			materialCount++;
 			continue;
 		}
-
+		
 	}
-
+	
 	if (materialCount >= needMaterialCount)
 	{
 		return 1;
@@ -850,17 +878,16 @@ long CheckSubItems(long objectID, long needMaterialCount, long wishAmount, long 
 	{
 		return 0;
 	}
-
+	
 }
 
-long IsAuthenticated(long sender)
-{
-
-	if(sender == itemBaseID || sender == location || sender == location)
+long IsAuthenticated(long sender) {
+	
+	if(sender == itemBaseID || sender == getMapValue(LOCATION, 0))
 	{
 		return 1;
 	}
-
+	
 	for (long i = 0; i < authIDs.length; i++)
 	{
 		if (authIDs[i] == sender)
@@ -868,90 +895,86 @@ long IsAuthenticated(long sender)
 			return 1;
 		}
 	}
-
+	
 	return 0;
 }
-long GetB3FromHash256(long a1, long a2, long a3, long a4)
-{
+long GetB3FromHash256(long a1, long a2, long a3, long a4) {
 	Set_A1_A2(a1, a2);
 	Set_A3_A4(a3, a4);
 	SHA256_A_To_B();
 	return Get_B3();
 }
 
-long GetArticleMatchSlotIndex(long articleSymbol, long desiredSlotIndex)
-{
+long GetArticleMatchSlotIndex(long articleSymbol, long desiredSlotIndex) {
 	getArticleDetails(articleSymbol);
 	getSlotDetails(desiredSlotIndex);
-
+	
 	if (currentSlot.size == currentArticle.size)
 	{
 		switch (currentSlot.slot)
 		{
 			case INTERNAL:
-				switch (currentArticle.slot)
-				{
-					case INTERNAL:
-					case SHIELD_SLOT:
-					case CARGO_SLOT:
-					case FACILITY_SLOT:
-						if (currentSlot.type == 0 || currentSlot.type == currentArticle.type)
-						{
-							return desiredSlotIndex;
-						}
-						break;
-				}
-				break;
-			case EXTERNAL:
-				switch (currentArticle.slot)
-				{
-					case EXTERNAL:
-					case GUN_SLOT:
-					case TURRET_SLOT:
-					case PULPIT_SLOT:
-					case LAUNCHER_SLOT:
-						if (currentSlot.type == 0 || currentSlot.type == currentArticle.type)
-						{
-							return desiredSlotIndex;
-						}
-						break;
-				}
-				break;
-			default:
-				if (currentArticle.slot == currentSlot.slot)
+			switch (currentArticle.slot)
+			{
+				case INTERNAL:
+				case SHIELD_SLOT:
+				case CARGO_SLOT:
+				case FACILITY_SLOT:
+				if (currentSlot.type == 0 || currentSlot.type == currentArticle.type)
 				{
 					return desiredSlotIndex;
 				}
 				break;
-
+			}
+			break;
+			case EXTERNAL:
+			switch (currentArticle.slot)
+			{
+				case EXTERNAL:
+				case GUN_SLOT:
+				case TURRET_SLOT:
+				case PULPIT_SLOT:
+				case LAUNCHER_SLOT:
+				if (currentSlot.type == 0 || currentSlot.type == currentArticle.type)
+				{
+					return desiredSlotIndex;
+				}
+				break;
+			}
+			break;
+			default:
+			if (currentArticle.slot == currentSlot.slot)
+			{
+				return desiredSlotIndex;
+			}
+			break;
+			
 		}
-
+		
 	}
-
+	
 	return 0;
-
+	
 }
 
-long GetSlotNumberOfType(long searchType)
-{
+long GetSlotNumberOfType(long searchType) {
 	long slotAmount = getExtMapValue(currentINFO.slotsHash, 0, itemBaseID);
-
+	
 	for(long i = 1; i < slotAmount; i++)
 	{
 		getSlotDetails(i);
-
+		
 		if (currentSlot.type == searchType)
 		{
 			return i;
 		}
-
+		
 	}
-
+	
 	return 0;
 }
 
-void SetItemIntoCargo(long item, long amount)
-{
+void SetItemIntoCargo(long item, long amount) {
 	if (currentINFO.freeCargoSpace > 0 && amount > 0)
 	{
 		long itemAmount = 0;
@@ -965,17 +988,16 @@ void SetItemIntoCargo(long item, long amount)
 			itemAmount = currentINFO.freeCargoSpace;
 			currentINFO.freeCargoSpace = 0;
 		}
-
-		long wichHash = GetWichHash();
+		
+		long wichHash = GetWichHash(STORE);
 		setMapValue(STORE, GetWich(), wichHash);
 		setMapValue(item, wichHash, getMapValue(item, wichHash) + itemAmount);
-
+		
 	}
-
+	
 }
-void GetItemOutOfCargo(long item, long amount)
-{
-
+void GetItemOutOfCargo(long item, long amount) {
+	
 	long amountAvailable = GetAmountAvailable(item);
 	if(amountAvailable > amount)
 	{
@@ -988,28 +1010,55 @@ void GetItemOutOfCargo(long item, long amount)
 		amountAvailable = 0;
 	}
 	
-	setMapValue(item, GetWichHash(), amountAvailable);
+	setMapValue(item, GetWichHash(STORE), amountAvailable);
 	
 }
 
-long GetAmountAvailable(long item)
-{
-	long x = getMapValue(item, GetWichHash());
+void DockObject(long objectContract) {
+	if((objectType != STATION && currentINFO.freeHangars > 0) || objectType == STATION)
+	{
+		long wichHash = GetWichHash(HANGAR);
+		setMapValue(HANGARS, GetWich(), wichHash);
+		setMapValue(wichHash, objectContract, 1);
+
+		if(objectType != STATION)
+		{
+			// reduce hangar places
+			currentINFO.freeHangars -= 1;
+		}
+	}
+
+}
+void UndockObject(long objectContract) {
+	long wichHash = GetWichHash(HANGAR);
+	if(getMapValue(objectContract, wichHash) == 1)
+	{
+		setMapValue(objectContract, wichHash, 0);
+		if (objectType != STATION)
+		{
+			// add hangar places
+			currentINFO.freeHangars += 1;
+		}
+	}
+}
+
+
+long GetAmountAvailable(long item) {
+	long x = getMapValue(item, GetWichHash(STORE));
 	return x;
 }
 
-long GetWich(void)
-{
+long GetWich(void) {
 	if (objectType == STATION)
 	{
 		return currentPOLL.actorID;
 	}
-
+	
 	return objectName;
 }
-long GetWichHash(void)
+long GetWichHash(long type)
 {
-	long y = GetB3FromHash256(STORE, GetWich(), 0, 0);
+	long y = GetB3FromHash256(type, GetWich(), 0, 0);
 	return y;
 }
 
