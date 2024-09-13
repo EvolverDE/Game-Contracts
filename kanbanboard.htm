@@ -1,0 +1,233 @@
+<html>
+	<head>
+		<style>
+			.flexbox-panel {
+				display: flex;
+				flex-direction: column;
+				flex-wrap: nowrap;
+				justify-content: flex-start;
+				align-items: flex-start;
+				align-content: center;
+				border-radius: 10px;
+				margin: 5px;
+				padding: 5px;
+			}
+			
+			h3 {
+				margin: 3px;
+			}
+			
+			h4 {
+				margin: 3px;
+			}
+			
+			.whitebox {
+				border: solid #E8F3FF 2px;
+				border-radius: 10px;
+				padding: 5px;
+			}
+			.redbox {
+				border: solid red 2px;
+				border-radius: 10px;
+				padding: 5px;
+			}
+			
+			.redbox-dotted {
+				border: dotted red 2px;
+				border-radius: 10px;
+				padding: 5px;
+			}
+			
+			.yellowbox {
+				border: solid yellow 2px;
+				border-radius: 10px;
+				padding: 5px;
+			}
+			
+			.greenbox {
+				border: solid green 2px;
+				border-radius: 10px;
+				padding: 5px;
+			}
+			
+			.flexbox-item {
+				flex: 1 1 auto;
+				margin: 3px;
+			}
+			
+			.contentbox{
+				flex-grow=1;
+				flex-shrink=1;
+			}
+			
+		</style>
+	</head>
+	
+	<body style="background-color: #021851; color: #EAF0F6; font-family: Montserrat">
+		<div class="flexbox-panel" style="flex-flow: row;">
+			<div class="flexbox-panel whitebox" style="flex-flow: column; justify-content: flex-start; align-items: center; width:33%;">
+				<h2>Backend / Blockchain</h2>
+				<div class="flexbox-item yellowbox">
+					<h3>Game Vote <span style="color:yellow;">&#9711;</span></h3>
+					<div class="flexbox-item greenbox contentbox">
+						<h4>Consensus Algorithm <span style="color:lime;">&check;</span></h4>
+					<p >the consensus algorithm is used to vote on in-game logical changes </p><!--style="display:none;"-->
+					</div>
+					<div class="flexbox-item greenbox contentbox">
+						<h4>Serial map data <span style="color:lime;">&check;</span></h4>
+						<p>Since the contract maps only have 3 columns (Key1, Key2 and Value), they must be serialized and linked using hash values</p><!--style="display:none;"-->
+					</div>
+					<div class="flexbox-item redbox contentbox">
+						<h4>Choosing the working type <span style="color:red;">&cross;</span></h4>
+						<p>determine who can join (club-mode or public-mode)</p><!--style="display:none;"-->
+					</div>
+					<div class="flexbox-item redbox contentbox">
+						<h4>Joining the contract <span style="color:red;">&cross;</span></h4>
+						<p>who gets a vote and when</p><!--style="display:none;"-->
+					</div>
+				</div>
+				<div class="flexbox-item greenbox">
+					<h3>Item Base <span style="color:lime;">&check;</span></h3>
+					<div class="flexbox-item greenbox contentbox">
+						<h4>Inventions <span style="color:lime;">&check;</span></h4>
+						<p>Inventions are individual object-creations like a iron bar wich needs some iron element(100 m³)</p><!--style="display:none;"-->
+					</div>
+					<div class="flexbox-item greenbox contentbox">
+						<h4>Properties <span style="color:lime;">&check;</span></h4>
+						<p>Properties declaring the objects behave in the world</p><!--style="display:none;"-->
+					</div>
+				</div>
+				
+				<div class="flexbox-item greenbox">
+					<h3>Solarsystem <span style="color:lime;">&check;</span></h3>
+					<div class="flexbox-item greenbox contentbox">
+						<h4>Generate Elements <span style="color:lime;">&check;</span></h4>
+						<p>make sure that donations generating elements</p><!--style="display:none;"-->
+					</div>
+					<div class="flexbox-item greenbox contentbox">
+						<h4>Mining <span style="color:lime;">&check;</span></h4>
+						<p>make sure the elements can be mined by objects that located in the solarsystem</p><!--style="display:none;"-->
+					</div>
+				</div>
+				
+				<div class="flexbox-item yellowbox">
+					<h3>Object <span style="color:yellow;">&#9711;</span></h3>
+					<div class="flexbox-item greenbox contentbox">
+						<h4>Contract Specifics <span style="color:lime;">&check;</span></h4>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Set itembase <span style="color:lime;">&check;</span></h4>
+							<p>make it configurable to set the item base id to the contract</p><!--style="display:none;"-->
+						</div>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Set object name/type <span style="color:lime;">&check;</span></h4>
+							<p>make it configurable to set the object name/type to the contract</p><!--style="display:none;"-->
+						</div>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Set object location <span style="color:lime;">&check;</span></h4>
+							<p>make it configurable to set the object location to the contract</p><!--style="display:none;"-->
+						</div>
+					</div>
+					<div class="flexbox-item yellowbox contentbox">
+						<h4>Game Specifics <span style="color:yellow;">&#9711;</span></h4>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Implement mining <span style="color:lime;">&check;</span></h4>
+							<p>make it possible to mine elements of the parent solarsystem contract</p><!--style="display:none;"-->
+						</div>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Implement refining <span style="color:lime;">&check;</span></h4>
+							<p>make it possible to refine elements to its common items</p><!--style="display:none;"-->
+						</div>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Implement building <span style="color:lime;">&check;</span></h4>
+							<p>make it possible to build complex items/articles recursively</p><!--style="display:none;"-->
+						</div>
+						<div class="flexbox-item yellowbox contentbox">
+							<h4>Implement fitting/equiping <span style="color:yellow;">&#9711;</span></h4>
+							<p>make it possible to equip objects</p><!--style="display:none;"-->
+						</div>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Implement docking <span style="color:lime;">&check;</span></h4>
+							<p>make it possible to dock on a object</p><!--style="display:none;"-->
+						</div>
+						<div class="flexbox-item redbox contentbox">
+							<h4>Implement scanning <span style="color:red;">&cross;</span></h4>
+							<p>make it possible to scan anomalies on the solarsystem contract</p><!--style="display:none;"-->
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="flexbox-panel whitebox" style="flex-flow: column; justify-content: flex-start; align-items: center; width:33%;">
+				<h2>Network</h2>
+				<div class="flexbox-item greenbox">
+					<h3>TCP-Node <span style="color:lime;">&check;</span></h3>
+					<div class="flexbox-item greenbox contentbox">
+						<h4>TCP-Communication <span style="color:lime;">&check;</span></h4>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Implement TCP-Server <span style="color:lime;">&check;</span></h4>
+							<p>implement threaded routines to accept connections from outside</p><!--style="display:none;"-->
+						</div>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Implement TCP-Client <span style="color:lime;">&check;</span></h4>
+							<p>implement the connection to a TCP-Server</p><!--style="display:none;"-->
+						</div>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Implement decentral meshing <span style="color:lime;">&check;</span></h4>
+							<p>Implement routines to ensure that the TCP network is connected in a decentralized manner</p><!--style="display:none;"-->
+						</div>
+					</div>
+				</div>
+				
+				<div class="flexbox-item greenbox">
+					<h3>UDP-Node <span style="color:lime;">&check;</span></h3>
+					<div class="flexbox-item greenbox contentbox">
+						<h4>UDP-Communication <span style="color:lime;">&check;</span></h4>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Implement decentral meshing <span style="color:lime;">&check;</span></h4>
+							<p>Since UDP is connectionless communication, it must be ensured that messages reach the recipient. this is achieved with hole punching</p><!--style="display:none;"-->
+						</div>
+					</div>
+				</div>
+				
+				<div class="flexbox-item redbox">
+					<h3>Blockchain <span style="color:red;">&cross;</span></h3>
+					<div class="flexbox-item redbox contentbox">
+						<h4>Blockchain-Communication <span style="color:red;">&cross;</span></h4>
+						<div class="flexbox-item redbox contentbox">
+							<h4>Implement REST-API <span style="color:red;">&cross;</span></h4>
+							<p>In order to communicate with the blockchain, a REST API must be implemented. The JSON data format serves as the interface</p><!--style="display:none;"-->
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="flexbox-panel whitebox" style="flex-flow: column; justify-content: flex-start; align-items: center; width:33%;">
+				
+				<h2>Node</h2>
+				<div class="flexbox-item whitebox">
+					<div class="flexbox-item redbox">
+						<h3>object classes <span style="color:red;">&cross;</span></h3>
+						<div class="flexbox-item redbox contentbox">
+							<h4>live objects <span style="color:red;">&cross;</span></h4>
+							<p>mirroring the object data on the blockchain for real-time updates</p><!--style="display:none;"-->
+						</div>
+					</div>
+					<div class="flexbox-item redbox">
+						<h3>Contract Provider <span style="color:red;">&cross;</span></h3>
+						<div class="flexbox-item redbox contentbox">
+							<h4>providing transactions <span style="color:red;">&cross;</span></h4>
+							<p>manage the transaction requests from TCP and create blockchain transactions for the vote contract</p><!--style="display:none;"-->
+						</div>
+					</div>
+					<div class="flexbox-item redbox">
+						<h3>Game <span style="color:red;">&cross;</span></h3>
+						<div class="flexbox-item redbox contentbox">
+							<h4>Game mechanics <span style="color:red;">&cross;</span></h4>
+							<p>ensure the messages/transactions are physically correct</p><!--style="display:none;"-->
+						</div>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+	</body>
+	
+</html>
