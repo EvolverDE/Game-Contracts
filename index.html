@@ -33,6 +33,13 @@
 				padding: 5px;
 			}
 			
+			.pinkbox {
+				border: solid #f0f 3px;
+				border-radius: 10px;
+				padding: 5px;
+			}
+			
+			
 			.redbox-dotted {
 				border: dotted red 2px;
 				border-radius: 10px;
@@ -98,7 +105,6 @@
 						<p>Properties declaring the objects behave in the world</p><!--style="display:none;"-->
 					</div>
 				</div>
-				
 				<div class="flexbox-item greenbox">
 					<h3>Solarsystem <span style="color:lime;">&check;</span></h3>
 					<div class="flexbox-item greenbox contentbox">
@@ -110,11 +116,10 @@
 						<p>make sure the elements can be mined by objects that located in the solarsystem</p><!--style="display:none;"-->
 					</div>
 				</div>
-				
 				<div class="flexbox-item yellowbox">
 					<h3>Object <span style="color:yellow;">&#9711;</span></h3>
-					<div class="flexbox-item greenbox contentbox">
-						<h4>Contract Specifics <span style="color:lime;">&check;</span></h4>
+					<div class="flexbox-item yellowbox contentbox">
+						<h4>Contract Specifics <span style="color:yellow;">&#9711;</span></h4>
 						<div class="flexbox-item greenbox contentbox">
 							<h4>Set itembase <span style="color:lime;">&check;</span></h4>
 							<p>make it configurable to set the item base id to the contract</p><!--style="display:none;"-->
@@ -127,6 +132,11 @@
 							<h4>Set object location <span style="color:lime;">&check;</span></h4>
 							<p>make it configurable to set the object location to the contract</p><!--style="display:none;"-->
 						</div>
+						<div class="flexbox-item redbox contentbox">
+							<h4>Set object NFT <span style="color:red;">&cross;</span></h4>
+							<p>make it configurable to set the unique NFT of the object</p><!--style="display:none;"-->
+						</div>
+						
 					</div>
 					<div class="flexbox-item yellowbox contentbox">
 						<h4>Game Specifics <span style="color:yellow;">&#9711;</span></h4>
@@ -148,10 +158,11 @@
 						</div>
 						<div class="flexbox-item greenbox contentbox">
 							<h4>Implement docking <span style="color:lime;">&check;</span></h4>
-							<p>make it possible to dock on a object</p><!--style="display:none;"-->
+							<p>make it possible to (un)dock objects</p><!--style="display:none;"-->
 						</div>
-						<div class="flexbox-item redbox contentbox">
-							<h4>Implement scanning <span style="color:red;">&cross;</span></h4>
+						<div class="flexbox-item pinkbox contentbox">
+						<h4 style="color:yellow;">Implement scanning <span style="color:#f0f">&#9888;</span> </h4>
+							(current work)
 							<p>make it possible to scan anomalies on the solarsystem contract</p><!--style="display:none;"-->
 						</div>
 					</div>
@@ -177,7 +188,6 @@
 						</div>
 					</div>
 				</div>
-				
 				<div class="flexbox-item greenbox">
 					<h3>UDP-Node <span style="color:lime;">&check;</span></h3>
 					<div class="flexbox-item greenbox contentbox">
@@ -188,7 +198,6 @@
 						</div>
 					</div>
 				</div>
-				
 				<div class="flexbox-item redbox">
 					<h3>Blockchain <span style="color:red;">&cross;</span></h3>
 					<div class="flexbox-item redbox contentbox">
@@ -201,28 +210,149 @@
 				</div>
 			</div>
 			<div class="flexbox-panel whitebox" style="flex-flow: column; justify-content: flex-start; align-items: center; width:33%;">
-				
 				<h2>Node</h2>
 				<div class="flexbox-item whitebox">
+					<h3>Sections</h3>
 					<div class="flexbox-item redbox">
-						<h3>object classes <span style="color:red;">&cross;</span></h3>
+						<h4>Object Classes <span style="color:red;">&cross;</span></h4>
 						<div class="flexbox-item redbox contentbox">
 							<h4>live objects <span style="color:red;">&cross;</span></h4>
 							<p>mirroring the object data on the blockchain for real-time updates</p><!--style="display:none;"-->
 						</div>
 					</div>
 					<div class="flexbox-item redbox">
-						<h3>Contract Provider <span style="color:red;">&cross;</span></h3>
+						<h4>Contract Provider <span style="color:red;">&cross;</span></h4>
 						<div class="flexbox-item redbox contentbox">
 							<h4>providing transactions <span style="color:red;">&cross;</span></h4>
 							<p>manage the transaction requests from TCP and create blockchain transactions for the vote contract</p><!--style="display:none;"-->
 						</div>
 					</div>
 					<div class="flexbox-item redbox">
-						<h3>Game <span style="color:red;">&cross;</span></h3>
+						<h4>Game <span style="color:red;">&cross;</span></h4>
+						using the Godot-Engine with C#
 						<div class="flexbox-item redbox contentbox">
 							<h4>Game mechanics <span style="color:red;">&cross;</span></h4>
 							<p>ensure the messages/transactions are physically correct</p><!--style="display:none;"-->
+						</div>
+						<div class="flexbox-item redbox contentbox">
+							<h4>Game controls <span style="color:red;">&cross;</span></h4>
+							<p>implement a game control per mouse/keyboard</p><!--style="display:none;"-->
+						</div>
+						<div class="flexbox-item yellowbox contentbox">
+							<h4>Game graphics <span style="color:yellow;">&#9711;</span></h4>
+							<div class="flexbox-item redbox contentbox">
+								<h4>2D graphics <span style="color:red;">&cross;</span></h4>
+								<div class="flexbox-item redbox contentbox">
+									<h4>UI <span style="color:red;">&cross;</span></h4>
+									<p>Create a User Interface to configure and control</p><!--style="display:none;"-->
+								</div>
+								<div class="flexbox-item redbox contentbox">
+									<h4>Elements/Items/Articles <span style="color:red;">&cross;</span></h4>
+									<p>Create icons/pictures for the elements, items and some of the articles</p><!--style="display:none;"-->
+								</div>
+							</div>
+							<div class="flexbox-item yellowbox contentbox">
+								<h4>3D graphics <span style="color:yellow;">&#9711;</span></h4>
+								<div class="flexbox-item yellowbox contentbox">
+									<h4>Stations <span style="color:yellow;">&#9711;</span></h4>
+									<div class="flexbox-item redbox contentbox">
+										<h4>Asteroid Station <span style="color:red;">&cross;</span></h4>
+										<div class="flexbox-item redbox contentbox">
+											<h4>3D-Model <span style="color:red;">&cross;</span></h4>
+											<p>Create a 3D-Model of the Zeptor Medium</p><!--style="display:none;"-->
+										</div>
+										<div class="flexbox-item redbox contentbox">
+											<h4>UVW-Mapping <span style="color:red;">&cross;</span></h4>
+											<p>Unwrap the 3D-Model of the Zeptor Medium for texturing</p><!--style="display:none;"-->
+										</div>
+										<div class="flexbox-item redbox contentbox">
+											<h4>Texturing <span style="color:red;">&cross;</span></h4>
+											<p>Create a Texture for the 3D-Model of the Zeptor Medium</p><!--style="display:none;"-->
+										</div>
+									</div>
+									<div class="flexbox-item greenbox contentbox">
+										<h4>Utility Station <span style="color:lime;">&check;</span></h4>
+										<div class="flexbox-item greenbox contentbox">
+											<h4>3D-Model <span style="color:lime;">&check;</span></h4>
+											<p>Create a 3D-Model of the Zeptor Light</p><!--style="display:none;"-->
+										</div>
+										<div class="flexbox-item greenbox contentbox">
+											<h4>UVW-Mapping <span style="color:lime;">&check;</span></h4>
+											<p>Unwrap the 3D-Model of the Zeptor Light for texturing</p><!--style="display:none;"-->
+										</div>
+										<div class="flexbox-item greenbox contentbox">
+											<h4>Texturing <span style="color:lime;">&check;</span></h4>
+											<p>Create a Texture for the 3D-Model of the Zeptor Light</p><!--style="display:none;"-->
+										</div>
+									</div>
+								</div>
+								<div class="flexbox-item yellowbox contentbox">
+									<h4>Ships <span style="color:yellow;">&#9711;</span></h4>
+									<div class="flexbox-item greenbox contentbox">
+										<h4>Zeptor Light <span style="color:lime;">&check;</span></h4>
+										<div class="flexbox-item greenbox contentbox">
+											<h4>3D-Model <span style="color:lime;">&check;</span></h4>
+											<p>Create a 3D-Model of the Zeptor Light</p><!--style="display:none;"-->
+										</div>
+										<div class="flexbox-item greenbox contentbox">
+											<h4>UVW-Mapping <span style="color:lime;">&check;</span></h4>
+											<p>Unwrap the 3D-Model of the Zeptor Light for texturing</p><!--style="display:none;"-->
+										</div>
+										<div class="flexbox-item greenbox contentbox">
+											<h4>Texturing <span style="color:lime;">&check;</span></h4>
+											<p>Create a Texture for the 3D-Model of the Zeptor Light</p><!--style="display:none;"-->
+										</div>
+									</div>
+									<div class="flexbox-item greenbox contentbox">
+										<h4>Zeptor Medium <span style="color:lime;">&check;</span></h4>
+										<div class="flexbox-item greenbox contentbox">
+											<h4>3D-Model <span style="color:lime;">&check;</span></h4>
+											<p>Create a 3D-Model of the Zeptor Medium</p><!--style="display:none;"-->
+										</div>
+										<div class="flexbox-item greenbox contentbox">
+											<h4>UVW-Mapping <span style="color:lime;">&check;</span></h4>
+											<p>Unwrap the 3D-Model of the Zeptor Medium for texturing</p><!--style="display:none;"-->
+										</div>
+										<div class="flexbox-item greenbox contentbox">
+											<h4>Texturing <span style="color:lime;">&check;</span></h4>
+											<p>Create a Texture for the 3D-Model of the Zeptor Medium</p><!--style="display:none;"-->
+										</div>
+									</div>
+									<div class="flexbox-item greenbox contentbox">
+										<h4>Zeptor Heavy <span style="color:lime;">&check;</span></h4>
+										<div class="flexbox-item greenbox contentbox">
+											<h4>3D-Model <span style="color:lime;">&check;</span></h4>
+											<p>Create a 3D-Model of the Zeptor Medium</p><!--style="display:none;"-->
+										</div>
+										<div class="flexbox-item greenbox contentbox">
+											<h4>UVW-Mapping <span style="color:lime;">&check;</span></h4>
+											<p>Unwrap the 3D-Model of the Zeptor Medium for texturing</p><!--style="display:none;"-->
+										</div>
+										<div class="flexbox-item greenbox contentbox">
+											<h4>Texturing <span style="color:lime;">&check;</span></h4>
+											<p>Create a Texture for the 3D-Model of the Zeptor Medium</p><!--style="display:none;"-->
+										</div>
+									</div>
+									
+									
+									<div class="flexbox-item yellowbox contentbox">
+										<h4>Unknown <span style="color:yellow;">&#9711;</span></h4>
+										<div class="flexbox-item greenbox contentbox">
+											<h4>3D-Model <span style="color:lime;">&check;</span></h4>
+											<p>Create a 3D-Model of the Unknown</p><!--style="display:none;"-->
+										</div>
+										<div class="flexbox-item greenbox contentbox">
+											<h4>UVW-Mapping <span style="color:lime;">&check;</span></h4>
+											<p>Unwrap the 3D-Model of the Unknown for texturing</p><!--style="display:none;"-->
+										</div>
+										<div class="flexbox-item yellowbox contentbox">
+											<h4>Texturing <span style="color:yellow;">&#9711;</span></h4>
+											<p>Create a Texture for the 3D-Model of the Unknown</p><!--style="display:none;"-->
+										</div>
+									</div>
+									
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
