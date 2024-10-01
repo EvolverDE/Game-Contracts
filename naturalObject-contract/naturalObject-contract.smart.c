@@ -22,28 +22,36 @@ const long ONE_WHOLE = 100000000;
 #define GAME_SPECIFIC 1_000_002
 
 // sub CONTRACT_SPECIFIC methods
-#define AUTHENTICATION 1_001_005
-#define CREATE_STATION 1_001_006
+#define GAMEVOTE_CONTRACT 1_001_000
+//#define ITEMBASE_CONTRACT 1_001_001
+#define LOCATION_CONTRACT 1_001_002
+#define TEMPAUTH_CONTRACT 1_001_003
+//#define SET_ITEMBASE 1_001_004
+//#define SET_OWNER 1_001_005
+//#define SET_NFT_CONTRACT 1_001_006
+#define AUTHENTICATE 1_001_007
+#define CREATE_STATION 1_001_008
 
 // sub GAME_SPECIFIC methods 
-#define ACT 1_002_001
-#define BUILD 1_002_002
-#define DELIVER 1_002_003
-#define DESCRIBE 1_002_004
-#define DOCK 1_002_005
-#define EQUIP 1_002_006
-#define EXPLODE 1_002_007
-#define INSURE 1_002_008
-#define INVENT 1_002_009
+//#define ACT 1_002_001
+//#define BUILD 1_002_002
+//#define DELIVER 1_002_003
+//#define DESCRIBE 1_002_004
+//#define DOCK 1_002_005
+//#define EQUIP 1_002_006
+//#define EXPLODE 1_002_007
+//#define INSURE 1_002_008
+//#define INVENT 1_002_009
 #define MINING 1_002_010
-#define REFINE 1_002_011
-#define REPAIR 1_002_012
+//#define REFINE 1_002_011
+//#define REPAIR 1_002_012
 #define SCAN 1_002_013
-#define STORE 1_002_014
-#define TREAT 1_002_015
+//#define STORE 1_002_014
+//#define TREAT 1_002_015
 
 // (ext)map flags
 // standard
+#define HASH 1_003_000
 #define PROVIDER_ID 1_003_001
 #define ACTOR_ID 1_003_002
 #define TARGET_ID 1_003_003
@@ -56,9 +64,105 @@ const long ONE_WHOLE = 100000000;
 
 // vote contract specific
 #define DEPOSITMENT 1_004_001
+//#define ENTITLEMENT 1_004_002
+//#define ELECTIONS 1_004_003
+//#define TIMEOUT 1_004_004
+//#define AGREEERS 1_004_005
+//#define REJECTERS 1_004_006
+//#define VOTEPOINTS 1_004_007
+
+
+// item base specific
+// item properties
+//#define CATEGORY 1_005_001
+#define TYPE 1_005_002
+//#define SIZE 1_005_003
+//#define PROPERTIES 1_005_004
+//#define DEFAULT_SPEED 1_005_005
+//#define DEFAULT_STRUCTURE 1_005_006
+//#define DEFAULT_ARMOR 1_005_007
+//#define DEFAULT_SHIELD 1_005_008
+//#define DEFAULT_CARGO 1_005_009
+//#define COCKPITS 1_005_010
+//#define SLOT 1_005_011
+//#define SLOTS 1_005_012
+//#define HANGAR 1_005_013
+//#define HANGARS 1_005_014
+
+// types
+//#define GUN 1_006_001
+//#define TURRET 1_006_002
+//#define PULPIT 1_006_003
+//#define LAUNCHER 1_006_004
+//#define ENGINE 1_006_005
+//#define SHIELD 1_006_006
+//#define CARGO 1_006_007
+//#define SCANNER 1_006_008
+//#define DRONE 1_006_009
+
+//#define FACILITY 1_006_010
+//#define HANGAR_MODULE 1_006_011
+//#define REFINERY_FACILITY 1_006_012
+//#define ASSEMBLE_FACILITY 1_006_013
+//#define ADMINISTRATIVE_FACILITY 1_006_014
+//#define OBSERVATORY_FACILITY 1_006_015
+//#define TRADE_HUB 1_006_016
+
+//#define SHIP 1_006_017
+//#define STATION 1_006_018
+#define ASTEROID 1_006_019
+//#define MOON 1_006_020
+#define PLANET 1_006_021
+//#define STAR 1_006_022
+
+// slot and hangar types
+#define INTERNAL 1_007_001
+#define EXTERNAL 1_007_002
+
+// slot types
+#define AMMO_SLOT 1_007_003
+#define GUN_SLOT 1_007_004
+#define TURRET_SLOT 1_007_005
+#define PULPIT_SLOT 1_007_006
+#define LAUNCHER_SLOT 1_007_007
+#define ENGINE_SLOT 1_007_008
+#define SHIELD_SLOT 1_007_009
+#define CARGO_SLOT 1_007_010
+#define SCANNER_SLOT 1_007_011
+#define FACILITY_SLOT 1_007_012
+
+// hangar types
+#define DRONE_HANGAR 1_007_013
+#define SHIP_HANGAR 1_007_014
+#define STATION_HANGAR 1_007_015
+
+// sizes and weights
+//#define SMALL 1_008_001
+//#define MEDIUM 1_008_002
+//#define LARGE 1_008_003
+//#define XLARGE 1_008_004
+//#define CAPITAL 1_008_005
+
+//#define LIGHT 1_008_006
+//#define HEAVY 1_008_007
 
 // item tree
 #define ELEMENT 1_100_000
+//#define REFINED 1_100_001
+//#define COMMON 1_100_002
+//#define ADVANCED 1_100_003
+//#define COMPONENT 1_100_004
+//#define SYSTEM 1_100_005
+//#define ARTICLE 1_100_006
+
+// artificialObject contract specific
+//#define OWNER 1_009_001
+#define STATUS 1_009_002
+//#define AMOUNT 1_009_003
+
+// extContract flags
+//#define ACTOR 1_010_001
+//#define TARGET 1_010_002
 
 // Metals(17)
 #define IRON 26
@@ -100,9 +204,15 @@ const long ONE_WHOLE = 100000000;
 // basic contract
 long firstStart = 1;
 long maxQuantity = 0;
-long authIDs[10];
 long sendBuffer[8];
 long currentFee = ONE_WHOLE;
+
+// advanced
+long status = 0;
+long gameVoteContract = 0;
+long locationContract = 0;
+long objectName = 0; // Article = sol00001
+long objectType = 0; // solarsystem; asteroid; ...
 
 // specific
 long metals[17];
@@ -137,8 +247,12 @@ constructor();
 
 void constructor(void) {
     // this function will be called only once on first activation.
-	authIDs[0] = 1111; //TODO: set initial ID
+	//TODO: set initial ID
 	currentPOLL.hash = 0;
+	gameVoteContract = 1111;
+	status = 0;
+	setMapValue(GAMEVOTE_CONTRACT, 0, 1111);
+	setMapValue(STATUS, 0, 0);
 }
 
 void getTxDetails(void)
@@ -168,7 +282,7 @@ void getPollDetails(long hashValue, long pollSaveID)
         currentPOLL.parameter4 = getExtMapValue(PARAMETER4, hashValue, pollSaveID);
     }
 
-    currentPOLL.partOfPoll = currentTX.message[1];
+    currentPOLL.partOfPoll = currentTX.message[7];
 
 }
 
@@ -186,30 +300,49 @@ void main(void)
         // if sender is not authenticated then break
         if (IsAuthenticated(currentTX.sender) == 0)
         {
-            GenerateElements();
+            if(currentTX.amount > 1000_0000_0000)
+			{
+				GenerateElements();
+			}
             break;
         }
         else
         {
-            // ### income ###
-            // currentTX.sender = voteContract
-            // currentTX.message[0] = currentHash
-            // currentTX.message[1] = ACTOR (wich part on this poll)
-            // currentTX.message[2] = free
-            // currentTX.message[3] = free
-            // currentTX.message[4] = free
-            // currentTX.message[5] = free
-            // currentTX.message[6] = free
-            // currentTX.message[7] = free
+             if (getCodeHashOf(currentTX.sender) != 0)
+			 {
+				 // currentTX.sender is a contract
 
-            if (getCodeHashOf(currentTX.sender) != 0)
-            {
-                getPollDetails(currentTX.message[0], currentTX.sender);
-            }
-            else
-            {
-                break;
-            }
+				 if (currentTX.message[0] == HASH)
+				 {
+					 getPollDetails(currentTX.message[1], gameVoteContract);
+				 }
+				 else if (firstStart == 1 && currentTX.message[0] == 18657918865985095) // 18657918865985095 = BIGBANG
+				 {
+					 long station = getExtMapValue(currentTX.message[0], 0, currentTX.sender);
+					 if (getCodeHashOf(station) != 0)
+					 {
+						 objectType = currentTX.message[1];
+						 status = 1;
+						 firstStart = 0;
+						 if (objectType == ASTEROID)
+						 {
+							 locationContract = currentTX.message[2];
+							 setMapValue(LOCATION_CONTRACT, 0, locationContract);
+
+							 SetSendBufferForTargetContract(CONTRACT_SPECIFIC, CREATE_STATION, 0, 0, 0, 0, 0, 0);
+							 SendBufferWithAmount(ONE_WHOLE, station);
+
+						 }
+						 setMapValue(STATUS, 0, 1);
+						 setMapValue(TYPE, 0, objectType);
+					 }
+				 }
+
+			 }
+			 else
+			 {
+				 break;
+			 }
 
         }
 
@@ -243,9 +376,17 @@ void ContractSpecific(void)
 
     switch (currentPOLL.subMethod)
     {
-        case AUTHENTICATION:
-            authIDs[currentPOLL.parameter] = currentPOLL.actorID;
-            break;
+        case TYPE:
+			objectName = currentPOLL.parameter;
+			objectType = PLANET;
+			break;
+		case AUTHENTICATE:
+			setMapValue(TEMPAUTH_CONTRACT, currentPOLL.actorID, SetTimeOut(16));
+			break;
+		case LOCATION_CONTRACT:
+			locationContract = currentPOLL.parameter;
+			setMapValue(LOCATION_CONTRACT, 0, currentPOLL.parameter);
+			break;
     }
 }
 void GenerateElements(void)
@@ -380,13 +521,6 @@ void GenerateElements(void)
         setMapValue(ELEMENT, selectionList[i], quantities[i]);
     }
 
-	// by first run, create station with given currentTX.message[0] as contractID of station
-    if (firstStart == 1 && getCodeHashOf(currentTX.message[0]) != 0)
-    {
-        firstStart = 0;
-        CreateStartStation(currentTX.message[0]);
-    }
-
 }
 void GameSpecific(void)
 {
@@ -407,6 +541,9 @@ void GameSpecific(void)
             // TODO: well, you can actually mine the resources of a solar system, yes.
             Mining();
             break;
+		case SCAN:
+			Scan();
+			break;
         default:
             break;
     }
@@ -415,23 +552,44 @@ void GameSpecific(void)
 
 // sub methods
 
-void CreateStartStation(long startStationID)
-{
-    SetSendBufferForTargetContract(CONTRACT_SPECIFIC, CREATE_STATION, 0, 0, 0, 0, 0, 0);
-    SendBufferWithAmount(ONE_WHOLE, startStationID);
-}
 void Mining(void)
 {
-    setMapValue(ELEMENT, currentPOLL.parameter, getMapValue(ELEMENT, currentPOLL.parameter) - currentPOLL.parameter2);
-    maxQuantity -= currentPOLL.parameter2;
-    
-    SetSendBufferForTargetContract(GAME_SPECIFIC, MINING, currentPOLL.parameter, currentPOLL.parameter2, 0, 0, currentPOLL.actorID, currentPOLL.parameter4);
-    SendBufferWithAmount(ONE_WHOLE, currentPOLL.parameter4);
-    
-    // 123 * (12369_2500_0000 * 10000 / 18517_4999_9866) * 10000 - 1_0000_0000 = ~81_1517_0000
-    sendAmount(currentPOLL.parameter2 * (Get_Current_Balance() * 10000 / maxQuantity) * 10000 - currentFee, currentPOLL.providerID);
-
+     if(status == 1)
+	 {
+		 long available = getMapValue(ELEMENT, currentPOLL.parameter);
+		 long miningQuantity = currentPOLL.parameter2 / ONE_WHOLE;
+		 if (available >= miningQuantity)
+		 {
+			 setMapValue(ELEMENT, currentPOLL.parameter, available - miningQuantity);
+			 maxQuantity -= miningQuantity;
+	 
+			 SetSendBufferForTargetContract(HASH, currentPOLL.hash, 0, 0, 0, 0, 0, currentPOLL.partOfPoll);
+			 SendBufferWithAmount(ONE_WHOLE, currentPOLL.parameter4);
+	 
+			 // 123 * (12369_2500_0000 * 10000 / 18517_4999_9866) * 10000 - 1_0000_0000 = ~81_1517_0000
+			 sendAmount(currentPOLL.parameter2 * (Get_Current_Balance() * 10000 / maxQuantity) * 10000 - currentFee, currentPOLL.providerID);
+		 }
+	 }
 }
+void Scan()
+{
+	if (status == 0 && currentTX.sender == gameVoteContract)
+	{
+		setMapValue(TEMPAUTH_CONTRACT, currentPOLL.targetID, SetTimeOut(15));
+
+		status = 1;
+		setMapValue(STATUS, 0, 1);
+	}
+	else if (status == 1 && IsAuthenticated(currentTX.sender) == 1)
+	{
+		locationContract = getExtMapValue(LOCATION_CONTRACT, 0, currentTX.sender);
+		setMapValue(LOCATION_CONTRACT, 0, locationContract);
+
+	}
+}
+
+
+
 
 // support methods
 void CalculateElementQuantities(long signaAmount)
@@ -468,16 +626,36 @@ long CalculatePrevalence(long toRound)
 }
 long IsAuthenticated(long sender)
 {
+	if (sender == gameVoteContract || GetTimeIsUp(getMapValue(TEMPAUTH_CONTRACT, sender)) == 0)
+	{
+		return 1;
+	}
 
-    for (long i = 0; i < authIDs.length; i++)
-    {
-        if (authIDs[i] == sender)
-        {
-            return 1;
-        }
-    }
+	return 0;
+}
 
-    return 0;
+long SetTimeOut(long time) { return Get_Block_Timestamp() + ((time / 4) << 32); } //+(360 << 32); 15 * ~4min/block = 60min = 1 hour locktime
+
+// 0 = time is not up
+// 1 = time is up
+// 2 = error
+long GetTimeIsUp(long timeOut)
+{
+
+	if (timeOut == 0)
+	{
+		return 2;
+	}
+
+	if (Get_Block_Timestamp() < timeOut)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+
 }
 
 // contract methods
