@@ -1,10 +1,14 @@
-/**
-	* @author hansmeuller
-	* i´m doing my part
-	*
-	* expanded by evolver
-*/
 
+/**
+ * @author evolver
+ * this smart contract implements a artificial contract for ingame article objects (like spaceships, stations, ect.)
+ * features:
+ * - only responds to authenticated IDs (like gameVote-contract as initial contract)
+ * - represents the data structure of an artificial in-game object
+ * - interact with different game logic methods (like build, equip, dock, scan, ect.)
+ * - interacts with other game contracts (like natural object contracts)
+ */
+ 
 #include APIFunctions
 
 #program name miningStationContract

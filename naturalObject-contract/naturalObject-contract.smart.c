@@ -1,6 +1,11 @@
 /**
  * @author evolver
- * this smart contract implements a solar system
+ * this smart contract implements a natural object contract
+ * features:
+ * - only responds to authenticated IDs (like gameVote-contract as initial contract)
+ * - represents the data structure of an natural in-game object
+ * - interact with different game logic methods (like mining and scan)
+ * - interacts with other game contracts (like artificial object contracts)
  */
 
 #include APIFunctions
