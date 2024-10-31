@@ -204,9 +204,9 @@ constructor();
 
 void constructor(void) {
     // this function will be called only once on first activation.
-	authIDs[0] = 1111; //TODO: set initial ID
+	gameVoteContract = 1111; //TODO: set initial ID
 	currentPOLL.hash = 0;
-	currentPOLL.actorID = 0;
+	setMapValue(GAMEVOTE_CONTRACT, 1, 1111);
 }
 
 void getTxDetails(void)

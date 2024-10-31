@@ -256,8 +256,8 @@ void constructor(void) {
 	currentPOLL.hash = 0;
 	gameVoteContract = 1111;
 	status = 0;
-	setMapValue(GAMEVOTE_CONTRACT, 0, 1111);
-	setMapValue(STATUS, 0, 0);
+	setMapValue(GAMEVOTE_CONTRACT, 1, 1111);
+	setMapValue(STATUS, 1, 0);
 }
 
 void getTxDetails(void)
@@ -332,14 +332,14 @@ void main(void)
 						 if (objectType == ASTEROID)
 						 {
 							 locationContract = currentTX.message[2];
-							 setMapValue(LOCATION_CONTRACT, 0, locationContract);
+							 setMapValue(LOCATION_CONTRACT, 1, locationContract);
 
 							 SetSendBufferForTargetContract(CONTRACT_SPECIFIC, CREATE_STATION, 0, 0, 0, 0, 0, 0);
 							 SendBufferWithAmount(ONE_WHOLE, station);
 
 						 }
-						 setMapValue(STATUS, 0, 1);
-						 setMapValue(TYPE, 0, objectType);
+						 setMapValue(STATUS, 1, 1);
+						 setMapValue(TYPE, 1, objectType);
 					 }
 				 }
 
@@ -390,7 +390,7 @@ void ContractSpecific(void)
 			break;
 		case LOCATION_CONTRACT:
 			locationContract = currentPOLL.parameter;
-			setMapValue(LOCATION_CONTRACT, 0, currentPOLL.parameter);
+			setMapValue(LOCATION_CONTRACT, 1, currentPOLL.parameter);
 			break;
     }
 }
@@ -583,12 +583,12 @@ void Scan()
 		setMapValue(TEMPAUTH_CONTRACT, currentPOLL.targetID, SetTimeOut(15));
 
 		status = 1;
-		setMapValue(STATUS, 0, 1);
+		setMapValue(STATUS, 1, 1);
 	}
 	else if (status == 1 && IsAuthenticated(currentTX.sender) == 1)
 	{
-		locationContract = getExtMapValue(LOCATION_CONTRACT, 0, currentTX.sender);
-		setMapValue(LOCATION_CONTRACT, 0, locationContract);
+		locationContract = getExtMapValue(LOCATION_CONTRACT, 1, currentTX.sender);
+		setMapValue(LOCATION_CONTRACT, 1, locationContract);
 
 	}
 }

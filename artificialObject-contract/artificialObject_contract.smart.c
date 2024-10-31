@@ -16,8 +16,8 @@
 #program activationAmount .5
 
 #pragma maxAuxVars 4
-#pragma maxConstVars 3
-#pragma optimizationLevel 1
+#pragma maxConstVars 1
+#pragma optimizationLevel 2
 #pragma version 2.2.1
 
 #define ONE_WHOLE 100000000
@@ -31,13 +31,15 @@
 // sub CONTRACT_SPECIFIC methods
 #define GAMEVOTE_CONTRACT 1_001_000
 #define ITEMBASE_CONTRACT 1_001_001
-#define LOCATION_CONTRACT 1_001_002
-#define TEMPAUTH_CONTRACT 1_001_003
-#define SET_ITEMBASE 1_001_004
-#define SET_OWNER 1_001_005
-#define SET_NFT_CONTRACT 1_001_006
-#define AUTHENTICATE 1_001_007
-#define CREATE_STATION 1_001_008
+#define MARKETPLACE_CONTRACT 1_001_002
+#define LOCATION_CONTRACT 1_001_003
+#define TEMPAUTH_CONTRACT 1_001_004
+#define SET_ITEMBASE 1_001_005
+#define SET_MARKETPLACE 1_001_006
+#define SET_OWNER 1_001_007
+#define SET_NFT_CONTRACT 1_001_008
+#define AUTHENTICATE 1_001_009
+#define CREATE_STATION 1_001_010
 
 // sub GAME_SPECIFIC methods 
 //#define ACT 1_002_001
@@ -54,7 +56,7 @@
 #define REPAIR 1_002_012
 #define SCAN 1_002_013
 #define STORE 1_002_014
-//#define TREAT 1_002_015
+#define TRADE 1_002_015
 
 // (ext)map flags
 // standard
@@ -113,7 +115,7 @@
 #define ASSEMBLE_FACILITY 1_006_013
 //#define ADMINISTRATIVE_FACILITY 1_006_014
 #define OBSERVATORY_FACILITY 1_006_015
-//#define TRADE_HUB 1_006_016
+#define TRADE_HUB 1_006_016
 
 #define SHIP 1_006_017
 #define STATION 1_006_018
@@ -139,9 +141,9 @@
 #define FACILITY_SLOT 1_007_012
 
 // Hangar types
-//#define DRONE_HANGAR 1_007_012
-//#define SHIP_HANGAR 1_007_013
-//#define STATION_HANGAR 1_007_014
+//#define DRONE_HANGAR 1_007_013
+//#define SHIP_HANGAR 1_007_014
+//#define STATION_HANGAR 1_007_015
 
 // sizes and weights
 //#define SMALL 1_008_017
@@ -155,22 +157,26 @@
 
 
 // item tree
-//#define ELEMENT 1_100_000
-#define REFINED 1_100_001
-//#define COMMON 1_100_002
-//#define ADVANCED 1_100_003
-//#define COMPONENT 1_100_004
-//#define SYSTEM 1_100_005
-//#define ARTICLE 1_100_006
+//#define ELEMENT 1_009_000
+#define REFINED 1_009_001
+//#define COMMON 1_009_002
+//#define ADVANCED 1_009_003
+//#define COMPONENT 1_009_004
+//#define SYSTEM 1_009_005
+//#define ARTICLE 1_009_006
+
+// marketplace contract specific
+//#define SYMBOL 1_010_001
+//#define PRICE 1_010_002
 
 // zeptorlight contract specific
-#define OWNER 1_009_001
-#define STATUS 1_009_002
+#define OWNER 1_011_001
+#define STATUS 1_011_002
 //#define AMOUNT 1_009_003
 
 // extContract flags
-#define ACTOR 1_010_001
-#define TARGET 1_010_002
+#define ACTOR 1_012_001
+#define TARGET 1_012_002
 
 // contract attributes
 // basic contract 
@@ -183,6 +189,7 @@ long contractID = 0;
 long status = 0;
 long gameVoteContract = 0;
 long itemBaseContract = 0;
+long marketplaceContract = 0;
 long locationContract = 0;
 long objectName = 0; // Article = MngStati
 long objectType = 0; // smallShip; mediumStation
@@ -261,8 +268,8 @@ void constructor(void) {
 	contractID = GetContractID();
 	gameVoteContract = 1111;
 	status = 0;
-	setMapValue(GAMEVOTE_CONTRACT, 0, 1111);
-	setMapValue(STATUS, 0, 0);
+	setMapValue(GAMEVOTE_CONTRACT, 1, 1111);
+	setMapValue(STATUS, 1, 0);
 }
 
 long GetContractID() {
@@ -469,27 +476,32 @@ void ContractSpecific(void) {
 			itemBaseContract = currentPOLL.parameter;
 			setMapValue(ITEMBASE_CONTRACT, 1, currentPOLL.parameter);
 			break;
+		case SET_MARKETPLACE:
+			marketplaceContract = currentPOLL.parameter;
+			setMapValue(MARKETPLACE_CONTRACT, 1, currentPOLL.parameter);
+			break;
 		case TYPE:
 			objectName = currentPOLL.parameter;
 			objectType = getExtMapValue(TYPE, objectName, itemBaseContract);
+			setMapValue(TYPE, objectType, objectName);
 			break;
 		case SET_OWNER:
-			setMapValue(OWNER, 0, currentPOLL.actorID);
+			setMapValue(OWNER, 1, currentPOLL.actorID);
 			break;
 		case SET_NFT_CONTRACT:
-			setMapValue(SET_NFT_CONTRACT, 0, currentPOLL.parameter);
+			setMapValue(SET_NFT_CONTRACT, 1, currentPOLL.parameter);
 			break;
 		case AUTHENTICATE:
 			setMapValue(TEMPAUTH_CONTRACT, currentPOLL.parameter, SetTimeOut(16));
 			break;
 		case LOCATION_CONTRACT:
 			locationContract = currentPOLL.parameter;
-			setMapValue(LOCATION_CONTRACT, 0, currentPOLL.parameter);
+			setMapValue(LOCATION_CONTRACT, 1, currentPOLL.parameter);
 			break;
 		case CREATE_STATION:
 			if (getCodeHashOf(currentTX.sender) != 0 && currentTX.sender == locationContract && objectType == STATION){
 				status = 1;
-				setMapValue(STATUS, 0, 1);
+				setMapValue(STATUS, 1, 1);
 				getPropertyDetails();
 				setMapValue(SLOT, 1, 5576974018634211683); // MedRfFac = 5576974018634211683
 				setMapValue(SLOT, 2, 5576973945837871459); // MedAsFac = 5576973945837871459
@@ -531,6 +543,9 @@ void GameSpecific(void) {
 			break;
 		case STORE:
 			Store();
+			break;
+		case TRADE:
+			Trade();
 			break;
 		default:
 			break;
@@ -607,7 +622,7 @@ void Build(void) {
                 if (status == 0)
                 {
                     status = 1;
-                    setMapValue(STATUS, 0, 1);
+                    setMapValue(STATUS, 1, 1);
                     getPropertyDetails();
                 }
                 else
@@ -671,13 +686,13 @@ void Dock(void) {
                 {
                     // undock 
                     // set the location of this object to the location of the target object
-                    locationContract = getExtMapValue(LOCATION_CONTRACT, 0, currentPOLL.targetID);
-                    setMapValue(LOCATION_CONTRACT, 0, locationContract);
+                    locationContract = getExtMapValue(LOCATION_CONTRACT, 1, currentPOLL.targetID);
+                    setMapValue(LOCATION_CONTRACT, 1, locationContract);
                 } else {
                     // dock
                     // set the location of this object to the target object
                     locationContract = currentPOLL.targetID;
-                    setMapValue(LOCATION_CONTRACT, 0, currentPOLL.targetID);
+                    setMapValue(LOCATION_CONTRACT, 1, currentPOLL.targetID);
                 }
             
             } else {
@@ -746,7 +761,7 @@ void Equip(void) {
 void Explode(void) {
 	// TODO: Test
 	// station destroyed/not exist
-	setMapValue(STATUS, 0, 0);
+	setMapValue(STATUS, 1, 0);
 	long count = getExtMapValue(INVENT, objectName, itemBaseContract);
 	for (long i = 1; i <= count; i++) {
 		setMapValue(BUILD, getExtMapValue(PARAMETER2, getExtMapValue(objectName, i, itemBaseContract), gameVoteContract), 0);
@@ -762,7 +777,7 @@ void Mining(void) {
     if ((getCodeHashOf(currentPOLL.targetID) != 0 || getCodeHashOf(currentPOLL.actorID) == 0) && currentPOLL.parameter4 == contractID)
     {
         SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2);
-        //if (IsNatualObject(getExtMapValue(TYPE, 0, currentPOLL.targetID)) == 1)
+        //if (IsNatualObject(getExtMapValue(TYPE, 1, currentPOLL.targetID)) == 1)
         //{
         //    if(getExtMapValue(ELEMENT, currentPOLL.parameter, currentPOLL.targetID) >= currentPOLL.parameter2 / ONE_WHOLE)
         //    {
@@ -771,8 +786,8 @@ void Mining(void) {
         //}
         //else
         //{
-        //    long parent = getExtMapValue(LOCATION_CONTRACT, 0, currentPOLL.targetID);
-        //    if (IsNatualObject(getExtMapValue(TYPE, 0, parent)) == 1)
+        //    long parent = getExtMapValue(LOCATION_CONTRACT, 1, currentPOLL.targetID);
+        //    if (IsNatualObject(getExtMapValue(TYPE, 1, parent)) == 1)
         //    {
         //        if (getExtMapValue(ELEMENT, currentPOLL.parameter, parent) >= currentPOLL.parameter2 / ONE_WHOLE)
         //        {
@@ -877,6 +892,70 @@ void Store(void) {
     }
     
 }
+void Trade(void){
+	/* incoming message
+	* currentPOLL.mainMethod = GAME_SPECIFIC
+	* currentPOLL.subMethod = TRADE
+	* currentPOLL.parameter = slotNumber (1...n their must be the TRADE_HUB)
+	* currentPOLL.parameter2 = IRON
+	* currentPOLL.parameter3 = 123
+	* currentPOLL.parameter4 = 10000 (origin actor)
+	* currentPOLL.actorID = 7777 (marketplace contract)
+	* currentPOLL.targetID = 3333 (this contract)
+	* currentPOLL.partOfPoll = TARGET
+	*/
+
+	if (status == 1)
+	{
+		// check the trade_hub at slotnumber
+		getArticleDetails(getMapValue(SLOT, currentPOLL.parameter));
+		if (currentArticle.type == TRADE_HUB)
+		{
+			/* get item out
+			* currentPOLL.mainMethod = GAME_SPECIFIC
+			* currentPOLL.subMethod = TRADE
+			* currentPOLL.parameter = IRON
+			* currentPOLL.parameter2 = 123
+			* currentPOLL.parameter3 = 7777 (marketplace contract)
+			* currentPOLL.parameter4 = 10000 (origin actor (OWNER of item on this (station) contract))
+			* currentPOLL.actorID = 10000 (origin actor (OWNER of item on this (station) contract))
+			* currentPOLL.targetID = 3333 (this contract)
+			* currentPOLL.partOfPoll = ACTOR
+			*/
+			currentPOLL.parameter = currentPOLL.parameter2; // IRON
+			currentPOLL.parameter2 = currentPOLL.parameter3; // 123
+			currentPOLL.parameter3 = currentPOLL.actorID; // save marketplace ID temporary
+			currentPOLL.actorID = currentPOLL.parameter4; // set actorID to the origin OWNER
+			currentPOLL.partOfPoll = ACTOR; // set ACTOR to get item OUT of store
+			
+			// check if enough amount of item is stored and owned by origin OWNER
+			if (getMapValue(currentPOLL.parameter, GetWichHash(STORE)) >= currentPOLL.parameter2)
+			{
+				Store();
+
+			   /* set item in
+			   * currentPOLL.mainMethod = GAME_SPECIFIC
+			   * currentPOLL.subMethod = TRADE
+			   * currentPOLL.parameter = IRON
+			   * currentPOLL.parameter2 = 123
+			   * currentPOLL.parameter3 = 7777 (marketplace contract)
+			   * currentPOLL.parameter4 = 10000 (origin actor (OWNER of item on this (station) contract))
+			   * currentPOLL.actorID = 7777 (marketplace contract)
+			   * currentPOLL.targetID = 3333 (this contract)
+			   * currentPOLL.partOfPoll = TARGET
+			   */
+
+				currentPOLL.actorID = currentPOLL.parameter3; // set actorID to the marketplace
+				currentPOLL.partOfPoll = TARGET; // set TARGET to set item INTO the store
+				Store();
+			}
+
+		}
+
+	}
+}
+
+
 // support methods
 long CheckSubItems(long objectID, long needMaterialCount, long wishAmount, long targetID) {
 
@@ -934,7 +1013,7 @@ long CheckSubItems(long objectID, long needMaterialCount, long wishAmount, long 
             }
             else
             {
-                materialAvailableAmount = GetAmountAvailable(material);
+                materialAvailableAmount = getMapValue(material, GetWichHash(STORE));
             }
         }
 
@@ -959,8 +1038,8 @@ long CheckSubItems(long objectID, long needMaterialCount, long wishAmount, long 
 
 long IsAuthenticated(long sender)
 {
-    if(sender == gameVoteContract || sender == itemBaseContract || sender == locationContract || GetTimeIsUp(getMapValue(TEMPAUTH_CONTRACT, sender)) == 0 || getExtMapValue(LOCATION_CONTRACT, 0, sender) == contractID)
-    {
+    if(sender == gameVoteContract || sender == itemBaseContract || sender == marketplaceContract || sender == locationContract || GetTimeIsUp(getMapValue(TEMPAUTH_CONTRACT, sender)) == 0 || getExtMapValue(LOCATION_CONTRACT, 1, sender) == contractID)
+	{
         return 1;
     }
 
@@ -1067,7 +1146,7 @@ void SetItemIntoCargo(long item, long amount) {
 }
 void GetItemOutOfCargo(long item, long amount) {
 
-    long amountAvailable = GetAmountAvailable(item);
+    long amountAvailable = getMapValue(item, GetWichHash(STORE));
     if(amountAvailable > amount)
     {
         amountAvailable = amountAvailable - amount;
@@ -1112,11 +1191,6 @@ void UndockObject(long objectContract) {
 }
 
 
-long GetAmountAvailable(long item) {
-	long x = getMapValue(item, GetWichHash(STORE));
-	return x;
-}
-
 long GetWich(void) {
 	if (objectType == STATION) {
 		return currentPOLL.actorID;
@@ -1125,8 +1199,7 @@ long GetWich(void) {
 	return objectName;
 }
 long GetWichHash(long type) {
-	long y = GetB3FromHash256(type, GetWich(), 0, 0);
-	return y;
+	return GetB3FromHash256(type, GetWich(), 0, 0);
 }
 
 long SetTimeOut(long time) { return Get_Block_Timestamp() + ((time / 4) << 32); } //+(360 << 32); 15 * ~4min/block = 60min = 1 hour locktime

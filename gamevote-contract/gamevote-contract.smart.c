@@ -226,7 +226,7 @@ void constructor(void) {
 	
     // this function will be called only once on first activation.
     currentPOLL.hash = 0;
-	setMapValue(18657918865985095, 0, 0); // 18657918865985095 = BIGBANG
+	setMapValue(18657918865985095, 1, 0); // 18657918865985095 = BIGBANG
 }
 
 void getTxDetails()
@@ -420,9 +420,9 @@ void MainMethod(long type)
 			Execute(1);
 		}
 	}
-	else if (IsIDOK(currentTX.sender, 0) != 0 && getCodeHashOf(currentTX.message[1]) != 0 && getCodeHashOf(currentTX.message[2]) != 0 && getCodeHashOf(currentTX.message[3]) != 0 && getMapValue(18657918865985095, 0) == 0)
+	else if (IsIDOK(currentTX.sender, 0) != 0 && getCodeHashOf(currentTX.message[1]) != 0 && getCodeHashOf(currentTX.message[2]) != 0 && getCodeHashOf(currentTX.message[3]) != 0 && getMapValue(18657918865985095, 1) == 0)
 	{
-		setMapValue(18657918865985095, 0, currentTX.message[3]); // 18657918865985095 = BIGBANG
+		setMapValue(18657918865985095, 1, currentTX.message[3]); // 18657918865985095 = BIGBANG
 		SetSendBufferForTargetContract(18657918865985095, STAR, 0, 0, 0, 0, 0, 0);
 		SendBufferWithAmount(ONE_WHOLE, currentTX.message[1]);
 		SetSendBufferForTargetContract(18657918865985095, ASTEROID, currentTX.message[1], 0, 0, 0, 0, 0);
