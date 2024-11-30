@@ -32,13 +32,15 @@ const long ONE_WHOLE = 100000000;
 // sub CONTRACT_SPECIFIC methods
 #define GAMEVOTE_CONTRACT 1_001_000
 //#define ITEMBASE_CONTRACT 1_001_001
-//#define LOCATION_CONTRACT 1_001_002
-#define TEMPAUTH_CONTRACT 1_001_003
-//#define SET_ITEMBASE 1_001_004
-//#define SET_OWNER 1_001_005
-//#define SET_NFT_CONTRACT 1_001_006
-//#define AUTHENTICATE 1_001_007
-//#define CREATE_STATION 1_001_008
+//#define MARKETPLACE_CONTRACT 1_001_002
+//#define LOCATION_CONTRACT 1_001_003
+#define TEMPAUTH_CONTRACT 1_001_004
+//#define SET_ITEMBASE 1_001_005
+//#define SET_MARKETPLACE 1_001_006
+//#define SET_OWNER 1_001_007
+//#define SET_NFT_CONTRACT 1_001_008
+//#define AUTHENTICATE 1_001_009
+//#define CREATE_STATION 1_001_010
 
 // sub GAME_SPECIFIC methods 
 //#define ACT 1_002_001
@@ -51,11 +53,12 @@ const long ONE_WHOLE = 100000000;
 //#define INSURE 1_002_008
 #define INVENT 1_002_009
 //#define MINING 1_002_010
-//#define REFINE = 1_002_011
-//#define REPAIR = 1_002_012
-//#define SCAN = 1_002_013
-//#define STORE = 1_002_014
-//#define TREAT = 1_002_015
+//#define REFINE 1_002_011
+//#define REPAIR 1_002_012
+//#define SCAN 1_002_013
+//#define STORE 1_002_014
+//#define TRADE_CREATEORDER 1_002_015
+//#define TRADE_ACCEPTORDER 1_002_016
 
 // (ext)map flags
 // standard
@@ -71,13 +74,13 @@ const long ONE_WHOLE = 100000000;
 #define PARAMETER4 1_003_009
 
 // vote contract specific
-#define DEPOSITMENT 1_004_001
-#define ENTITLEMENT 1_004_002
-#define ELECTIONS 1_004_003
-#define TIMEOUT 1_004_004
-#define AGREEERS 1_004_005
-#define REJECTERS 1_004_006
-#define VOTEPOINTS 1_004_007
+//#define DEPOSITMENT 1_004_001
+//#define ENTITLEMENT 1_004_002
+//#define ELECTIONS 1_004_003
+//#define TIMEOUT 1_004_004
+//#define AGREEERS 1_004_005
+//#define REJECTERS 1_004_006
+//#define VOTEPOINTS 1_004_007
 
 // item base specific
 // item properties
@@ -122,54 +125,60 @@ const long ONE_WHOLE = 100000000;
 //#define PLANET 1_006_021
 //#define STAR 1_006_022
 
-// slot and Hangar types
+// slot and hangar types
 //#define INTERNAL 1_007_001
 //#define EXTERNAL 1_007_002
 
 // slot types
-//#define AMMO_SLOT 1_007_003
-//#define GUN_SLOT 1_007_004
-//#define TURRET_SLOT 1_007_005
-//#define PULPIT_SLOT 1_007_006
-//#define LAUNCHER_SLOT 1_007_007
-//#define ENGINE_SLOT 1_007_008
-//#define SHIELD_SLOT 1_007_009
-//#define CARGO_SLOT 1_007_010
-//#define SCANNER_SLOT 1_007_011
-//#define FACILITY_SLOT 1_007_012
+// #define AMMO_SLOT 1_007_003
+// #define GUN_SLOT 1_007_004
+// #define TURRET_SLOT 1_007_005
+// #define PULPIT_SLOT 1_007_006
+// #define LAUNCHER_SLOT 1_007_007
+// #define ENGINE_SLOT 1_007_008
+// #define SHIELD_SLOT 1_007_009
+// #define CARGO_SLOT 1_007_010
+// #define SCANNER_SLOT 1_007_011
+// #define FACILITY_SLOT 1_007_012
 
 // hangar types
-//#define DRONE_HANGAR 1_007_013
-//#define SHIP_HANGAR 1_007_014
-//#define STATION_HANGAR 1_007_015
+// #define DRONE_HANGAR 1_007_013
+// #define SHIP_HANGAR 1_007_014
+// #define STATION_HANGAR 1_007_015
 
 // sizes and weights
-//#define SMALL 1_008_017
-//#define MEDIUM 1_008_018
-//#define LARGE 1_008_019
-//#define XLARGE 1_008_020
-//#define CAPITAL 1_008_021
+//#define SMALL 1_008_001
+//#define MEDIUM 1_008_002
+//#define LARGE 1_008_003
+//#define XLARGE 1_008_004
+//#define CAPITAL 1_008_005
 
-//#define LIGHT 1_008_022
-//#define HEAVY 1_008_023
+//#define LIGHT 1_008_006
+//#define HEAVY 1_008_007
 
 // item tree
-//#define ELEMENT 1_100_000
-//#define REFINED 1_100_001
-//#define COMMON 1_100_002
-//#define ADVANCED 1_100_003
-//#define COMPONENT 1_100_004
-//#define SYSTEM 1_100_005
-//#define ARTICLE 1_100_006
+//#define ELEMENT 1_009_000
+//#define REFINED 1_009_001
+//#define COMMON 1_009_002
+//#define ADVANCED 1_009_003
+//#define COMPONENT 1_009_004
+//#define SYSTEM 1_009_005
+//#define ARTICLE 1_009_006
 
-// artificial object contract specific
-//#define OWNER 1_009_001
-//#define STATUS 1_009_002
-//#define AMOUNT 1_009_003
+// marketplace contract specific
+//#define SELLORDER 1_010_001
+//#define SYMBOL 1_010_002
+//#define PRICE 1_010_003
+//#define HOLDER 1_010_004
+
+// artificialObject contract specific
+//#define OWNER 1_011_001
+//#define STATUS 1_011_002
+//#define AMOUNT 1_011_003
 
 // extContract flags
-//#define ACTOR 1_010_001
-//#define TARGET 1_010_002
+//#define ACTOR 1_012_001
+//#define TARGET 1_012_002
 
 // contract attributes
 // basic contract
@@ -226,6 +235,7 @@ void getPollDetails(long hashValue, long pollSaveID)
         currentPOLL.hash = hashValue;
         //currentPOLL.providerID = getExtMapValue(PROVIDER_ID, hashValue, pollSaveID);
         //currentPOLL.pollAmount = getExtMapValue(DEPOSITMENT, currentPOLL.providerID, pollSaveID);
+		//currentPOLL.amount = getExtMapValue(AMOUNT, hashValue, pollSaveID);
         //currentPOLL.actorID = getExtMapValue(ACTOR_ID, hashValue, pollSaveID);
         //currentPOLL.targetID = getExtMapValue(TARGET_ID, hashValue, pollSaveID);
         currentPOLL.mainMethod = getExtMapValue(MAINMETHOD, hashValue, pollSaveID);
@@ -242,35 +252,35 @@ void getPollDetails(long hashValue, long pollSaveID)
 
 void main(void)
 {
-    do
-    {
-        A_To_Tx_After_Timestamp(currentTX.timestamp);
-        if (Get_A1() == 0)
-        {
-            break;
-        }
-        getTxDetails();
+	do
+	{
+		A_To_Tx_After_Timestamp(currentTX.timestamp);
+		if (Get_A1() == 0)
+		{
+			break;
+		}
+		getTxDetails();
 
-        // if sender is not authenticated then break
-        if (IsAuthenticated(currentTX.sender) == 0)
-        {
-            break;
-        }
-        else
-        {
+		// if sender is not authenticated then break
+		if (IsAuthenticated(currentTX.sender) == 0)
+		{
+			break;
+		}
+		else
+		{
 
-            // ### income ###
-            // currentTX.sender = voteContract
-            // currentTX.message[0] = currentHash
-            // currentTX.message[1] = ACTOR (wich part on this poll)
-            // currentTX.message[2] = free
-            // currentTX.message[3] = free
-            // currentTX.message[4] = free
-            // currentTX.message[5] = free
-            // currentTX.message[6] = free
-            // currentTX.message[7] = free
+			// ### income ###
+			// currentTX.sender = voteContract
+			// currentTX.message[0] = HASH
+			// currentTX.message[1] = currentHash
+			// currentTX.message[2] = free
+			// currentTX.message[3] = free
+			// currentTX.message[4] = free
+			// currentTX.message[5] = free
+			// currentTX.message[6] = free
+			// currentTX.message[7] = free
 
-            if (getCodeHashOf(currentTX.sender) != 0)
+			if (getCodeHashOf(currentTX.sender) != 0)
 			{
 				if(currentTX.message[0] == HASH)
 				{
@@ -281,20 +291,20 @@ void main(void)
 			{
 				break;
 			}
-        }
+		}
 
-        switch (currentPOLL.mainMethod)
-        {
-            case CONTRACT_SPECIFIC:
-                ContractSpecific();
-                break;
-            case GAME_SPECIFIC:
-                GameSpecific();
-                break;
-            default:
-                break;
-        }
-    } while (true);
+		switch (currentPOLL.mainMethod)
+		{
+			case CONTRACT_SPECIFIC:
+				ContractSpecific();
+				break;
+			case GAME_SPECIFIC:
+				GameSpecific();
+				break;
+			default:
+				break;
+		}
+	} while (true);
 }
 
 // main methods
@@ -332,117 +342,116 @@ void GameSpecific(void)
 // sub methods
 void Describe(void)
 {
-    /* Set Properties of a object
-     * currentPOLL.mainMethod = GAME_SPECIFIC
-     * currentPOLL.subMethod = ACT
-     * currentPOLL.parameter = property (DEFAULTSPEED, DEFAULTSTRUCTURE, ...)
-     * currentPOLL.parameter2 = itemName (ZeptoLit)
-     * property (DEFAULTSPEED):
-     * currentPOLL.parameter3 = value (350 m/s)
-     * property (DEFAULTSTRUCTURE):
-     * currentPOLL.parameter3 = value (500 hitpoints)
-     * property (DEFAULTARMOR):
-     * currentPOLL.parameter3 = value (1000 hitpoints)
-     * property (DEFAULTSHIELD):
-     * currentPOLL.parameter3 = value (0 hitpoints)
-     * property (DEFAULTCARGO):
-     * currentPOLL.parameter3 = value (6 m3)
-     * property (SLOTS):
-     * currentPOLL.parameter3 = value (5 amount)
-     * property (HANGAR):
-     * currentPOLL.parameter3 = value (1 amount)
-     */
+	/* Set Properties of a object
+	 * currentPOLL.mainMethod = GAME_SPECIFIC
+	 * currentPOLL.subMethod = ACT
+	 * currentPOLL.parameter = property (DEFAULTSPEED, DEFAULTSTRUCTURE, ...)
+	 * currentPOLL.parameter2 = itemName (ZeptoLit)
+	 * property (DEFAULTSPEED):
+	 * currentPOLL.parameter3 = value (350 m/s)
+	 * property (DEFAULTSTRUCTURE):
+	 * currentPOLL.parameter3 = value (500 hitpoints)
+	 * property (DEFAULTARMOR):
+	 * currentPOLL.parameter3 = value (1000 hitpoints)
+	 * property (DEFAULTSHIELD):
+	 * currentPOLL.parameter3 = value (0 hitpoints)
+	 * property (DEFAULTCARGO):
+	 * currentPOLL.parameter3 = value (6 m3)
+	 * property (SLOTS):
+	 * currentPOLL.parameter3 = value (5 amount)
+	 * property (HANGAR):
+	 * currentPOLL.parameter3 = value (1 amount)
+	 */
 
-    switch (currentPOLL.parameter)
-    {
-        case SLOTS:
-        case HANGARS:
+	switch (currentPOLL.parameter)
+	{
+		case SLOTS:
+		case HANGARS:
 
-            if (currentPOLL.parameter4 == 0)
-            {
-                long nestingsHash = GetB3FromHash256(currentPOLL.parameter, currentPOLL.parameter2, currentPOLL.parameter3, 0);
+			if (currentPOLL.parameter4 == 0)
+			{
+				long nestingsHash = GetB3FromHash256(currentPOLL.parameter, currentPOLL.parameter2, currentPOLL.parameter3, 0);
 
-                setMapValue(currentPOLL.parameter, currentPOLL.parameter2, nestingsHash);
-                setMapValue(nestingsHash, 0, currentPOLL.parameter3);
-            }
-            else
-            {
+				setMapValue(currentPOLL.parameter, currentPOLL.parameter2, nestingsHash);
+				setMapValue(nestingsHash, 0, currentPOLL.parameter3);
+			}
+			else
+			{
 
-                long nestingAmount = getMapValue(currentPOLL.parameter2, 0);
+				long nestingAmount = getMapValue(currentPOLL.parameter2, 0);
 
-                if (currentPOLL.parameter3 > nestingAmount || currentPOLL.parameter3 < 1)
-                {
-                    /* Set Nesting Properties
-                     * currentPOLL.mainMethod = GAME_SPECIFIC
-                     * currentPOLL.subMethod = ACT
-                     * currentPOLL.parameter = property (SLOTS/HANGAR)
-                     * currentPOLL.parameter2 = nestingHash
-                     * currentPOLL.parameter3 = nestingProperty (SIZE, TYPE)
-                     * currentPOLL.parameter4 = value (SIZE: 1=small; 2=medium; 3=heavy / TYPE: INTERNAL; WEAPON; DRONE)
-                     */
+				if (currentPOLL.parameter3 > nestingAmount || currentPOLL.parameter3 < 1)
+				{
+					/* Set Nesting Properties
+					 * currentPOLL.mainMethod = GAME_SPECIFIC
+					 * currentPOLL.subMethod = ACT
+					 * currentPOLL.parameter = property (SLOTS/HANGAR)
+					 * currentPOLL.parameter2 = nestingHash
+					 * currentPOLL.parameter3 = nestingProperty (SIZE, TYPE)
+					 * currentPOLL.parameter4 = value (SIZE: 1=small; 2=medium; 3=heavy / TYPE: INTERNAL; WEAPON; DRONE)
+					 */
 
-                    setMapValue(currentPOLL.parameter3, currentPOLL.parameter2, currentPOLL.parameter4);
+					setMapValue(currentPOLL.parameter3, currentPOLL.parameter2, currentPOLL.parameter4);
 
-                }
-                else
-                {
-                    /* Set Nesting Properties
-                     * currentPOLL.mainMethod = GAME_SPECIFIC
-                     * currentPOLL.subMethod = ACT
-                     * currentPOLL.parameter = property (SLOTS/HANGAR)
-                     * currentPOLL.parameter2 = nestingsHash
-                     * currentPOLL.parameter3 = nestingNumber (1...n)
-                     * currentPOLL.parameter4 = slotName (SmaExSlo = 6011568028608851055)
-                     */
+				}
+				else
+				{
+					/* Set Nesting Properties
+					 * currentPOLL.mainMethod = GAME_SPECIFIC
+					 * currentPOLL.subMethod = ACT
+					 * currentPOLL.parameter = property (SLOTS/HANGAR)
+					 * currentPOLL.parameter2 = nestingsHash
+					 * currentPOLL.parameter3 = nestingNumber (1...n)
+					 * currentPOLL.parameter4 = slotName (SmaExSlo = 6011568028608851055)
+					 */
 
-                    //long nestingHash = GetB3FromHash256(currentPOLL.parameter, currentPOLL.parameter2, currentPOLL.parameter3, 0);
-                    setMapValue(currentPOLL.parameter2, currentPOLL.parameter3, currentPOLL.parameter4);
-                }
-            }
+					//long nestingHash = GetB3FromHash256(currentPOLL.parameter, currentPOLL.parameter2, currentPOLL.parameter3, 0);
+					setMapValue(currentPOLL.parameter2, currentPOLL.parameter3, currentPOLL.parameter4);
+				}
+			}
 
-            break;
-        default:
-            setMapValue(currentPOLL.parameter, currentPOLL.parameter2, currentPOLL.parameter3);
-            break;
-    }
+			break;
+		default:
+			setMapValue(currentPOLL.parameter, currentPOLL.parameter2, currentPOLL.parameter3);
+			break;
+	}
 }
 void Invent(void)
 {
-    /* Set build needs of object
-     * currentPOLL.mainMethod = GAME_SPECIFIC
-     * currentPOLL.subMethod = INVENT
-     * currentPOLL.parameter = main (ZeptoLit)
-     * currentPOLL.parameter2 = sub (Computer)
-     * currentPOLL.parameter3 = subAmount (1)
-     * currentPOLL.parameter4 = subIndex (0...n)
-     */
+	/* Set build needs of object
+	 * currentPOLL.mainMethod = GAME_SPECIFIC
+	 * currentPOLL.subMethod = INVENT
+	 * currentPOLL.parameter = main (ZeptoLit)
+	 * currentPOLL.parameter2 = sub (Computer)
+	 * currentPOLL.parameter3 = subAmount (1)
+	 * currentPOLL.parameter4 = subIndex (0...n)
+	 */
 
-    //getInventDetails();
+	//getInventDetails();
 
-    long count = getMapValue(INVENT, currentPOLL.parameter);
+	long count = getMapValue(INVENT, currentPOLL.parameter);
 
-    if (count == 0)
-    {
-        setMapValue(INVENT, currentPOLL.parameter, 1);
-        setMapValue(currentPOLL.parameter, 1, currentPOLL.hash);
-    }
-    else
-    {
-        if(currentPOLL.parameter4 > count)
-        {
-            setMapValue(INVENT, currentPOLL.parameter, currentPOLL.parameter4);
-        }
+	if (count == 0)
+	{
+		setMapValue(INVENT, currentPOLL.parameter, 1);
+		setMapValue(currentPOLL.parameter, 1, currentPOLL.hash);
+	}
+	else
+	{
+		if(currentPOLL.parameter4 > count)
+		{
+			setMapValue(INVENT, currentPOLL.parameter, currentPOLL.parameter4);
+		}
 
-        if (currentPOLL.parameter2 == 0)
-        {
-            setMapValue(INVENT, currentPOLL.parameter, CleanUpMap(currentPOLL.parameter, currentPOLL.parameter4));
-        }
-        else
-        {
-            setMapValue(currentPOLL.parameter, currentPOLL.parameter4, currentPOLL.hash);
-        }
-    }
-
+		if (currentPOLL.parameter2 == 0)
+		{
+			setMapValue(INVENT, currentPOLL.parameter, CleanUpMap(currentPOLL.parameter, currentPOLL.parameter4));
+		}
+		else
+		{
+			setMapValue(currentPOLL.parameter, currentPOLL.parameter4, currentPOLL.hash);
+		}
+	}
 }        
 
 // contract methods

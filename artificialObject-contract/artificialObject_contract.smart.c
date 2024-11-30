@@ -28,6 +28,9 @@
 #define GAME_SPECIFIC 1_000_002
 //#define WITHDRAWALING 1_000_003
 
+// vote contract specific
+//#define VOTE_FOR_POLL 1_000_004
+
 // sub CONTRACT_SPECIFIC methods
 #define GAMEVOTE_CONTRACT 1_001_000
 #define ITEMBASE_CONTRACT 1_001_001
@@ -54,9 +57,10 @@
 #define MINING 1_002_010
 #define REFINE 1_002_011
 #define REPAIR 1_002_012
-#define SCAN 1_002_013
+//#define SCAN 1_002_013
 #define STORE 1_002_014
-#define TRADE 1_002_015
+//#define TRADE_CREATEORDER 1_002_015
+//#define TRADE_ACCEPTORDER 1_002_016
 
 // (ext)map flags
 // standard
@@ -79,7 +83,6 @@
 //#define AGREEERS 1_004_005
 //#define REJECTERS 1_004_006
 //#define VOTEPOINTS 1_004_007
-
 
 // item base specific
 // item properties
@@ -106,7 +109,7 @@
 //#define ENGINE 1_006_005
 //#define SHIELD 1_006_006
 //#define CARGO 1_006_007
-#define SCANNER 1_006_008
+//#define SCANNER 1_006_008
 //#define DRONE 1_006_009
 
 //#define FACILITY 1_006_010
@@ -114,22 +117,22 @@
 #define REFINERY_FACILITY 1_006_012
 #define ASSEMBLE_FACILITY 1_006_013
 //#define ADMINISTRATIVE_FACILITY 1_006_014
-#define OBSERVATORY_FACILITY 1_006_015
-#define TRADE_HUB 1_006_016
+//#define OBSERVATORY_FACILITY 1_006_015
+//#define TRADE_HUB 1_006_016
 
 #define SHIP 1_006_017
 #define STATION 1_006_018
-#define ASTEROID 1_006_019
-#define MOON 1_006_020
-#define PLANET 1_006_021
-#define STAR 1_006_022
+// #define ASTEROID 1_006_019
+// #define MOON 1_006_020
+// #define PLANET 1_006_021
+// #define STAR 1_006_022
 
-// Slot and Hangar types
+// slot and hangar types
 #define INTERNAL 1_007_001
 #define EXTERNAL 1_007_002
 
-// Slot types
-//#define AMMO_SLOT 1_007_003
+// slot types
+// #define AMMO_SLOT 1_007_003
 #define GUN_SLOT 1_007_004
 #define TURRET_SLOT 1_007_005
 #define PULPIT_SLOT 1_007_006
@@ -140,21 +143,20 @@
 #define SCANNER_SLOT 1_007_011
 #define FACILITY_SLOT 1_007_012
 
-// Hangar types
-//#define DRONE_HANGAR 1_007_013
-//#define SHIP_HANGAR 1_007_014
-//#define STATION_HANGAR 1_007_015
+// hangar types
+// #define DRONE_HANGAR 1_007_013
+// #define SHIP_HANGAR 1_007_014
+// #define STATION_HANGAR 1_007_015
 
 // sizes and weights
-//#define SMALL 1_008_017
-//#define MEDIUM 1_008_018
-//#define LARGE 1_008_019
-//#define XLARGE 1_008_020
-//#define CAPITAL 1_008_021
+//#define SMALL 1_008_001
+//#define MEDIUM 1_008_002
+//#define LARGE 1_008_003
+//#define XLARGE 1_008_004
+//#define CAPITAL 1_008_005
 
-//#define LIGHT 1_008_022
-//#define HEAVY 1_008_023
-
+//#define LIGHT 1_008_006
+//#define HEAVY 1_008_007
 
 // item tree
 //#define ELEMENT 1_009_000
@@ -166,13 +168,15 @@
 //#define ARTICLE 1_009_006
 
 // marketplace contract specific
-//#define SYMBOL 1_010_001
-//#define PRICE 1_010_002
+//#define SELLORDER 1_010_001
+//#define SYMBOL 1_010_002
+//#define PRICE 1_010_003
+//#define HOLDER 1_010_004
 
-// zeptorlight contract specific
+// artificialObject contract specific
 #define OWNER 1_011_001
 #define STATUS 1_011_002
-//#define AMOUNT 1_009_003
+#define AMOUNT 1_011_003
 
 // extContract flags
 #define ACTOR 1_012_001
@@ -208,6 +212,7 @@ struct TXINFO {
 struct POLLINFO {
     long hash,
 	pollAmount,
+	amount,
 	providerID,
 	actorID,
 	targetID,
@@ -265,14 +270,14 @@ void constructor(void) {
 	currentPOLL.hash = 0;
 	currentArticle.category = 0;
 	currentINFO.freeHangars = 0;
-	contractID = GetContractID();
+	contractID = GetcontractID();
 	gameVoteContract = 1111;
 	status = 0;
 	setMapValue(GAMEVOTE_CONTRACT, 1, 1111);
 	setMapValue(STATUS, 1, 0);
 }
 
-long GetContractID() {
+long GetcontractID() {
 	A_To_Tx_After_Timestamp(Get_Creation_Timestamp());
 	return Get_A1();
 }
@@ -291,6 +296,7 @@ void getPollDetails(long hashValue, long pollSaveID) {
         currentPOLL.hash = hashValue;
         currentPOLL.providerID = getExtMapValue(PROVIDER_ID, hashValue, pollSaveID);
         currentPOLL.pollAmount = getExtMapValue(DEPOSITMENT, currentPOLL.providerID, pollSaveID);
+		currentPOLL.amount = getExtMapValue(AMOUNT, hashValue, pollSaveID);
         currentPOLL.actorID = getExtMapValue(ACTOR_ID, hashValue, pollSaveID);
         currentPOLL.targetID = getExtMapValue(TARGET_ID, hashValue, pollSaveID);
         currentPOLL.mainMethod = getExtMapValue(MAINMETHOD, hashValue, pollSaveID);
@@ -370,7 +376,7 @@ void main(void) {
 					 // currentTX.message[4] = parameter3
 					 // currentTX.message[5] = parameter4
 					 // currentTX.message[6] = actorID (to process sub method(parameter))
-					 // currentTX.message[7] = targetContractID (to process sub method(parameter))
+					 // currentTX.message[7] = targetcontractID (to process sub method(parameter))
 
 					 if (currentTX.message[1] == HASH)
 					 {
@@ -428,6 +434,8 @@ void main(void) {
 						 currentPOLL.parameter4 = currentTX.message[5];
 						 currentPOLL.actorID = currentTX.message[6];
 						 currentPOLL.targetID = currentTX.message[7];
+						 
+						 currentPOLL.partOfPoll = TARGET;
 					 }
 
 				 }
@@ -506,6 +514,7 @@ void ContractSpecific(void) {
 				setMapValue(SLOT, 1, 5576974018634211683); // MedRfFac = 5576974018634211683
 				setMapValue(SLOT, 2, 5576973945837871459); // MedAsFac = 5576973945837871459
 				setMapValue(SLOT, 3, 5576973975701778276); // MedHgMod = 5576973975701778276
+				setMapValue(SLOT, 4, 6085033130354832738); // TradeHub = 6085033130354832738
 				currentINFO.freeHangars = -1;
 			}
 			break;
@@ -538,512 +547,439 @@ void GameSpecific(void) {
 		case REPAIR:
 			Repair();
 			break;
-		case SCAN:
-			Scan();
-			break;
 		case STORE:
 			Store();
-			break;
-		case TRADE:
-			Trade();
 			break;
 		default:
 			break;
 	}
 }
 
-void Build(void) {
-    /* build the object itself
-    * currentPOLL.actorID = initiatorID (of build order)
-    * currentPOLL.mainMethod = GAME_SPECIFIC
-    * currentPOLL.subMethod = BUILD
-    * currentPOLL.parameter = assembly slot (1)
-    * currentPOLL.parameter2 = SYSTEM (Computer)
-    * currentPOLL.parameter3 = Amount (1)
-    * currentPOLL.parameter4 = 0
-    */
-
-    long objectID = objectName;
-    long tryBuild = 0;
-
-    long hash = 0;
-
-    if (status == 1)
-    {
-        // build objects with this object
-        objectID = currentPOLL.parameter2;
-        getArticleDetails(getMapValue(SLOT, currentPOLL.parameter));
-        if (currentArticle.type == ASSEMBLE_FACILITY && currentArticle.size > getExtMapValue(SIZE, currentPOLL.parameter2, itemBaseContract) && getCodeHashOf(currentPOLL.actorID) == 0)
-        {
-            tryBuild = 1;
-        }
-    }
-    else
-    {
-        // build object itself
-        tryBuild = 1;
-    }
-
-    if (tryBuild == 1)
-    {
-        long needMaterialCount = getExtMapValue(INVENT, objectID, itemBaseContract);
-        getArticleDetails(currentPOLL.parameter2);
-
-        if (currentArticle.category == REFINED)
-        {
-            // get slot of refinery
-            currentPOLL.parameter = GetSlotNumberOfType(currentArticle.type);
-            Refining();
-        }
-        else if (currentArticle.type >= SHIP && currentPOLL.parameter4 != 0)
-        {
-            // TODO: SetItemIntoHangar
-            if (getCodeHashOf(currentPOLL.parameter4) != 0 && status != 0)
-            {
-                if(CheckSubItems(objectID, needMaterialCount, currentPOLL.parameter3, currentPOLL.parameter4) == 1){
-                    //long wichHash = GetWichHash();
-                    //setMapValue(HANGAR, GetWich(), wichHash);
-                    //setMapValue(wichHash, currentPOLL.parameter2, currentPOLL.parameter4);
-
-                    currentPOLL.parameter = 3; // slotnumber of hangar module
-                    Dock();
-
-                    // send build to target contract
-                    SetSendBufferForTargetContract(GAME_SPECIFIC, BUILD, currentPOLL.parameter2, currentPOLL.parameter3, 0, HASH, currentPOLL.hash, currentPOLL.partOfPoll);
-                    SendBufferWithAmount(ONE_WHOLE, currentPOLL.parameter4);
-                }
-            }
-        }
-        else
-        {
-            if (CheckSubItems(objectID, needMaterialCount, currentPOLL.parameter3, currentPOLL.parameter4) == 1)
-            {
-                // Build materials ok
-                if (status == 0)
-                {
-                    status = 1;
-                    setMapValue(STATUS, 1, 1);
-                    getPropertyDetails();
-                }
-                else
-                {
-                    if (currentPOLL.parameter4 == 0)
-                    {
-                        // set into local cargo
-                        SetItemIntoCargo(currentPOLL.parameter2, currentPOLL.parameter3);
-                    }
-                    else if(getCodeHashOf(currentPOLL.parameter4) != 0)
-                    {
-                        // send buildup materials to target contract
-                        SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, currentPOLL.parameter2, currentPOLL.parameter3, 0, HASH, currentPOLL.hash, currentPOLL.partOfPoll);
-                        SendBufferWithAmount(ONE_WHOLE, currentPOLL.parameter4);
-                    }
-
-                    // refresh input materials amounts in map 
-                    for (long i = 1; i <= needMaterialCount; i++)
-                    {
-                        hash = getExtMapValue(objectID, i, itemBaseContract);
-                        GetItemOutOfCargo(getExtMapValue(PARAMETER2, hash, gameVoteContract), getExtMapValue(PARAMETER3, hash, gameVoteContract) * (currentPOLL.parameter3 / ONE_WHOLE));
-                    }
-
-                }
-            }
-            
-        }
-    }
-
-}
-
-void Dock(void) {
-    /* dock the zeptor on the station
-    * currentPOLL.actorID = initiatorID
-    * currentPOLL.mainMethod = GAME_SPECIFIC
-    * currentPOLL.subMethod = DOCK
-    * currentPOLL.parameter = hangar module number (1..n)
-    * currentPOLL.parameter2 = objectSymbol (ZeptLigh (to get properties))
-    * currentPOLL.parameter3 = 0
-    * currentPOLL.parameter4 = objectContract (contractID)
-    */
-
-    /* Hangarmodul in slot einbauen (entwerfen, Eigenschaften festlegen)
-    * wenn hangarmodul in station eingebaut -> unendlich viele hangarslots
-    * wenn hangarmodul in mobile plattform (schlachtschiff, miningplattform, etc.) -> hangarslots beschränkt
-    * beim docken überprüfen, ob es ein hangarmodul im angegebenen slot des objekts (station, schlachtschiff, miningplattform etc.) gibt
-    */
-
-    // this object must exist
-    if (status == 1)
-    {
-        // dock the source object to a hangarslot of this objects hangar module
-        // the target must match the hangar module with a size less than or equal to the module itself 
-        getArticleDetails(getExtMapValue(SLOT, currentPOLL.parameter, currentPOLL.targetID));
-        if (currentArticle.type == HANGAR_MODULE && currentArticle.size >= getExtMapValue(SIZE, currentPOLL.parameter2, itemBaseContract))
-        {
-            long dockedObject = getExtMapValue(currentPOLL.parameter4, GetWichHash(HANGAR), currentPOLL.targetID);
-            if (currentPOLL.partOfPoll == ACTOR)
-            {
-                if(dockedObject == 1)
-                {
-                    // undock 
-                    // set the location of this object to the location of the target object
-                    locationContract = getExtMapValue(LOCATION_CONTRACT, 1, currentPOLL.targetID);
-                    setMapValue(LOCATION_CONTRACT, 1, locationContract);
-                } else {
-                    // dock
-                    // set the location of this object to the target object
-                    locationContract = currentPOLL.targetID;
-                    setMapValue(LOCATION_CONTRACT, 1, currentPOLL.targetID);
-                }
-            
-            } else {
-
-                if(dockedObject == 1)
-                { 
-                    // undock
-                    UndockObject(currentPOLL.parameter4);
-                } else {
-                    // dock
-                    DockObject(currentPOLL.parameter4);
-                }
-
-            }
-        }
-
-    }
-
-}
-void Equip(void) {
-    /* equip the object
-     * currentPOLL.actorID = owner / authID
-     * currentPOLL.mainMethod = GAME_SPECIFIC
-     * currentPOLL.subMethod = EQUIP
-     * currentPOLL.parameter = articleSymbol
-     * currentPOLL.parameter2 = slotIndex (1...n)
-     * currentPOLL.parameter3 = 0
-     * currentPOLL.parameter4 = 0
-     */
-    
-    // this object must exist
-    if (status == 1)
-    {
-        // check HANGAR
-        if(getExtMapValue(getExtMapValue(HANGARS, currentPOLL.actorID, locationContract), contractID, locationContract) == 1 || objectType == STATION)
-        {
-            // check article available
-            // long temp1 = getExtMapValue(STORE, currentPOLL.actorID, locationContract);
-            // long temp2 = getExtMapValue(currentPOLL.parameter, getExtMapValue(STORE, currentPOLL.actorID, locationContract), locationContract);
-
-            if (getExtMapValue(currentPOLL.parameter, getExtMapValue(STORE, currentPOLL.actorID, locationContract), locationContract) / ONE_WHOLE >= 1 || getMapValue(currentPOLL.parameter, getMapValue(STORE, currentPOLL.actorID)) / ONE_WHOLE >= 1)
-            {
-                // check article fits slot
-                long slotIndex = GetArticleMatchSlotIndex(currentPOLL.parameter, currentPOLL.parameter2);
-                if (slotIndex != 0)
-                {
-                    // equip article to slotIndex
-                    setMapValue(SLOT, slotIndex, currentPOLL.parameter);
-                
-                    if(objectType == STATION)
-                    {
-                        // get article out of this objects store
-                        GetItemOutOfCargo(currentPOLL.parameter, 1);
-                    }
-                    else
-                    {
-                        // get article out of the locations store
-                        SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, currentPOLL.parameter, ONE_WHOLE, 0, HASH, currentPOLL.hash, ACTOR);
-                        SendBufferWithAmount(ONE_WHOLE, locationContract);
-                    }
-                }
-            }
-        }
-    }
-}
-void Explode(void) {
-	// TODO: Test
-	// station destroyed/not exist
-	setMapValue(STATUS, 1, 0);
-	long count = getExtMapValue(INVENT, objectName, itemBaseContract);
-	for (long i = 1; i <= count; i++) {
-		setMapValue(BUILD, getExtMapValue(PARAMETER2, getExtMapValue(objectName, i, itemBaseContract), gameVoteContract), 0);
-	}
-	
-}
-void Insure(void) {
-	// TODO: Complement and Test if needed
-	insurence = currentPOLL.parameter;
-}
-	
-void Mining(void) {
-    if ((getCodeHashOf(currentPOLL.targetID) != 0 || getCodeHashOf(currentPOLL.actorID) == 0) && currentPOLL.parameter4 == contractID)
-    {
-        SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2);
-        //if (IsNatualObject(getExtMapValue(TYPE, 1, currentPOLL.targetID)) == 1)
-        //{
-        //    if(getExtMapValue(ELEMENT, currentPOLL.parameter, currentPOLL.targetID) >= currentPOLL.parameter2 / ONE_WHOLE)
-        //    {
-        //        SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2);
-        //    }
-        //}
-        //else
-        //{
-        //    long parent = getExtMapValue(LOCATION_CONTRACT, 1, currentPOLL.targetID);
-        //    if (IsNatualObject(getExtMapValue(TYPE, 1, parent)) == 1)
-        //    {
-        //        if (getExtMapValue(ELEMENT, currentPOLL.parameter, parent) >= currentPOLL.parameter2 / ONE_WHOLE)
-        //        {
-        //            SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2);
-        //        }
-        //    }
-        //}
-        
-    }
-}
-void Refining(void) {
-
-    /* refine the object
-    * currentPOLL.actorID = initiatorID, not contract
-    * currentPOLL.mainMethod = GAME_SPECIFIC
-    * currentPOLL.subMethod = REFINE
-    * currentPOLL.parameter = refinery slot (2)
-    * currentPOLL.parameter2 = Refined Materials (GoldBar)
-    * currentPOLL.parameter3 = Amount (1)
-    * currentPOLL.parameter4 = 0
-    */
-
-    if (status != 0)
-    {
-        getArticleDetails(getMapValue(SLOT, currentPOLL.parameter));
-        if (currentArticle.type == REFINERY_FACILITY && currentArticle.type == getExtMapValue(TYPE, currentPOLL.parameter2, itemBaseContract) && currentArticle.size > getExtMapValue(SIZE, currentPOLL.parameter2, itemBaseContract) && getCodeHashOf(currentPOLL.actorID) == 0)
-        {
-            long needMaterialCount = getExtMapValue(INVENT, currentPOLL.parameter2, itemBaseContract);
-            if (CheckSubItems(currentPOLL.parameter2, needMaterialCount, currentPOLL.parameter3, 0) == 1)
-            {
-                if (currentPOLL.parameter4 == 0)
-                {
-                    // set into local cargo
-                    SetItemIntoCargo(currentPOLL.parameter2, currentPOLL.parameter3);
-                }
-                else if (getCodeHashOf(currentPOLL.parameter4) != 0)
-                {
-                    // send buildup materials to target contract
-                    SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, HASH, currentPOLL.hash, 0, 0, 0, currentPOLL.partOfPoll);
-                    SendBufferWithAmount(ONE_WHOLE, currentPOLL.parameter4);
-                }
-
-                // refresh input materials amounts in map 
-                for (long i = 1; i <= needMaterialCount; i++)
-                {
-                    long hash = getExtMapValue(currentPOLL.parameter2, i, itemBaseContract);
-                    GetItemOutOfCargo(getExtMapValue(PARAMETER2, hash, gameVoteContract), getExtMapValue(PARAMETER3, hash, gameVoteContract) * (currentPOLL.parameter3 / ONE_WHOLE));
-                }
-            }
-        }
-    }
-
-}
-void Repair(void) {
-	// TODO: Implement and Test
-}
-void Scan(void) {
-
-    /* scan a natural object
-    * currentPOLL.mainMethod = GAME_SPECIFIC
-    * currentPOLL.subMethod = SCAN
-    * currentPOLL.parameter = slot (2)
-    * currentPOLL.parameter2 = Refined Materials (GoldBar)
-    * currentPOLL.parameter3 = Amount (1)
-    * currentPOLL.parameter4 = 0
-    */
-
-    // this object must exist
-    if (status == 1)
-    {
-        getArticleDetails(getMapValue(SLOT, currentPOLL.parameter));
-
-        if (currentArticle.type == OBSERVATORY_FACILITY || currentArticle.type == SCANNER)
-        {
-            SetSendBufferForTargetContract(HASH, currentPOLL.hash, 0, 0, 0, 0, 0, TARGET);
-            SendBufferWithAmount(ONE_WHOLE, currentPOLL.actorID); // to naturalObject-Contract
-        }
-
-    }
-}
-void Store(void) {
-    if (status == 0)
-    {
-        if (currentPOLL.partOfPoll == TARGET)
-        {
-            setMapValue(BUILD, currentPOLL.parameter, getMapValue(BUILD, currentPOLL.parameter) + currentPOLL.parameter2);
-        }
-    }
-    else
-    {
-        if (currentPOLL.partOfPoll == ACTOR && getCodeHashOf(currentPOLL.targetID) != 0)
-        {
-            // currentPOLL.parameter = Element (IRON)
-            // currentPOLL.parameter2 = Amount (123)
-
-            GetItemOutOfCargo(currentPOLL.parameter, currentPOLL.parameter2);
-        }
-        else if (currentPOLL.partOfPoll == TARGET)
-        {
-            SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2);
-        }
-    }
-    
-}
-void Trade(void){
-	/* incoming message
+void Build(void) 
+{
+	/* build the object itself
+	* currentPOLL.actorID = initiatorID (of build order)
 	* currentPOLL.mainMethod = GAME_SPECIFIC
-	* currentPOLL.subMethod = TRADE
-	* currentPOLL.parameter = slotNumber (1...n their must be the TRADE_HUB)
-	* currentPOLL.parameter2 = IRON
-	* currentPOLL.parameter3 = 123
-	* currentPOLL.parameter4 = 10000 (origin actor)
-	* currentPOLL.actorID = 7777 (marketplace contract)
-	* currentPOLL.targetID = 3333 (this contract)
-	* currentPOLL.partOfPoll = TARGET
+	* currentPOLL.subMethod = BUILD
+	* currentPOLL.parameter = assembly slot (1)
+	* currentPOLL.parameter2 = SYSTEM (Computer)
+	* currentPOLL.parameter3 = Amount (1)
+	* currentPOLL.parameter4 = 0
 	*/
+
+	long objectID = objectName;
+	long tryBuild = 0;
+
+	long hash = 0;
 
 	if (status == 1)
 	{
-		// check the trade_hub at slotnumber
+		// build objects with this object
+		objectID = currentPOLL.parameter2;
 		getArticleDetails(getMapValue(SLOT, currentPOLL.parameter));
-		if (currentArticle.type == TRADE_HUB)
+		if (currentArticle.type == ASSEMBLE_FACILITY && currentArticle.size > getExtMapValue(SIZE, currentPOLL.parameter2, itemBaseContract) && getCodeHashOf(currentPOLL.actorID) == 0)
 		{
-			/* get item out
-			* currentPOLL.mainMethod = GAME_SPECIFIC
-			* currentPOLL.subMethod = TRADE
-			* currentPOLL.parameter = IRON
-			* currentPOLL.parameter2 = 123
-			* currentPOLL.parameter3 = 7777 (marketplace contract)
-			* currentPOLL.parameter4 = 10000 (origin actor (OWNER of item on this (station) contract))
-			* currentPOLL.actorID = 10000 (origin actor (OWNER of item on this (station) contract))
-			* currentPOLL.targetID = 3333 (this contract)
-			* currentPOLL.partOfPoll = ACTOR
-			*/
-			currentPOLL.parameter = currentPOLL.parameter2; // IRON
-			currentPOLL.parameter2 = currentPOLL.parameter3; // 123
-			currentPOLL.parameter3 = currentPOLL.actorID; // save marketplace ID temporary
-			currentPOLL.actorID = currentPOLL.parameter4; // set actorID to the origin OWNER
-			currentPOLL.partOfPoll = ACTOR; // set ACTOR to get item OUT of store
-			
-			// check if enough amount of item is stored and owned by origin OWNER
-			if (getMapValue(currentPOLL.parameter, GetWichHash(STORE)) >= currentPOLL.parameter2)
+			tryBuild = 1;
+		}
+	}
+	else
+	{
+		// build object itself
+		tryBuild = 1;
+	}
+
+	if (tryBuild == 1)
+	{
+		long needMaterialCount = getExtMapValue(INVENT, objectID, itemBaseContract);
+		getArticleDetails(currentPOLL.parameter2);
+
+		if (currentArticle.category == REFINED)
+		{
+			// get slot of refinery
+			currentPOLL.parameter = GetSlotNumberOfType(currentArticle.type);
+			Refining();
+		}
+		else if (currentArticle.type >= SHIP && currentPOLL.parameter4 != 0)
+		{
+			// SetItemIntoHangar
+			if (getCodeHashOf(currentPOLL.parameter4) != 0 && status != 0)
 			{
-				Store();
+				if(CheckSubItems(objectID, needMaterialCount, currentPOLL.parameter3, currentPOLL.parameter4) == 1){
+					//long wichHash = GetWichHash();
+					//setMapValue(HANGAR, GetWich(), wichHash);
+					//setMapValue(wichHash, currentPOLL.parameter2, currentPOLL.parameter4);
 
-			   /* set item in
-			   * currentPOLL.mainMethod = GAME_SPECIFIC
-			   * currentPOLL.subMethod = TRADE
-			   * currentPOLL.parameter = IRON
-			   * currentPOLL.parameter2 = 123
-			   * currentPOLL.parameter3 = 7777 (marketplace contract)
-			   * currentPOLL.parameter4 = 10000 (origin actor (OWNER of item on this (station) contract))
-			   * currentPOLL.actorID = 7777 (marketplace contract)
-			   * currentPOLL.targetID = 3333 (this contract)
-			   * currentPOLL.partOfPoll = TARGET
-			   */
-
-				currentPOLL.actorID = currentPOLL.parameter3; // set actorID to the marketplace
-				currentPOLL.partOfPoll = TARGET; // set TARGET to set item INTO the store
-				Store();
+					//currentPOLL.parameter = 3; // slotnumber of hangar module
+					//Dock();
+					DockObject(currentPOLL.parameter4);
+					// send build to target contract
+					SetSendBufferForTargetContract(GAME_SPECIFIC, BUILD, currentPOLL.parameter2, currentPOLL.parameter3, 0, HASH, currentPOLL.hash, currentPOLL.partOfPoll);
+					SendBufferWithAmount(currentFee, currentPOLL.parameter4);
+				}
 			}
+		}
+		else
+		{
+			if (CheckSubItems(objectID, needMaterialCount, currentPOLL.parameter3, currentPOLL.parameter4) == 1)
+			{
+				// Build materials ok
+				if (status == 0)
+				{
+					status = 1;
+					setMapValue(STATUS, 1, 1);
+					setMapValue(OWNER, 1, currentPOLL.actorID);
+					getPropertyDetails();
+				}
+				else
+				{
+					if (currentPOLL.parameter4 == 0)
+					{
+						// set into local cargo
+						SetItemIntoCargo(currentPOLL.parameter2, currentPOLL.parameter3, 0);
+					}
+					else if(getCodeHashOf(currentPOLL.parameter4) != 0)
+					{
+						// send buildup materials to target contract
+						SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, currentPOLL.parameter2, currentPOLL.parameter3, 0, HASH, currentPOLL.hash, currentPOLL.partOfPoll);
+						SendBufferWithAmount(currentFee, currentPOLL.parameter4);
+					}
 
+					// refresh input materials amounts in map 
+					for (long i = 1; i <= needMaterialCount; i++)
+					{
+						hash = getExtMapValue(objectID, i, itemBaseContract);
+						GetItemOutOfCargo(getExtMapValue(PARAMETER2, hash, gameVoteContract), getExtMapValue(PARAMETER3, hash, gameVoteContract) * (currentPOLL.parameter3 / ONE_WHOLE), 0);
+					}
+
+				}
+			}
+			
+		}
+	}
+}
+
+void Dock(void) 
+{
+	/* dock the zeptor on the station
+	* currentPOLL.actorID = initiatorID
+	* currentPOLL.mainMethod = GAME_SPECIFIC
+	* currentPOLL.subMethod = DOCK
+	* currentPOLL.parameter = hangar module number (1..n)
+	* currentPOLL.parameter2 = objectSymbol (ZeptLigh (to get properties))
+	* currentPOLL.parameter3 = 0
+	* currentPOLL.parameter4 = objectContract (contractID)
+	*/
+
+	/* Hangarmodul in slot einbauen (entwerfen, Eigenschaften festlegen)
+	* wenn hangarmodul in station eingebaut -> unendlich viele hangarslots
+	* wenn hangarmodul in mobile plattform (schlachtschiff, miningplattform, etc.) -> hangarslots beschränkt
+	* beim docken überprüfen, ob es ein hangarmodul im angegebenen slot des objekts (station, schlachtschiff, miningplattform etc.) gibt
+	*/
+
+	// this object must exist
+	if (status == 1)
+	{
+		// dock the source object to a hangarslot of this objects hangar module
+		// the target must match the hangar module with a size less than or equal to the module itself 
+		getArticleDetails(getExtMapValue(SLOT, currentPOLL.parameter, currentPOLL.targetID));
+		if (currentArticle.type == HANGAR_MODULE && currentArticle.size >= getExtMapValue(SIZE, currentPOLL.parameter2, itemBaseContract))
+		{
+			if (currentPOLL.partOfPoll == ACTOR)
+			{
+				if(currentPOLL.targetID == currentTX.sender)
+				{
+					// undock 
+					// set the location of this object to the location of the target object
+					locationContract = getExtMapValue(LOCATION_CONTRACT, 1, currentPOLL.targetID);
+					setMapValue(LOCATION_CONTRACT, 1, locationContract);
+				} else {
+					// dock
+					// set the location of this object to the target object
+					locationContract = currentPOLL.targetID;
+					setMapValue(LOCATION_CONTRACT, 1, currentPOLL.targetID);
+				}
+			
+			} else {
+				//long dockedObject = getExtMapValue(GetWichHash(HANGAR), currentPOLL.parameter4, currentPOLL.targetID);
+				if(getExtMapValue(GetWichHash(HANGAR), currentPOLL.parameter4, currentPOLL.targetID) == 1)
+				{ 
+					// undock
+					UndockObject(currentPOLL.parameter4);
+				} else {
+					// dock
+					DockObject(currentPOLL.parameter4);
+				}
+
+				SetSendBufferForTargetContract(HASH, currentPOLL.hash, 0, 0, 0, 0, 0, ACTOR);
+				SendBufferWithAmount(currentFee, currentPOLL.parameter4);
+
+			}
 		}
 
 	}
 }
+void Equip(void)
+{
+	/* equip the object
+	 * currentPOLL.actorID = owner / authID
+	 * currentPOLL.mainMethod = GAME_SPECIFIC
+	 * currentPOLL.subMethod = EQUIP
+	 * currentPOLL.parameter = articleSymbol
+	 * currentPOLL.parameter2 = slotIndex (1...n)
+	 * currentPOLL.parameter3 = 0
+	 * currentPOLL.parameter4 = 0
+	 */
+	
+	// this object must exist
+	if (status == 1)
+	{
+		// check HANGAR
+		if(getExtMapValue(getExtMapValue(HANGARS, currentPOLL.parameter4, currentPOLL.actorID), currentPOLL.targetID, currentPOLL.actorID) == 1)
+		{
+			// check article available
+			// long temp1 = getExtMapValue(STORE, currentPOLL.actorID, locationContract);
+			// long temp2 = getExtMapValue(currentPOLL.parameter, getExtMapValue(STORE, currentPOLL.actorID, locationContract), locationContract);
 
+			if (getExtMapValue(currentPOLL.parameter, getExtMapValue(STORE, currentPOLL.parameter4, currentPOLL.actorID), currentPOLL.actorID) / ONE_WHOLE >= 1 || getMapValue(currentPOLL.parameter, getMapValue(STORE, currentPOLL.parameter4)) / ONE_WHOLE >= 1)
+			{
+				// check if cargo is remote
+				if (contractID == currentPOLL.actorID && currentPOLL.actorID != currentPOLL.targetID)
+				{
+					setMapValue(TEMPAUTH_CONTRACT, currentPOLL.targetID, SetTimeOut(16));
+				}
+				else
+				{
+					// check article fits slot
+					long slotIndex = GetArticleMatchSlotIndex(currentPOLL.parameter, currentPOLL.parameter2);
+					if (slotIndex != 0)
+					{
+						// equip article to slotIndex
+						setMapValue(SLOT, slotIndex, currentPOLL.parameter);
+						// get article out of cargo
+						if(currentPOLL.actorID == currentPOLL.targetID)
+						{
+							// get article out of this objects store  (local cargo)
+							GetItemOutOfCargo(currentPOLL.parameter, 1, 0);
+						}
+						else
+						{
+							// get article out of the locations store (remote cargo)
+							SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, currentPOLL.parameter, ONE_WHOLE, 0, HASH, currentPOLL.hash, ACTOR);
+							SendBufferWithAmount(currentFee, locationContract);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+}
+void Explode(void) 
+{
+	// object destroyed/not exist
+	status = 0;
+	setMapValue(STATUS, 1, 0);
+	long count = getExtMapValue(INVENT, objectName, itemBaseContract);
+	for (int i = 1; i <= count; i++)
+	{
+		setMapValue(BUILD, getExtMapValue(PARAMETER2, getExtMapValue(objectName, i, itemBaseContract), gameVoteContract), 0);
+	}
+}
+void Insure(void)
+{
+	insurence = currentPOLL.parameter;
+}
+	
+void Mining(void)
+{
+	if ((getCodeHashOf(currentPOLL.targetID) != 0 || getCodeHashOf(currentPOLL.actorID) == 0) && currentPOLL.parameter4 == contractID)
+	{
+		SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2, 0);
+	}
+}
+void Refining(void)
+{
+	/* refine the object
+	* currentPOLL.actorID = initiatorID, not contract
+	* currentPOLL.mainMethod = GAME_SPECIFIC
+	* currentPOLL.subMethod = REFINE
+	* currentPOLL.parameter = refinery slot (2)
+	* currentPOLL.parameter2 = Refined Materials (GoldBar)
+	* currentPOLL.parameter3 = Amount (1)
+	* currentPOLL.parameter4 = 0
+	*/
+
+	if (status != 0)
+	{
+		getArticleDetails(getMapValue(SLOT, currentPOLL.parameter));
+		if (currentArticle.type == REFINERY_FACILITY && currentArticle.type == getExtMapValue(TYPE, currentPOLL.parameter2, itemBaseContract) && currentArticle.size > getExtMapValue(SIZE, currentPOLL.parameter2, itemBaseContract) && getCodeHashOf(currentPOLL.actorID) == 0)
+		{
+			long needMaterialCount = getExtMapValue(INVENT, currentPOLL.parameter2, itemBaseContract);
+			if (CheckSubItems(currentPOLL.parameter2, needMaterialCount, currentPOLL.parameter3, 0) == 1)
+			{
+				if (currentPOLL.parameter4 == 0)
+				{
+					// set into local cargo
+					SetItemIntoCargo(currentPOLL.parameter2, currentPOLL.parameter3, 0);
+				}
+				else if (getCodeHashOf(currentPOLL.parameter4) != 0)
+				{
+					// send buildup materials to target contract
+					SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, HASH, currentPOLL.hash, 0, 0, 0, currentPOLL.partOfPoll);
+					SendBufferWithAmount(currentFee, currentPOLL.parameter4);
+				}
+
+				// refresh input materials amounts in map 
+				for (long i = 1; i <= needMaterialCount; i++)
+				{
+					long hash = getExtMapValue(currentPOLL.parameter2, i, itemBaseContract);
+					GetItemOutOfCargo(getExtMapValue(PARAMETER2, hash, gameVoteContract), getExtMapValue(PARAMETER3, hash, gameVoteContract) * (currentPOLL.parameter3 / ONE_WHOLE), 0);
+				}
+			}
+		}
+	}
+}
+void Repair(void)
+{
+	// TODO: Implement and Test
+}
+
+void Store(void)
+{
+	if (status == 0)
+	{
+		if (currentPOLL.partOfPoll == TARGET)
+		{
+			setMapValue(BUILD, currentPOLL.parameter, getMapValue(BUILD, currentPOLL.parameter) + currentPOLL.parameter2);
+		}
+	}
+	else
+	{
+		/* incoming message 
+		* currentPOLL.mainMethod = GAME_SPECIFIC
+		* currentPOLL.subMethod = STORE
+		* currentPOLL.parameter = ITEM (ELEMENT,ARTICLE,...)
+		* currentPOLL.parameter2 = amount (123)
+		* currentPOLL.parameter3 = 0 (FROM)
+		* currentPOLL.parameter4 = 0 (TO)
+		* currentPOLL.actorID = 10000 (account)
+		* currentPOLL.targetID = 7777 (artificial contract)
+		* currentPOLL.partOfPoll = (ACTOR/TARGET)
+		*/
+		if (currentPOLL.parameter3 == 0 || currentPOLL.parameter4 == 0)
+		{
+			if (currentPOLL.partOfPoll == ACTOR && getCodeHashOf(currentPOLL.targetID) != 0)
+			{
+				// currentPOLL.parameter = Element (IRON)
+				// currentPOLL.parameter2 = Amount (123)
+
+				GetItemOutOfCargo(currentPOLL.parameter, currentPOLL.parameter2, currentPOLL.parameter4);
+			}
+			else if (currentPOLL.partOfPoll == TARGET)
+			{
+				SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2, 0);
+			}
+
+		}
+		else
+		{
+			// check if enough amount of item is stored and owned by source OWNER
+			if (getMapValue(currentPOLL.parameter, GetB3FromHash256(STORE, currentPOLL.parameter3, 0, 0)) >= currentPOLL.parameter2)
+			{
+				GetItemOutOfCargo(currentPOLL.parameter, currentPOLL.parameter2, currentPOLL.parameter3);
+				SetItemIntoCargo(currentPOLL.parameter, currentPOLL.parameter2, currentPOLL.parameter4);
+			}
+		}
+	}
+}
 
 // support methods
-long CheckSubItems(long objectID, long needMaterialCount, long wishAmount, long targetID) {
+long CheckSubItems(long objectID, long needMaterialCount, long wishAmount, long targetID)
+{
+	long hash = 0;
+	long material = 0;
+	long materialNeedAmount = 0;
+	long materialAvailableAmount = 0;
+	long materialCount = 0;
 
-    long hash = 0;
-    long material = 0;
-    long materialNeedAmount = 0;
-    long materialAvailableAmount = 0;
-    long materialCount = 0;
+	// check input materials amounts
+	for (long i = 1; i <= needMaterialCount; i++)
+	{
+		hash = getExtMapValue(objectID, i, itemBaseContract);
+		material = getExtMapValue(PARAMETER2, hash, gameVoteContract);
+		materialNeedAmount = getExtMapValue(PARAMETER3, hash, gameVoteContract);
+		materialAvailableAmount = 0;
+		long atLeastNQT = materialNeedAmount;
+		long atLeast = atLeastNQT / ONE_WHOLE;
 
-    // check input materials amounts
-    for (long i = 1; i <= needMaterialCount; i++)
-    {
-        hash = getExtMapValue(objectID, i, itemBaseContract);
-        material = getExtMapValue(PARAMETER2, hash, gameVoteContract);
-        materialNeedAmount = getExtMapValue(PARAMETER3, hash, gameVoteContract);
-        materialAvailableAmount = 0;
-        long atLeastNQT = materialNeedAmount;
-        long atLeast = atLeastNQT / ONE_WHOLE;
+		if (atLeastNQT <= 0)
+		{
+			continue;
+		}
 
-        if (atLeastNQT <= 0)
-        {
-            continue;
-        }
+		if (atLeastNQT / ONE_WHOLE == 0)
+		{
+			atLeast = ONE_WHOLE / atLeastNQT;
+			//atLeastNQT = atLeast * ONE_WHOLE;
+			wishAmount = wishAmount / atLeastNQT * atLeastNQT;
 
-        if (atLeastNQT / ONE_WHOLE == 0)
-        {
-            atLeast = ONE_WHOLE / atLeastNQT;
-            //atLeastNQT = atLeast * ONE_WHOLE;
-            wishAmount = wishAmount / atLeastNQT * atLeastNQT;
+			if (wishAmount * atLeast < atLeastNQT)
+			{
+				wishAmount = atLeastNQT;
+			}
 
-            if (wishAmount * atLeast < atLeastNQT)
-            {
-                wishAmount = atLeastNQT;
-            }
+		}
+		else
+		{
+			if (wishAmount < ONE_WHOLE)
+			{
+				wishAmount = ONE_WHOLE;
+			}
+		}
 
-        }
-        else
-        {
-            if (wishAmount < ONE_WHOLE)
-            {
-                wishAmount = ONE_WHOLE;
-            }
-        }
+		if (status == 0)
+		{
+			materialAvailableAmount = getMapValue(BUILD, material);
+		}
+		else
+		{
+			// check if in buildup
+			if (targetID != 0 && currentArticle.type == SHIP)
+			{
+				materialAvailableAmount = getExtMapValue(BUILD, material, targetID);
+			}
+			else
+			{
+				materialAvailableAmount = getMapValue(material, GetWichHash(STORE));// GetAmountAvailable(material);
+			}
+		}
 
-        if (status == 0)
-        {
-            materialAvailableAmount = getMapValue(BUILD, material);
-        }
-        else
-        { 
-            // check if in buildup
-            if (targetID != 0 && currentArticle.type == SHIP)
-            {
-                materialAvailableAmount = getExtMapValue(BUILD, material, targetID);
-            }
-            else
-            {
-                materialAvailableAmount = getMapValue(material, GetWichHash(STORE));
-            }
-        }
+		if (materialAvailableAmount > 0 && materialAvailableAmount >= materialNeedAmount * (wishAmount / ONE_WHOLE))
+		{
+			materialCount++;
+			continue;
+		}
 
-        if (materialAvailableAmount > 0 && materialAvailableAmount >= materialNeedAmount * (wishAmount / ONE_WHOLE))
-        {
-            materialCount++;
-            continue;
-        }
+	}
 
-    }
-
-    if (materialCount >= needMaterialCount)
-    {
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-
+	if (materialCount >= needMaterialCount)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 long IsAuthenticated(long sender)
 {
-    if(sender == gameVoteContract || sender == itemBaseContract || sender == marketplaceContract || sender == locationContract || GetTimeIsUp(getMapValue(TEMPAUTH_CONTRACT, sender)) == 0 || getExtMapValue(LOCATION_CONTRACT, 1, sender) == contractID)
+	if(sender == gameVoteContract || sender == itemBaseContract || sender == marketplaceContract || sender == locationContract || GetTimeIsUp(getMapValue(TEMPAUTH_CONTRACT, sender)) == 0)
 	{
-        return 1;
-    }
+		return 1;
+	}
 
-    return 0;
+	return 0;
 }
 long GetB3FromHash256(long a1, long a2, long a3, long a4) {
 	Set_A1_A2(a1, a2);
@@ -1052,7 +988,8 @@ long GetB3FromHash256(long a1, long a2, long a3, long a4) {
 	return Get_B3();
 }
 
-long GetArticleMatchSlotIndex(long articleSymbol, long desiredSlotIndex) {
+long GetArticleMatchSlotIndex(long articleSymbol, long desiredSlotIndex)
+{
     getArticleDetails(articleSymbol);
     getSlotDetails(desiredSlotIndex);
 
@@ -1105,10 +1042,11 @@ long GetArticleMatchSlotIndex(long articleSymbol, long desiredSlotIndex) {
 
 }
 
-long GetSlotNumberOfType(long searchType) {
+long GetSlotNumberOfType(long searchType)
+{
     long slotAmount = getExtMapValue(currentINFO.slotsHash, 0, itemBaseContract);
 
-    for(long i = 1; i < slotAmount; i++)
+    for(long i = 1; i <= slotAmount; i++)
     {
         getSlotDetails(i);
 
@@ -1122,7 +1060,18 @@ long GetSlotNumberOfType(long searchType) {
     return 0;
 }
 
-void SetItemIntoCargo(long item, long amount) {
+void SetItemIntoCargo(long item, long amount, long owner)
+{
+    long ownerHash = GetWichHash(STORE);
+    if(owner == 0)
+    {
+        owner = GetWich();
+    }
+    else
+    {
+        ownerHash = GetB3FromHash256(STORE, owner, 0, 0);
+    }
+
     if (currentINFO.freeCargoSpace > 0 && amount > 0)
     {
         long itemAmount = 0;
@@ -1137,16 +1086,25 @@ void SetItemIntoCargo(long item, long amount) {
             currentINFO.freeCargoSpace = 0;
         }
 
-        long wichHash = GetWichHash(STORE);
-        setMapValue(STORE, GetWich(), wichHash);
-        setMapValue(item, wichHash, getMapValue(item, wichHash) + itemAmount);
+        //long wichHash = GetWichHash(STORE);
+        setMapValue(STORE, owner, ownerHash);
+        setMapValue(item, ownerHash, getMapValue(item, ownerHash) + itemAmount);
 
     }
 
 }
-void GetItemOutOfCargo(long item, long amount) {
+void GetItemOutOfCargo(long item, long amount, long owner)
+{
+    if(owner == 0)
+    {
+        owner = GetWichHash(STORE);
+    }
+    else
+    {
+        owner = GetB3FromHash256(STORE, owner, 0, 0);
+    }
 
-    long amountAvailable = getMapValue(item, GetWichHash(STORE));
+    long amountAvailable = getMapValue(item, owner);
     if(amountAvailable > amount)
     {
         amountAvailable = amountAvailable - amount;
@@ -1158,11 +1116,12 @@ void GetItemOutOfCargo(long item, long amount) {
         amountAvailable = 0;
     }
     
-    setMapValue(item, GetWichHash(STORE), amountAvailable);
+    setMapValue(item, owner, amountAvailable);
     
 }
 
-void DockObject(long objectContract) {
+void DockObject(long objectContract)
+{
     if((objectType != STATION && currentINFO.freeHangars > 0) || objectType == STATION)
     {
         long wichHash = GetWichHash(HANGAR);
@@ -1177,11 +1136,12 @@ void DockObject(long objectContract) {
     }
 
 }
-void UndockObject(long objectContract) {
+void UndockObject(long objectContract)
+{
     long wichHash = GetWichHash(HANGAR);
-    if(getMapValue(objectContract, wichHash) == 1)
+    if(getMapValue(wichHash, objectContract) == 1)
     {
-        setMapValue(objectContract, wichHash, 0);
+        setMapValue(wichHash, objectContract, 0);
         if (objectType != STATION)
         {
             // add hangar places

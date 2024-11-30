@@ -41,17 +41,19 @@
 // sub CONTRACT_SPECIFIC methods
 //#define GAMEVOTE_CONTRACT 1_001_000
 //#define ITEMBASE_CONTRACT 1_001_001
-//#define LOCATION_CONTRACT 1_001_002
-//#define TEMPAUTH_CONTRACT 1_001_003
-//#define SET_ITEMBASE 1_001_004
-//#define SET_OWNER 1_001_005
-//#define SET_NFT_CONTRACT 1_001_006
-//#define AUTHENTICATE 1_001_007
-//#define CREATE_STATION 1_001_008
+//#define MARKETPLACE_CONTRACT 1_001_002
+//#define LOCATION_CONTRACT 1_001_003
+//#define TEMPAUTH_CONTRACT 1_001_004
+//#define SET_ITEMBASE 1_001_005
+//#define SET_MARKETPLACE 1_001_006
+//#define SET_OWNER 1_001_007
+//#define SET_NFT_CONTRACT 1_001_008
+//#define AUTHENTICATE 1_001_009
+//#define CREATE_STATION 1_001_010
 
-// sub GAME_SPECIFIC methods
+// sub GAME_SPECIFIC methods 
 //#define ACT 1_002_001
-//#define BUILD 1_002_002 
+//#define BUILD 1_002_002
 //#define DELIVER 1_002_003
 //#define DESCRIBE 1_002_004
 //#define DOCK 1_002_005
@@ -64,7 +66,8 @@
 //#define REPAIR 1_002_012
 //#define SCAN 1_002_013
 //#define STORE 1_002_014
-//#define TREAT 1_002_015
+//#define TRADE_CREATEORDER 1_002_015
+//#define TRADE_ACCEPTORDER 1_002_016
 
 // (ext)map flags
 // standard
@@ -131,56 +134,60 @@
 //#define PLANET 1_006_021
 #define STAR 1_006_022
 
-// Slot and Hangar types
+// slot and hangar types
 //#define INTERNAL 1_007_001
 //#define EXTERNAL 1_007_002
 
 // slot types
-//#define AMMO_SLOT 1_007_003
-//#define GUN_SLOT 1_007_004
-//#define TURRET_SLOT 1_007_005
-//#define PULPIT_SLOT 1_007_006
-//#define LAUNCHER_SLOT 1_007_007
-//#define ENGINE_SLOT 1_007_008
-//#define SHIELD_SLOT 1_007_009
-//#define CARGO_SLOT 1_007_010
-//#define SCANNER_SLOT 1_007_011
-//#define FACILITY_SLOT 1_007_012
+// #define AMMO_SLOT 1_007_003
+// #define GUN_SLOT 1_007_004
+// #define TURRET_SLOT 1_007_005
+// #define PULPIT_SLOT 1_007_006
+// #define LAUNCHER_SLOT 1_007_007
+// #define ENGINE_SLOT 1_007_008
+// #define SHIELD_SLOT 1_007_009
+// #define CARGO_SLOT 1_007_010
+// #define SCANNER_SLOT 1_007_011
+// #define FACILITY_SLOT 1_007_012
 
 // hangar types
-//#define DRONE_HANGAR 1_007_013
-//#define SHIP_HANGAR 1_007_014
-//#define STATION_HANGAR 1_007_015
+// #define DRONE_HANGAR 1_007_013
+// #define SHIP_HANGAR 1_007_014
+// #define STATION_HANGAR 1_007_015
 
 // sizes and weights
-//#define SMALL 1_008_017
-//#define MEDIUM 1_008_018
-//#define LARGE 1_008_019
-//#define XLARGE 1_008_020
-//#define CAPITAL 1_008_021
+//#define SMALL 1_008_001
+//#define MEDIUM 1_008_002
+//#define LARGE 1_008_003
+//#define XLARGE 1_008_004
+//#define CAPITAL 1_008_005
 
-//#define LIGHT 1_008_022
-//#define HEAVY 1_008_023
+//#define LIGHT 1_008_006
+//#define HEAVY 1_008_007
 
 // item tree
-//#define ELEMENT 1_100_000
-//#define REFINED 1_100_001
-//#define COMMON 1_100_002
-//#define ADVANCED 1_100_003
-//#define COMPONENT 1_100_004
-//#define SYSTEM 1_100_005
-//#define ARTICLE 1_100_006
+//#define ELEMENT 1_009_000
+//#define REFINED 1_009_001
+//#define COMMON 1_009_002
+//#define ADVANCED 1_009_003
+//#define COMPONENT 1_009_004
+//#define SYSTEM 1_009_005
+//#define ARTICLE 1_009_006
 
-// artificial object contract specific
-//#define OWNER 1_009_001
-//#define STATUS 1_009_002
-//#define AMOUNT 1_009_003
+// marketplace contract specific
+//#define SELLORDER 1_010_001
+//#define SYMBOL 1_010_002
+//#define PRICE 1_010_003
+//#define HOLDER 1_010_004
+
+// artificialObject contract specific
+//#define OWNER 1_011_001
+//#define STATUS 1_011_002
+#define AMOUNT 1_011_003
 
 // extContract flags
-#define ACTOR 1_010_001
-#define TARGET 1_010_002
-
-
+#define ACTOR 1_012_001
+#define TARGET 1_012_002
 
 // contract attributes
 // basic contract 
@@ -205,6 +212,7 @@ struct POLLINFO
 {
     long hash,
 	pollAmount,
+	amount,
 	providerID,
 	actorID,
 	targetID,
@@ -246,6 +254,7 @@ void getPollDetails(long hashValue, long currentAmount)
         currentPOLL.hash = hashValue;
         currentPOLL.providerID = getMapValue(PROVIDER_ID, hashValue);
         currentPOLL.pollAmount = getMapValue(DEPOSITMENT, currentPOLL.providerID);
+		currentPOLL.amount = getMapValue(AMOUNT, hashValue);
         currentPOLL.actorID = getMapValue(ACTOR_ID, hashValue);
         currentPOLL.targetID = getMapValue(TARGET_ID, hashValue);
         currentPOLL.mainMethod = getMapValue(MAINMETHOD, hashValue);
@@ -311,7 +320,6 @@ void main(void)
 // this is for a registration into the contract (get vote entitlement)
 void Depositing(void)
 {
-	
 	// ### incoming ###
 	// currentTX.sender = some of the depositers ID
 	// currentTX.amount <= 100 signa TODO: change for mainnet
@@ -323,21 +331,20 @@ void Depositing(void)
 	// currentTX.message[5] = free
 	// currentTX.message[6] = free
 	// currentTX.message[7] = free
-	
+
 	/**
-		* - ContractIDs cannot deposit
-		* - DEV: if there are no contract providers, its the first deposit
-		* - DEV: current TX amount is 100 signa for tests
-		* - the senderID can not be a map flag
-		* - the senderID has no deposit right now
-		* - TODO: take the CreatorID into account when contract providers count = 0
+	* - ContractIDs cannot deposit
+	* - DEV: if there are no contract providers, its the first deposit
+	* - DEV: current TX amount is 100 signa for tests
+	* - the senderID can not be a map flag
+	* - the senderID has no deposit right now
+	* - TODO: take the CreatorID into account when contract providers count = 0
 	*/
 	if (getCodeHashOf(currentTX.sender) == 0 && (contractProvider == 0 || currentTX.amount <= 100_0000_0000) && IsIDOK(currentTX.sender, 0) == 1 && getMapValue(DEPOSITMENT, currentTX.sender) == 0)
 	{
-		
 		// Deposits amount
 		setMapValue(DEPOSITMENT, currentTX.sender, currentTX.amount);
-		
+
 		if (contractProvider <= 1)
 		{
 			setMapValue(ENTITLEMENT, currentTX.sender, 1);
@@ -345,30 +352,25 @@ void Depositing(void)
 		}
 		else
 		{
-			
 			long timeout = SetTimeOut(ONEHOUR);
 			long hashValue = GetB3FromHash256(currentTX.sender, currentTX.amount, 0, timeout);
-			
+
 			setMapValue(ELECTIONS, contractElections++, hashValue);
-			
+
 			setMapValue(ENTITLEMENT, currentTX.sender, 0);
 			setMapValue(PROVIDER_ID, hashValue, currentTX.sender);
 			setMapValue(MAINMETHOD, hashValue, DEPOSITING);
 			setMapValue(TIMEOUT, hashValue, timeout);
-			
 		}
-		
 	}
 	else
 	{
 		SendBack();
 	}
-	
 }
 
 void MainMethod(long type)
 {
-	
 	// ### incoming ###
 	// currentTX.sender = providerID (for reward)
 	// currentTX.message[0] = main method (CONTRACT_SPECIFIC, GAME_SPECIFIC, ...)
@@ -379,19 +381,20 @@ void MainMethod(long type)
 	// currentTX.message[5] = parameter4
 	// currentTX.message[6] = actorID (to process sub method(parameter))
 	// currentTX.message[7] = targetContractID (to process sub method(parameter))
-	
+
 	if (IsIDOK(currentTX.sender, 0) != 0 && IsIDOK(currentTX.message[6], 1) != 0 && IsIDOK(currentTX.message[7], 1) != 0 && getMapValue(ENTITLEMENT, currentTX.sender) == 1)
 	{
-		
+
 		long timeout = SetTimeOut(ONEHOUR);
 		long hashValue = GetB3FromHash256(currentTX.sender, currentTX.message[6], currentTX.message[7], timeout);
-		
+
 		setMapValue(ELECTIONS, contractElections++, hashValue);
-		
+
 		setMapValue(PROVIDER_ID, hashValue, currentTX.sender);
+		setMapValue(AMOUNT, hashValue, currentTX.amount - ONE_WHOLE);
 		setMapValue(ACTOR_ID, hashValue, currentTX.message[6]);
 		setMapValue(TARGET_ID, hashValue, currentTX.message[7]);
-		
+
 		setMapValue(MAINMETHOD, hashValue, type);
 		setMapValue(SUBMETHOD, hashValue, currentTX.message[1]);
 		setMapValue(PARAMETER, hashValue, currentTX.message[2]);
@@ -399,10 +402,11 @@ void MainMethod(long type)
 		setMapValue(PARAMETER3, hashValue, currentTX.message[4]);
 		setMapValue(PARAMETER4, hashValue, currentTX.message[5]);
 		setMapValue(TIMEOUT, hashValue, timeout);
-		
+
 		currentPOLL.hash = hashValue;
 		currentPOLL.providerID = currentTX.sender;
 		currentPOLL.pollAmount = getMapValue(DEPOSITMENT, currentTX.sender);
+		currentPOLL.amount = currentTX.amount - ONE_WHOLE;
 		currentPOLL.actorID = currentTX.message[6];
 		currentPOLL.targetID = currentTX.message[7];
 		currentPOLL.mainMethod = type;
@@ -412,7 +416,7 @@ void MainMethod(long type)
 		currentPOLL.parameter3 = currentTX.message[4];
 		currentPOLL.parameter4 = currentTX.message[5];
 		currentPOLL.timeStamp = timeout;
-		
+
 		if (contractProvider <= 1)
 		{
 			// no voting necessary
@@ -424,21 +428,19 @@ void MainMethod(long type)
 	{
 		setMapValue(18657918865985095, 1, currentTX.message[3]); // 18657918865985095 = BIGBANG
 		SetSendBufferForTargetContract(18657918865985095, STAR, 0, 0, 0, 0, 0, 0);
-		SendBufferWithAmount(ONE_WHOLE, currentTX.message[1]);
+		SendBufferWithAmount(currentFee, currentTX.message[1]);
 		SetSendBufferForTargetContract(18657918865985095, ASTEROID, currentTX.message[1], 0, 0, 0, 0, 0);
-		SendBufferWithAmount(ONE_WHOLE, currentTX.message[2]);
+		SendBufferWithAmount(currentFee, currentTX.message[2]);
 	}
 	else
 	{
 		SendBack();
 	}
-	
 }
 
 // this is for a complete deregistration from the contract (no vote entitlement anymore)
 void Withdrawaling(void)
 {
-	
 	// ### incoming ###
 	// currentTX.sender = some of the depositers ID
 	// currentTX.message[0] = free
@@ -449,29 +451,29 @@ void Withdrawaling(void)
 	// currentTX.message[5] = free
 	// currentTX.message[6] = free
 	// currentTX.message[7] = free
-	
+
 	/**
 		* - the senderID can not be a map flag
 		* - the senderID has to be entitled
 		* - 
 		* - 
-	*/
-	
+		*/
+
 	if (IsIDOK(currentTX.sender, 0) == 1 && getMapValue(ENTITLEMENT, currentTX.sender) == 1)
 	{
-		
+
 		long deposit = getMapValue(DEPOSITMENT, currentTX.sender);
-		
+
 		// set DEPOSIT, ENTITLEMENT and VOTEPOINTS to 0
 		setMapValue(DEPOSITMENT, currentTX.sender, 0);
 		setMapValue(ENTITLEMENT, currentTX.sender, 0);
 		setMapValue(VOTEPOINTS, currentTX.sender, 0);
-		
+
 		contractProvider--;
-		
+
 		if (deposit >= ONE_WHOLE)
 		{
-			
+
 			if (contractProvider == 0)
 			{
 				sendAmount(Get_Current_Balance(), currentTX.sender);
@@ -481,7 +483,7 @@ void Withdrawaling(void)
 				sendAmount(deposit, currentTX.sender);
 			}
 		}
-		
+
 	}
 	else
 	{
@@ -492,7 +494,6 @@ void Withdrawaling(void)
 // this is about voting for a poll
 void VoteForPoll(void)
 {
-	
 	// ### incoming ###
 	// currentTX.sender = some other contractProviderID as voter
 	// currentTX.message[0] = contract method (VOTE_FOR_POLL)
@@ -503,9 +504,9 @@ void VoteForPoll(void)
 	// currentTX.message[5] = free
 	// currentTX.message[6] = free
 	// currentTX.message[7] = free
-	
+
 	getPollDetails(currentTX.message[1], currentTX.amount);
-	
+
 	/**
 		* - the hash of the poll must not be 0
 		* - the contractProvider count has to be bigger then 1
@@ -515,11 +516,11 @@ void VoteForPoll(void)
 		* - the voters ID must not have already voted for this poll
 		* - the poll must not have already timed out
 		* - the vote result of this voter must be ok
-	*/
-	
+		*/
+
 	if (currentPOLL.hash != 0 && contractProvider > 1 && currentPOLL.providerID != currentTX.sender && IsIDOK(currentTX.sender, 0) != 0 && getMapValue(ENTITLEMENT, currentTX.sender) == 1 && getMapValue(currentPOLL.hash, currentTX.sender) == 0 && currentPOLL.timeOut == 0 && currentPOLL.voteResult != 0)
 	{
-		
+
 		if (currentPOLL.voteResult == 1)
 		{
 			// rejected
@@ -532,13 +533,13 @@ void VoteForPoll(void)
 			setMapValue(DEPOSITMENT, currentPOLL.hash, getMapValue(DEPOSITMENT, currentPOLL.hash) + currentTX.amount - currentFee);
 			setMapValue(AGREEERS, currentPOLL.hash, getMapValue(AGREEERS, currentPOLL.hash) + 1);
 		}
-		
+
 		// refresh status
 		currentPOLL.status = CheckThePoll(currentPOLL.hash);
-		
+
 		// set to already voted
 		setMapValue(currentPOLL.hash, currentTX.sender, 1);
-		
+
 		// get the votepoints from the current voter
 		long maxVotePoints = getMapValue(VOTEPOINTS, currentTX.sender) + 1;
 		// check if the max vote points of voter is bigger then the global votepoints
@@ -547,20 +548,20 @@ void VoteForPoll(void)
 			// set global vote points to the max vote points of voter
 			maxGlobalVotePoints = maxVotePoints;
 		}
-		
+
 		// increment votepoints of current voter
 		setMapValue(VOTEPOINTS, currentTX.sender, maxVotePoints);
-		
+
 		// if status == 2 then wait for more votes else execute the poll
 		if (currentPOLL.status != 2)
 		{
 			Execute(currentPOLL.status);
 		}
-		
+
 	}
 	else
 	{
-		
+
 		if (currentPOLL.timeOut == 1)
 		{
 			// if status == 2 then reject the poll
@@ -577,9 +578,8 @@ void VoteForPoll(void)
 		{
 			SendBack();
 		}
-		
+
 	}
-	
 }
 
 // ### INTERNAL METHODS AND FUNCTIONS ###
@@ -587,10 +587,9 @@ void VoteForPoll(void)
 // a vote of >50% is required for a successful poll
 long CheckThePoll(long hashValue)
 {
-	
 	long rejecters = getMapValue(REJECTERS, hashValue);
 	long accepters = getMapValue(AGREEERS, hashValue);
-	
+
 	if (rejecters > accepters && contractProvider == 2)
 	{
 		// poll rejected
@@ -601,7 +600,7 @@ long CheckThePoll(long hashValue)
 		// poll accepted
 		return 1;
 	}
-	
+
 	if (rejecters > ((contractProvider -1)/ 2))
 	{
 		// poll rejected
@@ -612,17 +611,20 @@ long CheckThePoll(long hashValue)
 		// poll accepted
 		return 1;
 	}
-	
+
 	// not enough votes
 	return 2;
 }
 void Execute(long pollStatus)
 {
-	
 	setMapValue(TIMEOUT, currentPOLL.hash, 0);
 	setMapValue(DEPOSITMENT, currentPOLL.hash, 0);
 	long pieceAmount = (currentPOLL.pollAmount * getMapValue(VOTEPOINTS, currentPOLL.providerID) / maxGlobalVotePoints) - currentFee;
-	
+	if (pieceAmount < 0)
+	{
+		pieceAmount = 0;
+	}
+
 	if (pollStatus == 1)
 	{
 		switch (currentPOLL.mainMethod)
@@ -632,13 +634,13 @@ void Execute(long pollStatus)
 				contractProvider++;
 				break;
 			case CONTRACT_SPECIFIC:
-			
+
 				// send reward to pollsterID
 				if (pieceAmount >= ONE_WHOLE)
 				{
 					sendAmount(pieceAmount, currentPOLL.providerID);
 				}
-				
+
 				// ### outgoing ###
 				// recipient = targetContractID (123 (eg. ZeptorLight))
 				// message[0] = currentHash
@@ -649,13 +651,13 @@ void Execute(long pollStatus)
 				// message[5] = free
 				// message[6] = free
 				// message[7] = free
-				
+
 				SetSendBufferForTargetContract(HASH, currentPOLL.hash, 0, 0, 0, 0, 0, 0);
-				SendBufferWithAmount(currentPOLL.pollAmount - pieceAmount, currentPOLL.targetID);
-				
+				SendBufferWithAmount(currentPOLL.amount + (currentPOLL.pollAmount  - pieceAmount), currentPOLL.targetID);
+
 				break;
 			case GAME_SPECIFIC:
-			
+
 				// send reward to pollsterID
 				if (pieceAmount >= ONE_WHOLE)
 				{
@@ -677,7 +679,7 @@ void Execute(long pollStatus)
 					SetSendBufferForTargetContract(HASH, currentPOLL.hash, 0, 0, 0, 0, 0, ACTOR);
 					SendBufferWithAmount((currentPOLL.pollAmount - (pieceAmount / 2)) / 2, currentPOLL.actorID);
 				}
-				
+
 				// ### outgoing to TARGET ###
 				// recipient = targetContractID
 				// message[0] = currentHash
@@ -688,21 +690,20 @@ void Execute(long pollStatus)
 				// message[5] = free
 				// message[6] = free
 				// message[7] = free
-				
+
 				if(getCodeHashOf(currentPOLL.targetID) != 0)
 				{
 					SetSendBufferForTargetContract(HASH, currentPOLL.hash, 0, 0, 0, 0, 0, TARGET);
-					SendBufferWithAmount((currentPOLL.pollAmount - (pieceAmount / 2)) / 2, currentPOLL.targetID);
+					SendBufferWithAmount(currentPOLL.amount + ((currentPOLL.pollAmount - (pieceAmount / 2)) / 2), currentPOLL.targetID);
 				}
-				
+
 				break;
 		}
 	}
 	else
 	{
-		sendAmount(currentPOLL.pollAmount - currentFee, currentPOLL.providerID);
+		sendAmount(currentPOLL.pollAmount + (currentPOLL.amount - currentFee), currentPOLL.providerID);
 	}
-	
 }
 
 void SendBack() { sendAmount(currentTX.amount - currentFee, currentTX.sender); }

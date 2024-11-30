@@ -36,11 +36,11 @@ const long ONE_WHOLE = 100000000;
 
 // sub CONTRACT_SPECIFIC methods
 #define GAMEVOTE_CONTRACT 1_001_000
-//#define ITEMBASE_CONTRACT 1_001_001
+#define ITEMBASE_CONTRACT 1_001_001
 //#define MARKETPLACE_CONTRACT 1_001_002
 #define LOCATION_CONTRACT 1_001_003
 #define TEMPAUTH_CONTRACT 1_001_004
-//#define SET_ITEMBASE 1_001_005
+#define SET_ITEMBASE 1_001_005
 //#define SET_MARKETPLACE 1_001_006
 //#define SET_OWNER 1_001_007
 //#define SET_NFT_CONTRACT 1_001_008
@@ -51,18 +51,19 @@ const long ONE_WHOLE = 100000000;
 //#define ACT 1_002_001
 //#define BUILD 1_002_002
 //#define DELIVER 1_002_003
-#define DESCRIBE 1_002_004
+//#define DESCRIBE 1_002_004
 //#define DOCK 1_002_005
 //#define EQUIP 1_002_006
 //#define EXPLODE 1_002_007
 //#define INSURE 1_002_008
-#define INVENT 1_002_009
+//#define INVENT 1_002_009
 //#define MINING 1_002_010
 //#define REFINE 1_002_011
 //#define REPAIR 1_002_012
 //#define SCAN 1_002_013
 #define STORE 1_002_014
-#define TRADE 1_002_015
+#define TRADE_CREATEORDER 1_002_015
+#define TRADE_ACCEPTORDER 1_002_016
 
 // (ext)map flags
 // standard
@@ -79,12 +80,12 @@ const long ONE_WHOLE = 100000000;
 
 // vote contract specific
 #define DEPOSITMENT 1_004_001
-// #define ENTITLEMENT 1_004_002
-// #define ELECTIONS 1_004_003
-// #define TIMEOUT 1_004_004
-// #define AGREEERS 1_004_005
-// #define REJECTERS 1_004_006
-// #define VOTEPOINTS 1_004_007
+//#define ENTITLEMENT 1_004_002
+//#define ELECTIONS 1_004_003
+//#define TIMEOUT 1_004_004
+//#define AGREEERS 1_004_005
+//#define REJECTERS 1_004_006
+//#define VOTEPOINTS 1_004_007
 
 // item base specific
 // item properties
@@ -101,7 +102,7 @@ const long ONE_WHOLE = 100000000;
 #define SLOT 1_005_011
 #define SLOTS 1_005_012
 //#define HANGAR 1_005_013
-#define HANGARS 1_005_014
+//#define HANGARS 1_005_014
 
 // types
 //#define GUN 1_006_001
@@ -129,7 +130,7 @@ const long ONE_WHOLE = 100000000;
 //#define PLANET 1_006_021
 //#define STAR 1_006_022
 
-// slot and Hangar types
+// slot and hangar types
 //#define INTERNAL 1_007_001
 //#define EXTERNAL 1_007_002
 
@@ -151,14 +152,14 @@ const long ONE_WHOLE = 100000000;
 //#define STATION_HANGAR 1_007_015
 
 // sizes and weights
-//#define SMALL 1_008_017
-//#define MEDIUM 1_008_018
-//#define LARGE 1_008_019
-//#define XLARGE 1_008_020
-//#define CAPITAL 1_008_021
+//#define SMALL 1_008_001
+//#define MEDIUM 1_008_002
+//#define LARGE 1_008_003
+//#define XLARGE 1_008_004
+//#define CAPITAL 1_008_005
 
-//#define LIGHT 1_008_022
-//#define HEAVY 1_008_023
+//#define LIGHT 1_008_006
+//#define HEAVY 1_008_007
 
 // item tree
 //#define ELEMENT 1_009_000
@@ -170,10 +171,12 @@ const long ONE_WHOLE = 100000000;
 //#define ARTICLE 1_009_006
 
 // marketplace contract specific
-#define SYMBOL 1_010_001
-#define PRICE 1_010_002
+#define SELLORDER 1_010_001
+#define SYMBOL 1_010_002
+#define PRICE 1_010_003
+#define HOLDER 1_010_004
 
-// artificial object contract specific
+// artificialObject contract specific
 #define OWNER 1_011_001
 #define STATUS 1_011_002
 #define AMOUNT 1_011_003
@@ -184,8 +187,10 @@ const long ONE_WHOLE = 100000000;
 
 // contract attributes
 // basic contract
-long contractId = 0;
+long contractID = 0;
 long gameVoteContract = 0;
+long itemBaseContract = 0;
+long orderNumber = 0;
 long sendBuffer[8];
 long currentFee = ONE_WHOLE;
 
@@ -200,6 +205,7 @@ struct TXINFO {
 struct POLLINFO {
     long hash,
 	pollAmount,
+	amount,
 	providerID,
 	actorID,
 	targetID,
@@ -230,11 +236,12 @@ constructor();
 
 void constructor(void) {
     // this function will be called only once on first activation.
-	contractId = GetContractID();
+	contractID = GetContractID();
 	gameVoteContract = 1111; //TODO: set initial ID
 	setMapValue(GAMEVOTE_CONTRACT, 1, gameVoteContract);
 	currentPOLL.hash = 0;
 	currentPOLL.actorID = 0;
+	currentPOLL.amount = 0;
 }
 
 long GetContractID() {
@@ -259,6 +266,7 @@ void getPollDetails(long hashValue, long pollSaveID)
         currentPOLL.hash = hashValue;
         currentPOLL.providerID = getExtMapValue(PROVIDER_ID, hashValue, pollSaveID);
         currentPOLL.pollAmount = getExtMapValue(DEPOSITMENT, currentPOLL.providerID, pollSaveID);
+		currentPOLL.amount = getExtMapValue(AMOUNT, hashValue, pollSaveID);
         currentPOLL.actorID = getExtMapValue(ACTOR_ID, hashValue, pollSaveID);
         currentPOLL.targetID = getExtMapValue(TARGET_ID, hashValue, pollSaveID);
         currentPOLL.mainMethod = getExtMapValue(MAINMETHOD, hashValue, pollSaveID);
@@ -273,36 +281,19 @@ void getPollDetails(long hashValue, long pollSaveID)
 
 }
 
-void getOrderDetails(long hashValue, long holderID)
+void getOrderDetails(long hashValue)
 {
 	currentORDER.hash = hashValue;
+	currentORDER.isSellOrder = getMapValue(SELLORDER, hashValue);
 	currentORDER.symbol = getMapValue(SYMBOL, hashValue);
 	currentORDER.price = getMapValue(PRICE, hashValue);
 	currentORDER.location = getMapValue(LOCATION_CONTRACT, hashValue);
 	currentORDER.owner = getMapValue(OWNER, hashValue);
-
+	currentORDER.holder = getMapValue(HOLDER, hashValue);
 	currentORDER.amount = getMapValue(AMOUNT, hashValue);
-	currentORDER.status = 1; // getMapValue(STATUS, hashValue);
+	currentORDER.status = getMapValue(STATUS, hashValue);
 
-	if (currentORDER.amount < 0)
-	{
-		currentORDER.amount = currentORDER.amount * -1;
-		currentORDER.isSellOrder = 1;
-		currentORDER.holder = contractId;
-	}
-	else if (currentORDER.amount > 0)
-	{
-		currentORDER.isSellOrder = 0;
-		currentORDER.holder = holderID;
-	}
-	else
-	{
-		currentORDER.isSellOrder = -1;
-		currentORDER.holder = 0;
-		currentORDER.status = 0;
-	}
-
-	if (currentORDER.status == 1)
+if (currentORDER.status == 1)
 	{
 		currentORDER.available = getExtMapValue(hashValue, getExtMapValue(STORE, currentORDER.holder, currentORDER.location), currentORDER.location);
 		currentORDER.total = currentORDER.amount * currentORDER.price;
@@ -374,216 +365,375 @@ void main(void)
 // main methods
 void ContractSpecific(void)
 {
-    setMapValue(TEMPAUTH_CONTRACT, currentPOLL.parameter, 1);
+    if (itemBaseContract == 0 && currentPOLL.subMethod != SET_ITEMBASE)
+	{
+		return;
+	}
+	switch (currentPOLL.subMethod)
+	{
+		case SET_ITEMBASE:
+			itemBaseContract = currentPOLL.parameter;
+			setMapValue(ITEMBASE_CONTRACT, 1, currentPOLL.parameter);
+			break;
+		case AUTHENTICATE:
+			setMapValue(TEMPAUTH_CONTRACT, currentPOLL.parameter, SetTimeOut(16));
+			break;
+	}
 }
 void GameSpecific(void)
 {
     // ### income ###
-    // currentTX.sender = gamevoteContract
-    // currentTX.message[0] = currentHash
-    // currentTX.message[1] = TARGET (wich part on this poll)
-    // currentTX.message[2] = voteContractID (optional)
-    // currentTX.message[3] = free
-    // currentTX.message[4] = free
-    // currentTX.message[5] = free
-    // currentTX.message[6] = free
-    // currentTX.message[7] = free
+	// currentTX.sender = gamevoteContract
+	// currentTX.message[0] = currentHash
+	// currentTX.message[1] = TARGET (wich part on this poll)
+	// currentTX.message[2] = voteContractID (optional)
+	// currentTX.message[3] = free
+	// currentTX.message[4] = free
+	// currentTX.message[5] = free
+	// currentTX.message[6] = free
+	// currentTX.message[7] = free
 
-    switch (currentPOLL.subMethod)
-    {
-		case TRADE:
-			Trade();
+	switch (currentPOLL.subMethod)
+	{
+		case TRADE_CREATEORDER:
+			CreateOrder();
+			break;
+		case TRADE_ACCEPTORDER:
+			AcceptOrder();
 			break;
 		default:
 			break;
+	}
+}
+
+// sub methods
+void CreateOrder(void)
+{
+
+    /* incoming message (input)
+    * currentPOLL.mainMethod = GAME_SPECIFIC
+    * currentPOLL.subMethod = TRADE_CREATEORDER
+    * currentPOLL.parameter = IRON (SYMBOL, ARTICLE, ...)
+    * currentPOLL.parameter2 = -123_0000_0000 (sell amount)
+    * currentPOLL.parameter3 = 456_0000_0000 (price)
+    * currentPOLL.parameter4 = 6666 (station contract(location))
+    * currentPOLL.actorID = 10000 (origin actor(owner))
+    * currentPOLL.targetID = 3333 (this marketplace)
+    * currentPOLL.partOfPoll = TARGET
+    */
+
+    if (getExtMapValue(STATUS, 1, currentPOLL.parameter4) == 1) 
+    {
+        long slot = FindTradeHubSlot(currentPOLL.parameter4);
+        if (slot != 0)
+        {
+
+            currentORDER.hash = 0;
+            currentORDER.owner = currentPOLL.actorID;
+            currentORDER.symbol = currentPOLL.parameter;
+            currentORDER.location = currentPOLL.parameter4;
+            currentORDER.status = 0;
+            if (currentPOLL.parameter2 < 0)
+            {
+                // sellorder
+                currentORDER.isSellOrder = 1;
+                currentORDER.amount = currentPOLL.parameter2 * -1;
+                currentORDER.price = currentPOLL.parameter3;
+                currentORDER.total = currentORDER.price * currentORDER.amount;
+                currentORDER.holder = contractID;
+                
+                currentORDER.available = getExtMapValue(currentORDER.symbol, getExtMapValue(STORE, currentORDER.owner, currentORDER.location), currentORDER.location);
+                
+                if (currentORDER.amount > currentORDER.available)
+                {
+                    currentORDER.amount = currentORDER.available;
+                }
+
+                if (currentORDER.amount >= ONE_WHOLE)
+                {
+                    currentORDER.status = 1;
+                }
+            }
+            else
+            {
+                // buyorder
+
+                currentORDER.isSellOrder = 0;
+                currentORDER.amount = currentPOLL.parameter2;
+                currentORDER.price = currentTX.amount - (currentTX.amount - currentPOLL.amount);
+                currentORDER.total = currentORDER.price * currentORDER.amount;
+                currentORDER.holder = 0;
+                //currentORDER.location = 0;
+                currentORDER.available = 0;
+
+                if (currentORDER.price > ONE_WHOLE)
+                {
+                    currentORDER.status = 1;
+                }
+               
+            }
+
+            if(currentORDER.status == 1)
+            {
+                CreateNewOrder();
+            }
+
+        }
     }
 
 }
 
-// sub methods
-
-void Trade()
+void AcceptOrder(void)
 {
+    // accept order
+    /* incoming message (input)
+     * currentPOLL.mainMethod = GAME_SPECIFIC
+     * currentPOLL.subMethod = TRADE_ACCEPTORDER
+     * currentPOLL.parameter = HASH (of order)
+     * currentPOLL.parameter2 = 123_0000_0000 (amount)
+     * currentPOLL.parameter3 = 0
+     * currentPOLL.parameter4 = 0
+     * currentPOLL.actorID = 10000 (origin actor(buyer))
+     * currentPOLL.targetID = 3333 (marketplace)
+     */
 
-	/* incoming message (input)
-	* currentPOLL.mainMethod = GAME_SPECIFIC
-	* currentPOLL.subMethod = TRADE
-	* currentPOLL.parameter = SYMBOL
-	* currentPOLL.parameter2 = IRON (SYMBOL, [HASH (of TradeEntry)])
-	* currentPOLL.parameter3 = -123 (sell amount)
-	* currentPOLL.parameter4 = 456 (price)
-	* currentPOLL.actorID = 10000 (origin actor(owner))
-	* currentPOLL.targetID = 3333 (station contract(location))
-	* currentPOLL.partOfPoll = TARGET
-	*/
+    // change or cancel order
+    /* incoming message (input)
+    * currentPOLL.mainMethod = GAME_SPECIFIC
+    * currentPOLL.subMethod = TRADE_CHANGEORDER
+    * currentPOLL.parameter = HASH (of order)
+    * currentPOLL.parameter2 = 123_0000_0000 (amount)
+    * currentPOLL.parameter3 = 456_0000_0000 (price)
+    * currentPOLL.parameter4 = 0
+    * currentPOLL.actorID = 10000 (owner)
+    * currentPOLL.targetID = 3333 (marketplace)
+    */
 
-	/* TODOs: checking and processing (putput)
-	* - status
-	* - TRADE_HUB of target contract
-	* - Amount of item strored at target contract
-	* - check if amount of item is owned by actorID at target storage 
-	*/
+    getOrderDetails(currentPOLL.parameter);
 
-	if (getExtMapValue(STATUS, 1, currentPOLL.targetID) == 1) 
-	{
-		long slot = FindTradeHubSlot(currentPOLL.targetID);
-		if (slot != 0)
-		{
-			long amount = currentPOLL.parameter3;
+    // check for station exists
+    if (getExtMapValue(STATUS, 1, currentORDER.location) == 1)
+    {
+        // check for trade hub exists on station
+        long slot = FindTradeHubSlot(currentORDER.location);
+        if (slot != 0)
+        {
+            if (currentORDER.owner == currentPOLL.actorID)
+            {
+                // change or cancel order
+                ChangeOrderConditions();
+            }
+            else
+            {
+                // check if the order is a sellorder
+                if (currentORDER.isSellOrder == 1)
+                {
+                    // check if item amount is available
+                    // check funds for buying
+                    if (currentORDER.amount >= currentPOLL.parameter2 && currentPOLL.amount >= currentORDER.price * (currentPOLL.parameter2 / ONE_WHOLE))
+                    {
+                        ExecuteAcceptedOrder(currentPOLL.parameter2);
+                    }
+                }
+                else
+                {
+                    // buyorder
+                    long available = getExtMapValue(currentORDER.symbol, getExtMapValue(STORE, currentPOLL.actorID, currentORDER.location), currentORDER.location);
+                    // check if item amount is available
+                    if (available >= currentPOLL.parameter2 && currentPOLL.parameter2 <= currentORDER.amount)
+                    {
+                        ExecuteAcceptedOrder(currentPOLL.parameter2);
+                    }
+                }
+            }
 
-			if (amount < 0)
-			{
-				amount = amount * -1;
-			}
-
-			if (currentPOLL.parameter == SYMBOL)
-			{
-				// currentPOLL.parameter is SYMBOL
-				// create new order
-				// check item and enough amount on target contract map for selling
-				// OR positive amount for buying
-				if (getExtMapValue(currentPOLL.parameter2, getExtMapValue(STORE, currentPOLL.actorID, currentPOLL.targetID), currentPOLL.targetID) >= amount || currentPOLL.parameter3 >= 0)
-				{
-					CreateNewOrder(slot, amount);
-				}
-				
-			}
-			else
-			{
-				// currentPOLL.parameter is not SYMBOL
-				// accept open order
-
-				/* check status of target contract
-				 * check item and enough amount on target contract map for buying (owner = marketplace contract)
-				 * check item and enough amount on target contract map for selling (owner = actorID; target is direct, not marketplace)
-				 * check if orderHash is ok (open)
-				 * 
-				 * 
-				 * close order when finished
-				 */
-
-				
-
-				long storeId = contractId;
-
-				if (currentPOLL.parameter3 < 0)
-				{
-					// selling to a buyorder
-					storeId = currentPOLL.actorID;
-				}
-
-				long storedAmount = getExtMapValue(currentPOLL.parameter2, getExtMapValue(STORE, storeId, currentPOLL.targetID), currentPOLL.targetID);
-
-				if (storedAmount >= amount)
-				{
-
-					getOrderDetails(currentPOLL.parameter2, currentPOLL.actorID);
-
-					if (currentORDER.location == currentPOLL.targetID && (currentORDER.owner == storeId || contractId == storeId))
-					{
-						if (currentPOLL.parameter3 < 0)
-						{
-							// selling to a buyorder
-
-							/* outgoing message
-							* currentPOLL.mainMethod = GAME_SPECIFIC
-							* currentPOLL.subMethod = TRADE
-							* currentPOLL.parameter = slotNumber (1...n their must be the TRADE_HUB)
-							* currentPOLL.parameter2 = HASH (of order)
-							* currentPOLL.parameter3 = 123
-							* currentPOLL.parameter4 = 10000 (origin actor) FROM
-							* currentPOLL.actorID = 7777 (marketplace contract) TO
-							* currentPOLL.targetID = 3333 (this contract)
-							* currentPOLL.partOfPoll = TARGET
-							*/
-
-							SetSendBufferForTargetContract(GAME_SPECIFIC, TRADE, slot, currentORDER.symbol, amount, storeId, currentPOLL.targetID, currentPOLL.targetID);
-							SendBufferWithAmount(ONE_WHOLE, currentPOLL.targetID);
-						}
-						else
-						{
-							// buying from a sellorder
-
-							/* outgoing message
-							* currentPOLL.mainMethod = GAME_SPECIFIC
-							* currentPOLL.subMethod = TRADE
-							* currentPOLL.parameter = slotNumber (1...n their must be the TRADE_HUB)
-							* currentPOLL.parameter2 = HASH (of order)
-							* currentPOLL.parameter3 = 123
-							* currentPOLL.parameter4 = 10000 (origin actor) FROM
-							* currentPOLL.actorID = 7777 (marketplace contract) TO
-							* currentPOLL.targetID = 3333 (this contract)
-							* currentPOLL.partOfPoll = TARGET
-							*/
-
-							SetSendBufferForTargetContract(GAME_SPECIFIC, TRADE, slot, getMapValue(SYMBOL, currentPOLL.parameter2), amount, storeId, currentPOLL.targetID, currentPOLL.targetID);
-							SendBufferWithAmount(ONE_WHOLE, currentPOLL.targetID);
-						}
-
-						if(storedAmount == amount)
-						{
-							setMapValue(AMOUNT, currentPOLL.parameter, 0);
-							setMapValue(STATUS, currentPOLL.parameter, 0);
-						}
-					}
-				}
-			}
-		}
-	}
+        }
+    }
 }
 
 long FindTradeHubSlot(long targetID)
 {
-	//long name = getExtMapValue(TYPE, STATION, targetID);
-	//long slotsHash = getExtMapValue(SLOTS, getExtMapValue(TYPE, STATION, targetID), targetID);
-	long slots = getExtMapValue(getExtMapValue(SLOTS, getExtMapValue(TYPE, STATION, targetID), targetID), 0, targetID);
+	long slots = getExtMapValue(getExtMapValue(SLOTS, getExtMapValue(TYPE, STATION, targetID), itemBaseContract), 0, itemBaseContract);
 
 	for (long i = 1; i <= slots; i++)
 	{
-		if (getExtMapValue(SLOT, i, targetID) == TRADE_HUB)
+		//long tmp1 = getExtMapValue(SLOT, i, targetID);
+		//long tmp2 = getExtMapValue(TYPE, getExtMapValue(SLOT, i, targetID), itemBaseContract);
+
+		if (getExtMapValue(TYPE, getExtMapValue(SLOT, i, targetID), itemBaseContract) == TRADE_HUB)
 		{
 			return i;
 		}
+
 	}
 	return 0;
 }
 
-void CreateNewOrder(long tradeHubSlot, long amount)
+void CreateNewOrder(void)
 {
-	if (currentPOLL.parameter3 >= 0)
+	long hash = GetB3FromHash256(currentORDER.owner, currentORDER.location, currentORDER.symbol, currentTX.timestamp);
+	setMapValue(HASH, orderNumber++, hash);
+	setMapValue(SELLORDER, hash, currentORDER.isSellOrder);
+	setMapValue(SYMBOL, hash, currentORDER.symbol);
+	setMapValue(AMOUNT, hash, currentORDER.amount);
+	setMapValue(PRICE, hash, currentORDER.price);
+	setMapValue(LOCATION_CONTRACT, hash, currentORDER.location);
+	setMapValue(OWNER, hash, currentORDER.owner);
+	setMapValue(HOLDER, hash, currentORDER.holder);
+	setMapValue(STATUS, hash, currentORDER.status);
+
+	if (currentORDER.isSellOrder == 1)
 	{
-		// buyorder
-		currentPOLL.parameter4 = (currentTX.amount / currentPOLL.parameter3) - currentFee;
-	}
-	
-	long hash = GetB3FromHash256(currentPOLL.actorID, currentPOLL.targetID, currentPOLL.parameter2, currentTX.timestamp);
-	setMapValue(HASH, 1, hash);
-	setMapValue(SYMBOL, hash, currentPOLL.parameter2);
-	setMapValue(AMOUNT, hash, currentPOLL.parameter3);
-	setMapValue(PRICE, hash, currentPOLL.parameter4);
-	setMapValue(LOCATION_CONTRACT, hash, currentPOLL.targetID);
-	setMapValue(OWNER, hash, currentPOLL.actorID);
-	setMapValue(STATUS, hash, 1);
-	
-	if (currentPOLL.parameter3 < 0)
-	{
+
 		// sellorder
 
 		/* outgoing message
 		* currentPOLL.mainMethod = GAME_SPECIFIC
-		* currentPOLL.subMethod = TRADE
-		* currentPOLL.parameter = slotNumber (1...n their must be the TRADE_HUB)
-		* currentPOLL.parameter2 = IRON
-		* currentPOLL.parameter3 = 123
-		* currentPOLL.parameter4 = 10000 (origin actor)
-		* currentPOLL.actorID = 7777 (marketplace contract)
-		* currentPOLL.targetID = 3333 (this contract)
+		* currentPOLL.subMethod = STORE
+		* currentPOLL.parameter = SYMBOL
+		* currentPOLL.parameter2 = amount
+		* currentPOLL.parameter3 = from owner
+		* currentPOLL.parameter4 = to holder
+		* currentPOLL.actorID = 7777 ( this marketplace contract)
+		* currentPOLL.targetID = 3333 (station contract)
 		* currentPOLL.partOfPoll = TARGET
 		*/
 
-		SetSendBufferForTargetContract(GAME_SPECIFIC, TRADE, tradeHubSlot, currentPOLL.parameter2, amount, currentPOLL.parameter4, currentPOLL.targetID, currentPOLL.targetID);
-		SendBufferWithAmount(ONE_WHOLE, currentPOLL.targetID);
+		SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, currentORDER.symbol, currentORDER.amount, currentORDER.owner, currentORDER.holder, contractID, currentORDER.location);
+		SendBufferWithAmount(currentFee, currentORDER.location);
 	}
+}
+
+void ExecuteAcceptedOrder(long amount)
+{
+    long amountFactor = amount / ONE_WHOLE;
+
+    if (currentORDER.isSellOrder == 1)
+    {
+        // sellorder
+
+        /* outgoing message
+        * currentPOLL.mainMethod = GAME_SPECIFIC
+        * currentPOLL.subMethod = STORE
+        * currentPOLL.parameter = SYMBOL
+        * currentPOLL.parameter2 = amount
+        * currentPOLL.parameter3 = from holder
+        * currentPOLL.parameter4 = to buyer
+        * currentPOLL.actorID = 7777 (this marketplace contract)
+        * currentPOLL.targetID = 3333 (station contract)
+        */
+
+        // send the item amount to the buyers hangar
+        SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, currentORDER.symbol, amount, currentORDER.holder, currentPOLL.actorID, contractID, currentORDER.location);
+        SendBufferWithAmount(currentFee, currentORDER.location);
+        
+        // send the total to the seller
+        sendAmount(amountFactor * currentORDER.price, currentORDER.owner);
+        
+        // set the item amount change
+        currentORDER.amount = currentORDER.amount - amount;
+        if (currentORDER.amount <= 0)
+        {
+            // close the order
+            setMapValue(STATUS, currentORDER.hash, 0);
+        }
+
+    }
+    else
+    {
+        // buyorder
+
+        /* outgoing message
+        * currentPOLL.mainMethod = GAME_SPECIFIC
+        * currentPOLL.subMethod = STORE
+        * currentPOLL.parameter = SYMBOL
+        * currentPOLL.parameter2 = amount
+        * currentPOLL.parameter3 = from seller
+        * currentPOLL.parameter4 = to buyer
+        * currentPOLL.actorID = 7777 (this marketplace contract)
+        * currentPOLL.targetID = 3333 (station contract)
+        */
+
+        // send the item amount to the buyers hangar
+        SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, currentORDER.symbol, amount, currentPOLL.actorID, currentORDER.owner, contractID, currentORDER.location);
+        SendBufferWithAmount(currentFee, currentORDER.location);
+
+        // send the total to the seller
+        sendAmount(amountFactor * currentORDER.price, currentPOLL.actorID);
+
+        // set the item amount change
+        currentORDER.amount = currentORDER.amount - amount;
+        if (currentORDER.amount <= 0)
+        {
+            // close the order
+            setMapValue(STATUS, currentORDER.hash, 0);
+        }
+    }
+}
+
+void ChangeOrderConditions(void)
+{
+	
+    if (currentORDER.price != currentPOLL.parameter3)
+    {
+        setMapValue(PRICE, currentORDER.hash, currentPOLL.parameter3);
+    }
+
+    if (currentORDER.amount != currentPOLL.parameter2)
+    {
+        if(currentORDER.isSellOrder == 1)
+        {
+            if (currentORDER.amount > currentPOLL.parameter2)
+            {
+                // change order
+
+                setMapValue(AMOUNT, currentORDER.hash, currentPOLL.parameter2);
+
+                /* outgoing message
+                * currentPOLL.mainMethod = GAME_SPECIFIC
+                * currentPOLL.subMethod = STORE
+                * currentPOLL.parameter = SYMBOL
+                * currentPOLL.parameter2 = amount
+                * currentPOLL.parameter3 = from holder
+                * currentPOLL.parameter4 = to owner
+                * currentPOLL.actorID = 7777 (this marketplace contract)
+                * currentPOLL.targetID = 3333 (station contract)
+                */
+
+                SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, currentORDER.symbol, currentORDER.amount - currentPOLL.parameter2, currentORDER.holder, currentORDER.owner, contractID, currentORDER.location);
+                SendBufferWithAmount(currentFee, currentORDER.location);
+            }
+            else
+            {
+                // cancel order
+
+                setMapValue(STATUS, currentORDER.hash, -1);
+
+                /* outgoing message
+                * currentPOLL.mainMethod = GAME_SPECIFIC
+                * currentPOLL.subMethod = STORE
+                * currentPOLL.parameter = SYMBOL
+                * currentPOLL.parameter2 = amount
+                * currentPOLL.parameter3 = from holder
+                * currentPOLL.parameter4 = to owner
+                * currentPOLL.actorID = 7777 (this marketplace contract)
+                * currentPOLL.targetID = 3333 (station contract)
+                */
+
+                SetSendBufferForTargetContract(GAME_SPECIFIC, STORE, currentORDER.symbol, currentORDER.amount, currentORDER.holder, currentORDER.owner, contractID, currentORDER.location);
+                SendBufferWithAmount(currentFee, currentORDER.location);
+
+            }
+        }
+        else
+        {
+            // buyorder
+
+            setMapValue(AMOUNT, currentORDER.hash, currentPOLL.parameter2);
+
+        }
+    }
+
 }
 
 // contract methods
@@ -605,8 +755,39 @@ void SendBufferWithAmount(long amount, long recipient)
     sendMessage(sendBuffer + 4, recipient);
 }
 
-
 // support methods
+long GetB3FromHash256(long a1, long a2, long a3, long a4)
+{
+    Set_A1_A2(a1, a2);
+    Set_A3_A4(a3, a4);
+    SHA256_A_To_B();
+    return Get_B3();
+}
+
+long SetTimeOut(long time) { return Get_Block_Timestamp() + ((time / 4) << 32); } //+(360 << 32); 15 * ~4min/block = 60min = 1 hour locktime
+
+// 0 = time is not up
+// 1 = time is up
+// 2 = error
+long GetTimeIsUp(long timeOut)
+{
+
+    if (timeOut == 0)
+    {
+        return 2;
+    }
+
+    if (Get_Block_Timestamp() < timeOut)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+
+}
+
 long IsAuthenticated(long sender)
 {
 
@@ -616,35 +797,4 @@ long IsAuthenticated(long sender)
 	}
 
 	return 0; 
-}
-
-long GetB3FromHash256(long a1, long a2, long a3, long a4)
-{
-    Set_A1_A2(a1, a2);
-    Set_A3_A4(a3, a4);
-    SHA256_A_To_B();
-    return Get_B3();
-}
-
-long CleanUpMap(long key1, long itemIndex)
-{
-    long finished = 1;
-    do
-    {
-        finished = 1;
-        long nextItem = getMapValue(key1, itemIndex + 1);
-        if (nextItem != 0)
-        {
-            setMapValue(key1, itemIndex, nextItem);
-            itemIndex++;
-            finished = 0;
-        }
-        else
-        {
-            setMapValue(key1, itemIndex, 0);
-        }
-
-    } while (finished == 0);
-
-    return itemIndex;
 }
