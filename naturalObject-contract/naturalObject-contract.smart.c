@@ -14,7 +14,7 @@
 #program description This contract serves as a actor/target contract and represent a solar system
 #program activationAmount 1.6
 
-#pragma maxAuxVars 3
+#pragma maxAuxVars 5
 #pragma maxConstVars 3
 #pragma optimizationLevel 3
 #pragma version 2.2.1
@@ -42,7 +42,7 @@ const long ONE_WHOLE = 100000000;
 //#define SET_OWNER 1_001_007
 //#define SET_NFT_CONTRACT 1_001_008
 #define AUTHENTICATE 1_001_009
-#define CREATE_STATION 1_001_010
+//#define BIGBANG_CREATE 1_001_010
 
 // sub GAME_SPECIFIC methods 
 //#define ACT 1_002_001
@@ -54,13 +54,14 @@ const long ONE_WHOLE = 100000000;
 //#define EXPLODE 1_002_007
 //#define INSURE 1_002_008
 //#define INVENT 1_002_009
-#define MINING 1_002_010
+#define MINE 1_002_010
 //#define REFINE 1_002_011
 //#define REPAIR 1_002_012
-#define SCAN 1_002_013
-//#define STORE 1_002_014
-//#define TRADE_CREATEORDER 1_002_015
-//#define TRADE_ACCEPTORDER 1_002_016
+//#define SALVAGE 1_002_013
+#define SCAN 1_002_014
+//#define STORE 1_002_015
+//#define TRADE_CREATEORDER 1_002_016
+//#define TRADE_ACCEPTORDER 1_002_017
 
 // (ext)map flags
 // standard
@@ -88,18 +89,24 @@ const long ONE_WHOLE = 100000000;
 // item properties
 //#define CATEGORY 1_005_001
 #define TYPE 1_005_002
-//#define SIZE 1_005_003
-//#define PROPERTIES 1_005_004
-//#define DEFAULT_SPEED 1_005_005
-//#define DEFAULT_STRUCTURE 1_005_006
-//#define DEFAULT_ARMOR 1_005_007
-//#define DEFAULT_SHIELD 1_005_008
-//#define DEFAULT_CARGO 1_005_009
-//#define COCKPITS 1_005_010
-#define SLOT 1_005_011
-//#define SLOTS 1_005_012
-//#define HANGAR 1_005_013
-//#define HANGARS 1_005_014
+#define SIZE 1_005_003
+//#define PROPERTY 1_005_004
+//#define PROPERTIES 1_005_005
+//#define DEFAULT_SPEED 1_005_006
+//#define DEFAULT_STRUCTURE 1_005_007
+//#define DEFAULT_ARMOR 1_005_008
+//#define DEFAULT_SHIELD 1_005_009
+//#define DEFAULT_CARGO 1_005_010
+//#define COCKPIT 1_005_010
+//#define COCKPITS 1_005_011
+#define SLOT 1_005_012
+//#define SLOTS 1_005_013
+//#define HANGAR 1_005_014
+//#define HANGARS 1_005_015
+//#define SERVICE 1_005_016
+#define SERVICES 1_005_017
+//#define HANDLED_BY 1_005_018
+//#define MANUFACTURED_BY 1_005_019
 
 // types
 //#define GUN 1_006_001
@@ -109,7 +116,7 @@ const long ONE_WHOLE = 100000000;
 //#define ENGINE 1_006_005
 //#define SHIELD 1_006_006
 //#define CARGO 1_006_007
-#define SCANNER 1_006_008
+//#define SCANNER 1_006_008
 //#define DRONE 1_006_009
 
 //#define FACILITY 1_006_010
@@ -117,15 +124,15 @@ const long ONE_WHOLE = 100000000;
 //#define REFINERY_FACILITY 1_006_012
 //#define ASSEMBLE_FACILITY 1_006_013
 //#define ADMINISTRATIVE_FACILITY 1_006_014
-#define OBSERVATORY_FACILITY 1_006_015
+//#define OBSERVATORY_FACILITY 1_006_015
 //#define TRADE_HUB 1_006_016
 
-//#define SHIP 1_006_017
-//#define STATION 1_006_018
-#define ASTEROID 1_006_019
-//#define MOON 1_006_020
-#define PLANET 1_006_021
-#define STAR 1_006_022
+//#define SHIP 1_006_018
+//#define STATION 1_006_019
+#define ASTEROID 1_006_020
+//#define MOON 1_006_021
+#define PLANET 1_006_022
+#define STAR 1_006_023
 
 // slot and hangar types
 //#define INTERNAL 1_007_001
@@ -149,11 +156,11 @@ const long ONE_WHOLE = 100000000;
 // #define STATION_HANGAR 1_007_015
 
 // sizes and weights
-//#define SMALL 1_008_001
-//#define MEDIUM 1_008_002
-//#define LARGE 1_008_003
-//#define XLARGE 1_008_004
-//#define CAPITAL 1_008_005
+#define SMALL 1_008_017
+#define MEDIUM 1_008_018
+#define LARGE 1_008_019
+#define XLARGE 1_008_020
+//#define CAPITAL 1_008_021
 
 //#define LIGHT 1_008_006
 //#define HEAVY 1_008_007
@@ -174,7 +181,7 @@ const long ONE_WHOLE = 100000000;
 //#define HOLDER 1_010_004
 
 // artificialObject contract specific
-#define OWNER 1_011_001
+//#define OWNER 1_011_001
 #define STATUS 1_011_002
 #define AMOUNT 1_011_003
 
@@ -220,12 +227,14 @@ const long ONE_WHOLE = 100000000;
 
 // contract attributes
 // basic contract
+
 long firstStart = 1;
 long maxQuantity = 0;
 long sendBuffer[8];
 long currentFee = ONE_WHOLE;
 
 // advanced
+long contractID = 0;
 long status = 0;
 long gameVoteContract = 0;
 long itemBaseContract = 0;
@@ -271,8 +280,14 @@ void constructor(void) {
 	currentPOLL.hash = 0;
 	gameVoteContract = 1111;
 	status = 0;
+	contractID = GetcontractID();
 	setMapValue(GAMEVOTE_CONTRACT, 1, 1111);
 	setMapValue(STATUS, 1, 0);
+}
+
+long GetcontractID() {
+	A_To_Tx_After_Timestamp(Get_Creation_Timestamp());
+	return Get_A1();
 }
 
 void getTxDetails(void)
@@ -355,8 +370,8 @@ void main(void)
 							locationContract = currentTX.message[2];
 							setMapValue(LOCATION_CONTRACT, 1, locationContract);
 
-							SetSendBufferForTargetContract(CONTRACT_SPECIFIC, CREATE_STATION, 0, 0, 0, 0, 0, 0);
-							SendBufferWithAmount(currentFee, station);
+							//SetSendBufferForTargetContract(CONTRACT_SPECIFIC, CREATE_STATION, 0, 0, 0, 0, 0, 0);
+							//SendBufferWithAmount(currentFee, station);
 
 						}
 						else
@@ -467,20 +482,20 @@ void ContractSpecific(void)
 
 	switch (currentPOLL.subMethod)
 	{
-		case TYPE:
-			//CONTRACT_SPECIFIC, TYPE, SCAN, result, 0, 0, 0, 0
-			objectName = currentTX.timestamp;
-			objectType = currentPOLL.parameter2;
-			setMapValue(TYPE, 1, currentPOLL.parameter2);
-			if (currentPOLL.parameter == SCAN)
-			{
-				GenerateElements(Get_Current_Balance());
-				status = 1;
-				setMapValue(STATUS, 1, 1);
-				locationContract = currentTX.sender;
-				setMapValue(LOCATION_CONTRACT, 1, locationContract);
-			}
-			break;
+		// case TYPE:
+			// CONTRACT_SPECIFIC, TYPE, SCAN, result, 0, 0, 0, 0
+			// objectName = currentTX.timestamp;
+			// objectType = currentPOLL.parameter2;
+			// setMapValue(TYPE, 1, currentPOLL.parameter2);
+			// if (currentPOLL.parameter == SCAN)
+			// {
+				// GenerateElements(Get_Current_Balance());
+				// status = 1;
+				// setMapValue(STATUS, 1, 1);
+				// locationContract = currentTX.sender;
+				// setMapValue(LOCATION_CONTRACT, 1, locationContract);
+			// }
+			// break;
 		case AUTHENTICATE:
 			setMapValue(TEMPAUTH_CONTRACT, currentPOLL.actorID, SetTimeOut(16));
 			break;
@@ -614,7 +629,7 @@ void GenerateElements(long amount)
         }
     }
 
-    CalculateElementQuantities(amount);
+    CalculateElementQuantities(amount / 1000);
 
     for (long i = 0; i < quantities.length; i++)
     {
@@ -642,8 +657,8 @@ void GameSpecific(void)
 
     switch (currentPOLL.subMethod)
     {
-        case MINING:
-            Mining();
+        case MINE:
+            Mine();
             break;
 		case SCAN:
 			Scan();
@@ -656,90 +671,159 @@ void GameSpecific(void)
 
 // sub methods
 
-void Mining(void)
+void Mine(void)
 {
-     if(status == 1)
-	 {
-		 long available = getMapValue(ELEMENT, currentPOLL.parameter);
-		 long miningQuantity = currentPOLL.parameter2 / ONE_WHOLE;
-		 if (available >= miningQuantity)
-		 {
-			 setMapValue(ELEMENT, currentPOLL.parameter, available - miningQuantity);
-			 maxQuantity -= miningQuantity;
-	 
-			 SetSendBufferForTargetContract(HASH, currentPOLL.hash, 0, 0, 0, 0, 0, currentPOLL.partOfPoll);
-			 SendBufferWithAmount(ONE_WHOLE, currentPOLL.parameter4);
-	 
-			 // 123 * (12369_2500_0000 * 10000 / 18517_4999_9866) * 10000 - 1_0000_0000 = ~81_1517_0000
-			 sendAmount(currentPOLL.parameter2 * (Get_Current_Balance() * 10000 / maxQuantity) * 10000 - currentFee, currentPOLL.providerID);
-		 }
-	 }
+	if (status == 1)
+	{
+		if (IsServiceGiven(MINE, currentPOLL.parameter, currentPOLL.targetID, currentPOLL.parameter2) != 0)
+		{
+			long available = getMapValue(ELEMENT, currentPOLL.parameter2);
+			long miningQuantity = currentPOLL.parameter3 / ONE_WHOLE;
+			if (available >= miningQuantity)
+			{
+				setMapValue(ELEMENT, currentPOLL.parameter2, available - miningQuantity);
+				maxQuantity -= miningQuantity;
+	
+				SetSendBufferForTargetContract(HASH, currentPOLL.hash, 0, 0, 0, 0, 0, TARGET);
+				SendBufferWithAmount(currentFee, currentPOLL.parameter);
+	
+				// 123 * (12369_2500_0000 * 10000 / 18517_4999_9866) * 10000 - 1_0000_0000 = ~81_1517_0000
+				sendAmount(currentPOLL.parameter3 * (Get_Current_Balance() * 10000 / maxQuantity) * 10000 - currentFee, currentPOLL.providerID);
+			}
+		}
+	}
 }
 void Scan(void)
 {
-	/* mainMethod = GAME_SPECIFIC
-	* subMethod = SCAN
-	* parameter = scanSource (ZeptLigh [7777])
-	* parameter2 = slotNumber (4 -> SmalScan [61234567890])
-	* parameter3 = 0
-	* parameter4 = actorID (account1 [10000])
-	* actorID = objectToScan (planet [9999])
-	* targetID = targetID (solarsystem [4444])
-	* PartOfPoll = ACTOR / TARGET
-	*/
-	
-	// check scanSource is ok
-	long type = getExtMapValue(TYPE, getExtMapValue(SLOT, currentPOLL.parameter2, currentPOLL.parameter), itemBaseContract);
+	/*
+	 * mainMethod           : -             = GAME_SPECIFIC, 
+	 * subMethod            : -             = SCAN,
+	 * Parameter            : toolID        = SmalScan/Observ,
+	 * Parameter2           : vehicleID     = ZeptLigh/FelDrill,
+	 * Parameter3           : -             = 0,
+	 * Parameter4           : actorID       = gamer/provider,
+	 * Parameter5/actorID   : toScanID      = Natural Contract,
+	 * Parameter6/targetID  : scanAreaID    = Star,
+	 * PartOfPoll           : -             = ACTOR / TARGET
+	 */
 
-	if (getExtMapValue(OWNER, 1, currentPOLL.parameter) == currentPOLL.parameter4 && type != 0)
+	if (currentTX.sender == gameVoteContract &&
+		   currentPOLL.partOfPoll == ACTOR &&
+		   getCodeHashOf(currentPOLL.targetID) != 0 &&
+		   IsAuthenticated(currentPOLL.targetID) == 0 && 
+		   status == 0)
 	{
-		if (status == 0 && currentPOLL.partOfPoll == ACTOR && Creator == currentPOLL.parameter4)
+		// actor part (from gamevote)
+		setMapValue(TEMPAUTH_CONTRACT, currentPOLL.targetID, SetTimeOut(16));
+	}
+	else if (currentTX.sender == gameVoteContract &&
+		   currentPOLL.partOfPoll == TARGET &&
+		   getCodeHashOf(currentPOLL.actorID) != 0 &&
+		   IsAuthenticated(currentPOLL.actorID) == 0 &&
+		   getExtMapValue(STATUS, 1, currentPOLL.actorID) == 0)
+	{
+		// target part (from gamevote)
+		if (IsServiceGiven(SCAN, currentPOLL.parameter2, currentPOLL.parameter, 0) == 1)
 		{
-			// object to be scanned
-			setMapValue(TEMPAUTH_CONTRACT, currentPOLL.targetID, SetTimeOut(16));
+			// AUTHENTICATE New Contract
+			setMapValue(TEMPAUTH_CONTRACT, currentPOLL.actorID, SetTimeOut(16));
 
+			// Send to New Contract
+			SetSendBufferForTargetContract(HASH, currentPOLL.hash, 0, 0, 0, 0, 0, TARGET);
+			SendBufferWithAmount(currentFee, currentPOLL.actorID);
 		}
-		else if (status == 1 && currentPOLL.partOfPoll == TARGET)
+	}
+	else if (currentTX.sender == gameVoteContract &&
+		   currentPOLL.partOfPoll == TARGET &&
+		   getCodeHashOf(currentPOLL.actorID) != 0 &&
+		   IsAuthenticated(currentPOLL.actorID) == 1 && 
+		   getExtMapValue(STATUS, 1, currentPOLL.actorID) == 0)
+	{
+		// target part (from gamevote)
+		if (IsServiceGiven(SCAN, currentPOLL.parameter2, currentPOLL.parameter, 0) == 1)
 		{
-			// object to be parent of scanned object
+			// Send to New Contract
+			SetSendBufferForTargetContract(HASH, currentPOLL.hash, 0, 0, 0, 0, 0, TARGET);
+			SendBufferWithAmount(currentFee, currentPOLL.actorID);
+		}
+	}
+	else if (currentTX.sender == currentPOLL.targetID &&
+		   currentPOLL.partOfPoll == TARGET &&
+		   status == 0)
+	{
+		// actor part (from target)
+		long scanAreaType = getExtMapValue(TYPE, 1, getExtMapValue(LOCATION_CONTRACT, 1, currentPOLL.targetID));
 
-			long rnd = RND(100);
-			long result = 0;
+		// roll a dice for STAR, PLANET, MOON or ASTEROID
+		long rnd = RND(100);
 
-			if (type == OBSERVATORY_FACILITY)
-			{
-				if (rnd <= 10 && objectType == STAR)
-				{
-					// STAR
-					result = STAR;
-				}
-				else if (rnd > 10 && rnd <= 20 && objectType == STAR && getMapValue(PLANET, 0) < 10)
-				{
-					// PLANET (max 10)
-					setMapValue(PLANET, 0, getMapValue(PLANET, 0) + 1);
-					result = PLANET;
-				}
-			}
-			else if (type == SCANNER)
-			{
+		switch (getExtMapValue(getExtMapValue(TYPE, 1, currentPOLL.parameter), SIZE, itemBaseContract))
+		{
+			case SMALL:
 				if (rnd >= 50)
 				{
 					// ASTEROID
-					result = ASTEROID;
+					objectType = ASTEROID;
 				}
-				else if (rnd > 10 && rnd <= 49 && objectType == STAR && getMapValue(PLANET, 0) < 10)
+				break;
+			case MEDIUM:
+				if (rnd >= 50)
 				{
-					// PLANET (max 10)
-					setMapValue(PLANET, 0, getMapValue(PLANET, 0) + 1);
-					result = PLANET;
+					// ASTEROID
+					objectType = ASTEROID;
 				}
-			}
-			if (result != 0)
-			{
-				SetSendBufferForTargetContract(CONTRACT_SPECIFIC, TYPE, SCAN, result, 0, 0, 0, 0);
-				SendBufferWithAmount(currentFee, currentPOLL.actorID);
-			}
+				else if (rnd > 10 && rnd <= 49 && scanAreaType == STAR && getExtMapValue(PLANET, 1, currentPOLL.targetID) <= 10)
+				{
+					// PLANET
+					objectType = PLANET;
+				}
+				break;
+			case LARGE:
+				if (rnd > 10 && rnd <= 20 && scanAreaType == STAR && getExtMapValue(PLANET, 1, currentPOLL.targetID) <= 10)
+				{
+					// PLANET
+					objectType = PLANET;
+				}
+				break;
+			case XLARGE:
+				if (rnd <= 10 && scanAreaType == STAR)
+				{
+					// STAR
+					objectType = STAR;
+				}
+				break;
 		}
+
+		if (objectType != 0)
+		{
+			setMapValue(TYPE, 1, objectType);
+
+			switch (objectType)
+			{
+				case STAR:
+					locationContract = contractID;
+					break;
+				case PLANET:
+					locationContract = currentTX.sender;
+					SetSendBufferForTargetContract(HASH, currentPOLL.hash, 0, 0, 0, 0, 0, TARGET);
+					SendBufferWithAmount(currentFee, currentPOLL.actorID);
+					break;
+				default:
+					locationContract = currentTX.sender;
+					break;
+			}
+
+			setMapValue(LOCATION_CONTRACT, 1, locationContract);
+
+		}
+
+	}
+	else if (currentTX.sender == currentPOLL.actorID &&
+		   currentPOLL.partOfPoll == TARGET)
+	{
+		// target part (from actor)
+		// PLANET (max 10)
+		setMapValue(PLANET, 1, getMapValue(PLANET, 1) + 1);
 	}
 }
 
@@ -748,11 +832,11 @@ void CalculateElementQuantities(long signaAmount)
 {
     quantities[30];
     long i = 0;
-    while (signaAmount > 0)
+    while (signaAmount > 0 && i < 30)
     {
         quantities[i++] = signaAmount;
         maxQuantity += signaAmount;
-        signaAmount /= 3;
+        signaAmount /= 2;
     }
 }
 long CalculatePrevalence(long toRound)
@@ -784,6 +868,73 @@ long IsAuthenticated(long sender)
 
 	return 0;
 }
+
+long IsServiceGiven(long service, long vehicleContractID, long toolID, long productSymbol)
+{
+	// check if vehicle contract (station) exists
+	// check facility is installed (on station contract)
+	// check service is given by installed facility (on itembase)
+
+	if (getExtMapValue(STATUS, 1, vehicleContractID) != 0 
+		&& getExtMapValue(SLOT, toolID, vehicleContractID) != 0 
+		&& getExtMapValue(getExtMapValue(getExtMapValue(TYPE, 1, toolID), SERVICES, itemBaseContract), service, itemBaseContract) != 0)
+	{
+		switch (productSymbol)
+		{
+			case HYDROGEN:  //1
+			case HELIUM:    //2
+			case LITHIUM:   //3
+			case CARBON:    //6
+			case NITROGEN:  //7
+			case OXYGEN:    //8
+			case NEON:      //10
+			case SODIUM:    //11
+			case ALUMINIUM: //13
+			case SILICON:   //14
+			case SULFUR:    //16
+			case CALCIUM:   //20
+			case TITAN:     //22
+			case CHROME:    //24
+			case IRON:      //26
+			case COBALT:    //27
+			case COPPER:    //29
+			case STRONTIUM: //38
+			case SILVER:    //47
+			case TIN:       //50
+			case XENON:     //54
+			case NEODYM:    //60
+			case DYSPROSIUM://66
+			case TANTALUM:  //73
+			case WOLFRAM:   //74
+			case PLATINUM:  //78
+			case GOLD:      //79
+			case MERCURY:   //80
+			case LEAD:      //82
+			case URANIUM:   //92
+				if(service != MINE)
+				{
+					return 0;
+				}
+				break;
+
+			//    // check if product can made with facility
+			//    // check if product can be handled by service
+			//    // check if product size is less or equal to the facility size
+			//    if (getExtMapValue(facility, product, itemBaseContract) != 0
+			//    && getExtMapValue(product, SERVICE, itemBaseContract) != service
+			//    && getExtMapValue(product, SIZE, itemBaseContract) <= getExtMapValue(facility, SIZE, itemBaseContract))
+			//    {
+
+			//    }
+			//    break;
+		}
+		return 1;
+
+	}
+
+	return 0;
+}
+
 
 long SetTimeOut(long time) { return Get_Block_Timestamp() + ((time / 4) << 32); } //+(360 << 32); 15 * ~4min/block = 60min = 1 hour locktime
 

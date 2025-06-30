@@ -93,11 +93,16 @@ const long ONE_WHOLE = 100000000;
 //#define DEFAULT_ARMOR 1_005_007
 //#define DEFAULT_SHIELD 1_005_008
 //#define DEFAULT_CARGO 1_005_009
-//#define COCKPITS 1_005_010
-//#define SLOT 1_005_011
-#define SLOTS 1_005_012
-//#define HANGAR 1_005_013
-#define HANGARS 1_005_014
+//#define COCKPIT 1_005_010
+//#define COCKPITS 1_005_011
+//#define SLOT 1_005_012
+#define SLOTS 1_005_013
+//#define HANGAR 1_005_014
+#define HANGARS 1_005_015
+//#define SERVICE 1_005_016
+#define SERVICES 1_005_017
+#define HANDLED_BY 1_005_018
+//#define MANUFACTURED_BY 1_005_019
 
 // types
 //#define GUN 1_006_001
@@ -111,6 +116,7 @@ const long ONE_WHOLE = 100000000;
 //#define DRONE 1_006_009
 
 //#define FACILITY 1_006_010
+#define FACILITIES 1_006_011
 //#define HANGAR_MODULE 1_006_011
 //#define REFINERY_FACILITY 1_006_012
 //#define ASSEMBLE_FACILITY 1_006_013
@@ -367,48 +373,51 @@ void Describe(void)
 	{
 		case SLOTS:
 		case HANGARS:
+		case SERVICES:
+		case HANDLED_BY:
+		case FACILITIES:
+		
+			//if (currentPOLL.parameter4 == 0)
+			//{
+			long nestingsHash = GetB3FromHash256(currentPOLL.parameter, currentPOLL.parameter2, currentPOLL.parameter3, 0);
 
-			if (currentPOLL.parameter4 == 0)
-			{
-				long nestingsHash = GetB3FromHash256(currentPOLL.parameter, currentPOLL.parameter2, currentPOLL.parameter3, 0);
+			setMapValue(currentPOLL.parameter, currentPOLL.parameter2, nestingsHash);
+			setMapValue(nestingsHash, 0, currentPOLL.parameter3);
+			//}
+			//else
+			//{
 
-				setMapValue(currentPOLL.parameter, currentPOLL.parameter2, nestingsHash);
-				setMapValue(nestingsHash, 0, currentPOLL.parameter3);
-			}
-			else
-			{
+			//    long nestingAmount = getMapValue(currentPOLL.parameter2, 0);
 
-				long nestingAmount = getMapValue(currentPOLL.parameter2, 0);
+			//    if (currentPOLL.parameter3 > nestingAmount || currentPOLL.parameter3 < 1)
+			//    {
+			//        /* Set Nesting Properties
+			//         * currentPOLL.mainMethod = GAME_SPECIFIC
+			//         * currentPOLL.subMethod = ACT
+			//         * currentPOLL.parameter = property (SLOTS/HANGAR)
+			//         * currentPOLL.parameter2 = nestingHash
+			//         * currentPOLL.parameter3 = nestingProperty (SIZE, TYPE)
+			//         * currentPOLL.parameter4 = value (SIZE: 1=small; 2=medium; 3=heavy / TYPE: INTERNAL; WEAPON; DRONE)
+			//         */
 
-				if (currentPOLL.parameter3 > nestingAmount || currentPOLL.parameter3 < 1)
-				{
-					/* Set Nesting Properties
-					 * currentPOLL.mainMethod = GAME_SPECIFIC
-					 * currentPOLL.subMethod = ACT
-					 * currentPOLL.parameter = property (SLOTS/HANGAR)
-					 * currentPOLL.parameter2 = nestingHash
-					 * currentPOLL.parameter3 = nestingProperty (SIZE, TYPE)
-					 * currentPOLL.parameter4 = value (SIZE: 1=small; 2=medium; 3=heavy / TYPE: INTERNAL; WEAPON; DRONE)
-					 */
+			//        setMapValue(currentPOLL.parameter3, currentPOLL.parameter2, currentPOLL.parameter4);
 
-					setMapValue(currentPOLL.parameter3, currentPOLL.parameter2, currentPOLL.parameter4);
+			//    }
+			//    else
+			//    {
+			//        /* Set Nesting Properties
+			//         * currentPOLL.mainMethod = GAME_SPECIFIC
+			//         * currentPOLL.subMethod = ACT
+			//         * currentPOLL.parameter = property (SLOTS/HANGAR)
+			//         * currentPOLL.parameter2 = nestingsHash
+			//         * currentPOLL.parameter3 = nestingNumber (1...n)
+			//         * currentPOLL.parameter4 = slotName (SmaExSlo = 6011568028608851055)
+			//         */
 
-				}
-				else
-				{
-					/* Set Nesting Properties
-					 * currentPOLL.mainMethod = GAME_SPECIFIC
-					 * currentPOLL.subMethod = ACT
-					 * currentPOLL.parameter = property (SLOTS/HANGAR)
-					 * currentPOLL.parameter2 = nestingsHash
-					 * currentPOLL.parameter3 = nestingNumber (1...n)
-					 * currentPOLL.parameter4 = slotName (SmaExSlo = 6011568028608851055)
-					 */
-
-					//long nestingHash = GetB3FromHash256(currentPOLL.parameter, currentPOLL.parameter2, currentPOLL.parameter3, 0);
-					setMapValue(currentPOLL.parameter2, currentPOLL.parameter3, currentPOLL.parameter4);
-				}
-			}
+			//        //long nestingHash = GetB3FromHash256(currentPOLL.parameter, currentPOLL.parameter2, currentPOLL.parameter3, 0);
+			//        setMapValue(currentPOLL.parameter2, currentPOLL.parameter3, currentPOLL.parameter4);
+			//    }
+			//}
 
 			break;
 		default:
@@ -434,7 +443,7 @@ void Invent(void)
 	if (count == 0)
 	{
 		setMapValue(INVENT, currentPOLL.parameter, 1);
-		setMapValue(currentPOLL.parameter, 1, currentPOLL.hash);
+		setMapValue(GetB3FromHash256(INVENT, currentPOLL.parameter, 0, 0), 1, currentPOLL.hash);
 	}
 	else
 	{
@@ -449,29 +458,29 @@ void Invent(void)
 		}
 		else
 		{
-			setMapValue(currentPOLL.parameter, currentPOLL.parameter4, currentPOLL.hash);
+			setMapValue(GetB3FromHash256(INVENT, currentPOLL.parameter, 0, 0), currentPOLL.parameter4, currentPOLL.hash);
 		}
 	}
 }        
 
 // contract methods
-void SetSendBufferForTargetContract(long buffer1, long buffer2, long buffer3, long buffer4, long buffer5, long buffer6, long buffer7, long buffer8)
-{
-    sendBuffer[0] = buffer1;
-    sendBuffer[1] = buffer2;
-    sendBuffer[2] = buffer3;
-    sendBuffer[3] = buffer4;
-    sendBuffer[4] = buffer5;
-    sendBuffer[5] = buffer6;
-    sendBuffer[6] = buffer7;
-    sendBuffer[7] = buffer8;
-}
+// void SetSendBufferForTargetContract(long buffer1, long buffer2, long buffer3, long buffer4, long buffer5, long buffer6, long buffer7, long buffer8)
+// {
+    // sendBuffer[0] = buffer1;
+    // sendBuffer[1] = buffer2;
+    // sendBuffer[2] = buffer3;
+    // sendBuffer[3] = buffer4;
+    // sendBuffer[4] = buffer5;
+    // sendBuffer[5] = buffer6;
+    // sendBuffer[6] = buffer7;
+    // sendBuffer[7] = buffer8;
+// }
 
-void SendBufferWithAmount(long amount, long recipient)
-{
-    sendAmountAndMessage(amount - currentFee, sendBuffer, recipient);
-    sendMessage(sendBuffer + 4, recipient);
-}
+// void SendBufferWithAmount(long amount, long recipient)
+// {
+    // sendAmountAndMessage(amount - currentFee, sendBuffer, recipient);
+    // sendMessage(sendBuffer + 4, recipient);
+// }
 
 
 // support methods

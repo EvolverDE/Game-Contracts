@@ -27,7 +27,9 @@
 // enumeration substitute
 #define ONE_WHOLE 100000000
 #define ONEHOUR 60
-#define TWENTYFOURHOURS 1440
+//#define TWENTYFOURHOURS 1440
+#define BIGBANG 18657918865985095
+
 
 // contract methods
 #define DEPOSITING 1_000_000
@@ -49,7 +51,7 @@
 //#define SET_OWNER 1_001_007
 //#define SET_NFT_CONTRACT 1_001_008
 //#define AUTHENTICATE 1_001_009
-//#define CREATE_STATION 1_001_010
+#define BIGBANG_CREATE 1_001_010
 
 // sub GAME_SPECIFIC methods 
 //#define ACT 1_002_001
@@ -61,13 +63,14 @@
 //#define EXPLODE 1_002_007
 //#define INSURE 1_002_008
 //#define INVENT 1_002_009
-//#define MINING 1_002_010
+//#define MINE 1_002_010
 //#define REFINE 1_002_011
 //#define REPAIR 1_002_012
-//#define SCAN 1_002_013
-//#define STORE 1_002_014
-//#define TRADE_CREATEORDER 1_002_015
-//#define TRADE_ACCEPTORDER 1_002_016
+//#define SALVAGE 1_002_013
+//#define SCAN 1_002_014
+//#define STORE 1_002_015
+//#define TRADE_CREATEORDER 1_002_016
+//#define TRADE_ACCEPTORDER 1_002_017
 
 // (ext)map flags
 // standard
@@ -96,17 +99,22 @@
 //#define CATEGORY 1_005_001
 //#define TYPE 1_005_002
 //#define SIZE 1_005_003
-//#define PROPERTIES 1_005_004
-//#define DEFAULT_SPEED 1_005_005
-//#define DEFAULT_STRUCTURE 1_005_006
-//#define DEFAULT_ARMOR 1_005_007
-//#define DEFAULT_SHIELD 1_005_008
-//#define DEFAULT_CARGO 1_005_009
-//#define COCKPITS 1_005_010
-//#define SLOT 1_005_011
-//#define SLOTS 1_005_012
-//#define HANGAR 1_005_013
-//#define HANGARS 1_005_014
+//#define PROPERTY 1_005_004
+//#define PROPERTIES 1_005_005
+//#define DEFAULT_SPEED 1_005_006
+//#define DEFAULT_STRUCTURE 1_005_007
+//#define DEFAULT_ARMOR 1_005_008
+//#define DEFAULT_SHIELD 1_005_009
+//#define DEFAULT_CARGO 1_005_010
+//#define COCKPITS 1_005_011
+//#define SLOT 1_005_012
+//#define SLOTS 1_005_013
+//#define HANGAR 1_005_014
+//#define HANGARS 1_005_015
+//#define SERVICE 1_005_016
+//#define SERVICES 1_005_017
+//#define HANDLED_BY 1_005_018
+//#define MANUFACTURED_BY 1_005_019
 
 // types
 //#define GUN 1_006_001
@@ -120,19 +128,20 @@
 //#define DRONE 1_006_009
 
 //#define FACILITY 1_006_010
-//#define HANGAR_MODULE 1_006_011
-//#define REFINERY_FACILITY 1_006_012
-//#define ASSEMBLE_FACILITY 1_006_013
-//#define ADMINISTRATIVE_FACILITY 1_006_014
-//#define OBSERVATORY_FACILITY 1_006_015
-//#define TRADE_HUB 1_006_016
+//#define FACILITIES 1_006_011
+//#define HANGAR_MODULE 1_006_012
+//#define REFINERY_FACILITY 1_006_013
+//#define ASSEMBLE_FACILITY 1_006_014
+//#define ADMINISTRATIVE_FACILITY 1_006_015
+//#define OBSERVATORY_FACILITY 1_006_016
+//#define TRADE_HUB 1_006_017
 
-//#define SHIP 1_006_017
-//#define STATION 1_006_018
-#define ASTEROID 1_006_019
-//#define MOON 1_006_020
-//#define PLANET 1_006_021
-#define STAR 1_006_022
+//#define SHIP 1_006_018
+//#define STATION 1_006_019
+#define ASTEROID 1_006_020
+//#define MOON 1_006_021
+//#define PLANET 1_006_022
+#define STAR 1_006_023
 
 // slot and hangar types
 //#define INTERNAL 1_007_001
@@ -309,6 +318,9 @@ void main(void)
             case VOTE_FOR_POLL:
 				VoteForPoll();
 				break;
+			case BIGBANG:
+				BigBang();
+				break;
             default:
 				break;
 		}
@@ -424,14 +436,14 @@ void MainMethod(long type)
 			Execute(1);
 		}
 	}
-	else if (IsIDOK(currentTX.sender, 0) != 0 && getCodeHashOf(currentTX.message[1]) != 0 && getCodeHashOf(currentTX.message[2]) != 0 && getCodeHashOf(currentTX.message[3]) != 0 && getMapValue(18657918865985095, 1) == 0)
-	{
-		setMapValue(18657918865985095, 1, currentTX.message[3]); // 18657918865985095 = BIGBANG
-		SetSendBufferForTargetContract(18657918865985095, STAR, 0, 0, 0, 0, 0, 0);
-		SendBufferWithAmount(currentFee, currentTX.message[1]);
-		SetSendBufferForTargetContract(18657918865985095, ASTEROID, currentTX.message[1], 0, 0, 0, 0, 0);
-		SendBufferWithAmount(currentFee, currentTX.message[2]);
-	}
+	// else if (IsIDOK(currentTX.sender, 0) != 0 && getCodeHashOf(currentTX.message[1]) != 0 && getCodeHashOf(currentTX.message[2]) != 0 && getCodeHashOf(currentTX.message[3]) != 0 && getMapValue(18657918865985095, 1) == 0)
+	// {
+		// setMapValue(18657918865985095, 1, currentTX.message[3]); // 18657918865985095 = BIGBANG
+		// SetSendBufferForTargetContract(18657918865985095, STAR, 0, 0, 0, 0, 0, 0);
+		// SendBufferWithAmount(currentFee, currentTX.message[1]);
+		// SetSendBufferForTargetContract(18657918865985095, ASTEROID, currentTX.message[1], 0, 0, 0, 0, 0);
+		// SendBufferWithAmount(currentFee, currentTX.message[2]);
+	// }
 	else
 	{
 		SendBack();
@@ -452,24 +464,27 @@ void Withdrawaling(void)
 	// currentTX.message[6] = free
 	// currentTX.message[7] = free
 
-	/**
-		* - the senderID can not be a map flag
-		* - the senderID has to be entitled
-		* - 
-		* - 
-		*/
+	/*
+	* - the senderID can not be a map flag
+	* - the senderID has to be entitled
+	* - 
+	* - 
+	*/
+		
+	long deposit = getMapValue(DEPOSITMENT, currentTX.sender);
 
-	if (IsIDOK(currentTX.sender, 0) == 1 && getMapValue(ENTITLEMENT, currentTX.sender) == 1)
+	if (IsIDOK(currentTX.sender, 0) == 1 && deposit > 0)
 	{
-
-		long deposit = getMapValue(DEPOSITMENT, currentTX.sender);
 
 		// set DEPOSIT, ENTITLEMENT and VOTEPOINTS to 0
 		setMapValue(DEPOSITMENT, currentTX.sender, 0);
-		setMapValue(ENTITLEMENT, currentTX.sender, 0);
 		setMapValue(VOTEPOINTS, currentTX.sender, 0);
 
-		contractProvider--;
+		if (getMapValue(ENTITLEMENT, currentTX.sender) != 0)
+		{
+			setMapValue(ENTITLEMENT, currentTX.sender, 0);
+			contractProvider--;
+		}
 
 		if (deposit >= ONE_WHOLE)
 		{
@@ -483,7 +498,7 @@ void Withdrawaling(void)
 				sendAmount(deposit, currentTX.sender);
 			}
 		}
-
+		
 	}
 	else
 	{
@@ -580,6 +595,59 @@ void VoteForPoll(void)
 		}
 
 	}
+}
+
+void BigBang()
+{
+    if (
+        IsIDOK(currentTX.sender, 0) != 0 && 
+        getCodeHashOf(currentTX.message[1]) != 0 && 
+        getCodeHashOf(currentTX.message[2]) != 0 &&
+        getCodeHashOf(currentTX.message[3]) != 0 &&
+        getCodeHashOf(currentTX.message[4]) != 0 &&
+        getCodeHashOf(currentTX.message[5]) != 0 &&
+        getCodeHashOf(currentTX.message[6]) != 0 &&
+        getCodeHashOf(currentTX.message[7]) != 0 &&
+        getMapValue(BIGBANG, 1) == 0
+        )
+    {
+        /* 
+          currentTX.message[0].mainMethod = 18657918865985095 // BIGBANG ;
+          currentTX.message[1].subMethod = starID.ToString();
+          currentTX.message[2].parameter = asteroidID.ToString();
+          currentTX.message[3].parameter2 = stationID.ToString();
+          currentTX.message[4].parameter3 = quarryID.ToString();
+          currentTX.message[5].parameter4 = refiningID.ToString();
+          currentTX.message[6].parameter5 = assemblyID.ToString();
+          currentTX.message[7].parameter6 = hangarID.ToString();
+        */
+        setMapValue(BIGBANG, 1, currentTX.message[3]); // 18657918865985095 = BIGBANG, message[3] = spawnpoint
+        SetSendBufferForTargetContract(BIGBANG, STAR, 0, 0, 0, 0, 0, 0);
+        SendBufferWithAmount(currentFee, currentTX.message[1]);
+        SetSendBufferForTargetContract(BIGBANG, ASTEROID, currentTX.message[1], 0, 0, 0, 0, 0);
+        SendBufferWithAmount(currentFee, currentTX.message[2]);
+
+        // BIGBANG for station
+        SetSendBufferForTargetContract(BIGBANG, BIGBANG_CREATE, currentTX.message[2], currentTX.message[4], currentTX.message[5], currentTX.message[6], currentTX.message[7], 0);
+        SendBufferWithAmount(currentFee, currentTX.message[3]);
+
+        // BIGBANG for QuaryFac
+        SetSendBufferForTargetContract(BIGBANG, BIGBANG_CREATE, currentTX.message[3], 0, 0, 0, 0, 0);
+        SendBufferWithAmount(currentFee, currentTX.message[4]);
+
+        // BIGBANG for MedRefFc
+        SetSendBufferForTargetContract(BIGBANG, BIGBANG_CREATE, currentTX.message[3], 0, 0, 0, 0, 0);
+        SendBufferWithAmount(currentFee, currentTX.message[5]);
+
+        // BIGBANG for MedAsFac
+        SetSendBufferForTargetContract(BIGBANG, BIGBANG_CREATE, currentTX.message[3], 0, 0, 0, 0, 0);
+        SendBufferWithAmount(currentFee, currentTX.message[6]);
+
+        // BIGBANG for HangMod
+        SetSendBufferForTargetContract(BIGBANG, BIGBANG_CREATE, currentTX.message[3], 0, 0, 0, 0, 0);
+        SendBufferWithAmount(currentFee, currentTX.message[7]);
+
+    }
 }
 
 // ### INTERNAL METHODS AND FUNCTIONS ###
@@ -702,6 +770,7 @@ void Execute(long pollStatus)
 	}
 	else
 	{
+		setMapValue(DEPOSITMENT, currentPOLL.providerID, 0);
 		sendAmount(currentPOLL.pollAmount + (currentPOLL.amount - currentFee), currentPOLL.providerID);
 	}
 }

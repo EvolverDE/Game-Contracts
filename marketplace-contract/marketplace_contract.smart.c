@@ -60,10 +60,11 @@ const long ONE_WHOLE = 100000000;
 //#define MINING 1_002_010
 //#define REFINE 1_002_011
 //#define REPAIR 1_002_012
-//#define SCAN 1_002_013
-#define STORE 1_002_014
-#define TRADE_CREATEORDER 1_002_015
-#define TRADE_ACCEPTORDER 1_002_016
+//#define SALVAGE 1_002_013
+//#define SCAN 1_002_014
+#define STORE 1_002_015
+#define TRADE_CREATEORDER 1_002_016
+#define TRADE_ACCEPTORDER 1_002_017
 
 // (ext)map flags
 // standard
@@ -98,11 +99,16 @@ const long ONE_WHOLE = 100000000;
 //#define DEFAULT_ARMOR 1_005_007
 //#define DEFAULT_SHIELD 1_005_008
 //#define DEFAULT_CARGO 1_005_009
-//#define COCKPITS 1_005_010
-#define SLOT 1_005_011
-#define SLOTS 1_005_012
-//#define HANGAR 1_005_013
-//#define HANGARS 1_005_014
+//#define COCKPIT 1_005_010
+//#define COCKPITS 1_005_011
+#define SLOT 1_005_012
+#define SLOTS 1_005_013
+//#define HANGAR 1_005_014
+//#define HANGARS 1_005_015
+//#define SERVICE 1_005_016
+#define SERVICES 1_005_017
+//#define HANDLED_BY 1_005_018
+//#define MANUFACTURED_BY 1_005_019
 
 // types
 //#define GUN 1_006_001
@@ -121,14 +127,14 @@ const long ONE_WHOLE = 100000000;
 //#define ASSEMBLE_FACILITY 1_006_013
 //#define ADMINISTRATIVE_FACILITY 1_006_014
 //#define OBSERVATORY_FACILITY 1_006_015
-#define TRADE_HUB 1_006_016
+//#define TRADE_HUB 1_006_016
 
-//#define SHIP 1_006_017
-#define STATION 1_006_018
-//#define ASTEROID 1_006_019
-//#define MOON 1_006_020
-//#define PLANET 1_006_021
-//#define STAR 1_006_022
+//#define SHIP 1_006_018
+#define STATION 1_006_019
+//#define ASTEROID 1_006_020
+//#define MOON 1_006_021
+//#define PLANET 1_006_022
+//#define STAR 1_006_023
 
 // slot and hangar types
 //#define INTERNAL 1_007_001
@@ -553,19 +559,20 @@ void AcceptOrder(void)
 
 long FindTradeHubSlot(long targetID)
 {
-	long slots = getExtMapValue(getExtMapValue(SLOTS, getExtMapValue(TYPE, STATION, targetID), itemBaseContract), 0, itemBaseContract);
+	long slots = getExtMapValue(getExtMapValue(TYPE, 1, targetID), SLOTS, itemBaseContract);
 
 	for (long i = 1; i <= slots; i++)
 	{
-		//long tmp1 = getExtMapValue(SLOT, i, targetID);
-		//long tmp2 = getExtMapValue(TYPE, getExtMapValue(SLOT, i, targetID), itemBaseContract);
+		long servicesHash = getExtMapValue(getExtMapValue(TYPE, 1, getExtMapValue(SLOT, i, targetID)), SERVICES, itemBaseContract);
 
-		if (getExtMapValue(TYPE, getExtMapValue(SLOT, i, targetID), itemBaseContract) == TRADE_HUB)
+		if (getExtMapValue(servicesHash, TRADE_ACCEPTORDER, itemBaseContract) == 1 ||
+			getExtMapValue(servicesHash, TRADE_CREATEORDER, itemBaseContract) == 1)
 		{
 			return i;
 		}
 
 	}
+	
 	return 0;
 }
 

@@ -1,6 +1,6 @@
 # Game Vote Contract
 
-This smart contract ...
+This contract serves as a consensus regulator (from a few to many voters) for target contracts
 
 |                    |                         |
 |--------------------|-------------------------|
@@ -36,8 +36,8 @@ TODO
 - voteTarget = depositFromPollsterID / maxProviders / 50%
 - voteTarget = 100 signa / 10 providers / 2(50%) = 20 signa
 - voters votePoints increments
-- voteFee < voteTarget -> reject
-- voteFee >= voteTarget -> reject
+- voteFee < voteTarget(+-10%) -> reject
+- voteFee >= voteTarget(+-10%) -> accept
 
 ## Maps
 

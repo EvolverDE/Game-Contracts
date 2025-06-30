@@ -105,9 +105,10 @@
 						</div>
 					</details>
 				</div>
+				<!-- Gamevote Contract -->
 				<div class="flexbox-item yellowbox contentbox">
 					<details>
-					<summary><h3>Game Vote <span style="color:yellow;">&#9711;</span></h3></summary>
+					<summary><h3>Game Vote Contract <span style="color:yellow;">&#9711;</span></h3></summary>
 						<div class="flexbox-item greenbox contentbox">
 							<h4>Consensus Algorithm <span style="color:lime;">&check;</span></h4>
 						<p >the consensus algorithm is used to vote on in-game logical changes </p>
@@ -116,9 +117,9 @@
 							<h4>Serial map data <span style="color:lime;">&check;</span></h4>
 							<p>Since the contract maps only have 3 columns (Key1, Key2 and Value), they must be serialized and linked using hash values</p>
 						</div>
-						<div class="flexbox-item redbox contentbox">
-							<h4>Choosing the working type <span style="color:red;">&cross;</span></h4>
-							<p>determine who can join (club-mode or public-mode)</p>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Choosing the working type <span style="color:lime;">&check;</span></h4>
+							<p>determine who can join (<span style="color:lime;">club-mode</span> or public-mode)</p>
 						</div>
 						<div class="flexbox-item redbox contentbox">
 							<h4>Joining the contract <span style="color:red;">&cross;</span></h4>
@@ -126,9 +127,10 @@
 						</div>
 					</details>
 				</div>
+				<!-- Itembase Contract -->
 				<div class="flexbox-item greenbox contentbox">
 					<details>
-						<summary><h3>Item Base <span style="color:lime;">&check;</span></h3></summary>
+						<summary><h3>Item Base Contract <span style="color:lime;">&check;</span></h3></summary>
 						<div class="flexbox-item greenbox contentbox">
 							<h4>Inventions <span style="color:lime;">&check;</span></h4>
 							<p>Inventions are individual object-creations like a iron bar wich needs some iron element(100 m³)</p>
@@ -139,27 +141,11 @@
 						</div>
 					</details>
 				</div>
-				<div class="flexbox-item yellowbox contentbox">
-					<details open>
-						<summary><h3>Natural Object <span style="color:yellow;">&#9711;</span></h3></summary>
-						<div class="flexbox-item greenbox contentbox">
-							<h4>Generate Elements <span style="color:lime;">&check;</span></h4>
-							<p>make sure that donations generating elements</p>
-						</div>
-						<div class="flexbox-item greenbox contentbox">
-							<h4>Mining <span style="color:lime;">&check;</span></h4>
-							<p>make sure the elements can be mined by objects that located in the solarsystem</p>
-						</div>
-						<div class="flexbox-item pinkbox contentbox">
-							<h4>Scan <span style="color:#f0f">&#9888;</span></h4>
-							<p>make it possible to scan new natural objects</p>
-						</div>
-					</details>
-				</div>
+				<!-- Marketplace Contract -->
 				<div class="flexbox-item greenbox contentbox">
 					<details>
-						<summary><h3>Marketplace Object <span style="color:lime;">&check;</span></h3></summary>
-						<div class="flexbox-item green contentbox">
+						<summary><h3>Marketplace Contract <span style="color:lime;">&check;</span></h3></summary>
+						<div class="flexbox-item greenbox contentbox">
 							<h4>Create Orders <span style="color:lime;">&check;</span></h4>
 							<p>make sure to create Sell and buyorders</p>
 						</div>
@@ -169,12 +155,36 @@
 						</div>
 					</details>
 				</div>
-				<div class="flexbox-item yellowbox contentbox">
-					<details open>
-						<summary><h3>Artificial object <span style="color:yellow;">&#9711;</span></h3></summary>
-						<div class="flexbox-item yellowbox contentbox">
+				<!-- Natural Contract -->
+				<div class="flexbox-item greenbox contentbox">
+					<details>
+						<summary><h3>Natural Object Contract <span style="color:lime;">&check;</span></h3></summary>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Generate Elements <span style="color:lime;">&check;</span></h4>
+							<p>make sure that donations generating elements</p>
+						</div>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Mining <span style="color:lime;">&check;</span></h4>
+							<p>make sure the elements can be mined by objects that located in the solarsystem</p>
+						</div>
+						<div class="flexbox-item greenbox contentbox">
+							<h4>Scanning <span style="color:lime;">&check;</span></h4>
+							<p>make it possible to scan new natural objects</p>
+						</div>
+						
+						<!--<div class="flexbox-item pinkbox contentbox">
+							<h4>Scan <span style="color:#f0f">&#9888;</span></h4>
+							<p>make it possible to scan new natural objects</p>
+						</div>-->
+					</details>
+				</div>
+				<!-- vehicleObject Contract -->
+				<div class="flexbox-item greenbox contentbox">
+					<details>
+						<summary><h3>Vehicle Object Contract <span style="color:lime;">&check;</span></h3></summary>
+						<div class="flexbox-item greenbox contentbox">
 							<details>
-								<summary><h4>Contract Specifics <span style="color:yellow;">&#9711;</span></h4></summary>
+								<summary><h4>Contract Specifics <span style="color:lime;">&check;</span></h4></summary>
 								<div class="flexbox-item greenbox contentbox">
 									<h4>Set itembase <span style="color:lime;">&check;</span></h4>
 									<p>make it configurable to set the item base id to the contract</p>
@@ -187,15 +197,15 @@
 									<h4>Set object location <span style="color:lime;">&check;</span></h4>
 									<p>make it configurable to set the object location to the contract</p>
 								</div>
-								<div class="flexbox-item redbox contentbox">
+								<!--<div class="flexbox-item redbox contentbox">
 									<h4>Set object NFT <span style="color:red;">&cross;</span></h4>
 									<p>make it configurable to set the unique NFT of the object</p>
-								</div>
+								</div> -->
 							</details>
 						</div>
-						<div class="flexbox-item yellowbox contentbox">
-							<details open>
-								<summary><h4>Game Specifics <span style="color:yellow;">&#9711;</span></h4></summary>
+						<div class="flexbox-item greenbox contentbox">
+							<details>
+								<summary><h4>Game Specifics <span style="color:lime;">&check;</span></h4></summary>
 								<div class="flexbox-item greenbox contentbox">
 									<h4>Implement mining <span style="color:lime;">&check;</span></h4>
 									<p>make it possible to mine elements of the parent solarsystem contract</p>
@@ -216,8 +226,8 @@
 									<h4>Implement docking <span style="color:lime;">&check;</span></h4>
 									<p>make it possible to (un)dock objects</p>
 								</div>
-								<div class="flexbox-item pinkbox contentbox">
-								<h4 >Implement scanning <span style="color:#f0f">&#9888;</span></h4>
+								<div class="flexbox-item greenbox contentbox">
+								<h4 >Implement scanning <span style="color:lime">&check;</span></h4>
 									<p>make it possible to scan new natural objects</p>
 								</div>
 								<div class="flexbox-item greenbox contentbox">
@@ -228,6 +238,63 @@
 						</div>
 					</details>
 				</div>
+				<!-- itemObject Contract -->
+				<div class="flexbox-item greenbox contentbox">
+					<details>
+						<summary><h3>Item Object Contract <span style="color:lime;">&check;</span></h3></summary>
+						<div class="flexbox-item greenbox contentbox">
+							<details>
+								<summary><h4>Contract Specifics <span style="color:lime;">&check;</span></h4></summary>
+								<div class="flexbox-item greenbox contentbox">
+									<h4>Set itembase <span style="color:lime;">&check;</span></h4>
+									<p>make it configurable to set the item base id to the contract</p>
+								</div>
+								<div class="flexbox-item greenbox contentbox">
+									<h4>Set object name/type <span style="color:lime;">&check;</span></h4>
+									<p>make it configurable to set the object name/type to the contract</p>
+								</div>
+								<div class="flexbox-item greenbox contentbox">
+									<h4>Set object location <span style="color:lime;">&check;</span></h4>
+									<p>make it configurable to set the object location to the contract</p>
+								</div>
+								<!--<div class="flexbox-item redbox contentbox">
+									<h4>Set object NFT <span style="color:red;">&cross;</span></h4>
+									<p>make it configurable to set the unique NFT of the object</p>
+								</div> -->
+							</details>
+						</div>
+						<div class="flexbox-item greenbox contentbox">
+							<details>
+								<summary><h4>Game Specifics <span style="color:lime;">&check;</span></h4></summary>
+								<div class="flexbox-item greenbox contentbox">
+									<h4>Implement mining <span style="color:lime;">&check;</span></h4>
+									<p>make it possible to mine elements of the parent solarsystem contract</p>
+								</div>
+								<div class="flexbox-item greenbox contentbox">
+									<h4>Implement refining <span style="color:lime;">&check;</span></h4>
+									<p>make it possible to refine elements to its common items</p>
+								</div>
+								<div class="flexbox-item greenbox contentbox">
+									<h4>Implement building <span style="color:lime;">&check;</span></h4>
+									<p>make it possible to build complex items/articles recursively</p>
+								</div>
+								<div class="flexbox-item greenbox contentbox">
+									<h4>Implement fitting/equiping <span style="color:lime;">&check;</span></h4>
+									<p>make it possible to equip objects</p>
+								</div>
+								<div class="flexbox-item greenbox contentbox">
+									<h4>Implement docking <span style="color:lime;">&check;</span></h4>
+									<p>make it possible to (un)dock objects</p>
+								</div>
+								<div class="flexbox-item greenbox contentbox">
+								<h4 >Implement scanning <span style="color:lime">&check;</span></h4>
+									<p>make it possible to scan new natural objects</p>
+								</div>
+							</details>
+						</div>
+					</details>
+				</div>
+			
 			</div>
 			<div class="flexbox-panel whitebox" style="flex-flow: column; justify-content: flex-start; align-items: center; width:33%;">
 				<h2>Network</h2>
